@@ -59,7 +59,6 @@ function CM.BuildWeaponEnhanceMacroBody(items)
     -- mainHandCharges, mainHandEnchantID, hasOffHandEnchant, ... (5th value,
     -- not 4th - mainHandEnchantID sits in between and is easy to miscount).
     local hasMainHandEnchant, _, _, _, hasOffHandEnchant = _G.GetWeaponEnchantInfo()
-    local lines = { "#showtooltip" }
 
     local slot, weaponType
     if not hasMainHandEnchant then
@@ -68,10 +67,16 @@ function CM.BuildWeaponEnhanceMacroBody(items)
         slot, weaponType = 17, CM.GetEquippedWeaponType(17)
     end
 
-    if slot and weaponType then
-        local itemID = GetBestItemFor(items, weaponType)
-        if itemID then AppendApplyLines(lines, itemID, slot) end
-    end
+    local itemID = slot and weaponType and GetBestItemFor(items, weaponType)
+
+    -- Always show an item on the button, like every other tab - even when
+    -- there's nothing to apply this cycle (both hands already covered, or
+    -- the hand that needs it currently holds no weapon), so the macro never
+    -- looks like a dead/empty button.
+    local showID = itemID or CM.GetFirstInBags(items)
+    local lines = { showID and ("#showtooltip item:" .. showID) or "#showtooltip" }
+
+    if itemID then AppendApplyLines(lines, itemID, slot) end
 
     return CM.TrimMacroLines(lines)
 end
