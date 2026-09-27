@@ -14,12 +14,16 @@ CM.HEALTHSTONE_IDS = {
 -- an explicit ID list is deterministic and works in any client language.
 -- Add further quality-tier IDs here as they turn up in-game.
 CM.WEAPONENHANCE_IDS = {
-	[237367] = "blunt",  -- Glänzender Gewichtstein / Refulgent Weightstone (rank 1)
+    [237367] = "blunt",  -- Glänzender Gewichtstein / Refulgent Weightstone (rank 1)
     [237369] = "blunt",  -- Glänzender Gewichtstein / Refulgent Weightstone (rank 2)
-	[237370] = "edged",  -- Glänzender Schleifstein / Refulgent Whetstone (rank 1)
+    [237370] = "edged",  -- Glänzender Schleifstein / Refulgent Whetstone (rank 1)
     [237371] = "edged",  -- Glänzender Schleifstein / Refulgent Whetstone (rank 2)
-	[243733] = 			 -- Thalassisches Phönixöl
-	[
+    [243733] = "any",    -- Thalassisches Phönixöl / Thalassian Phoenix Oil (rank 1)
+    [243734] = "any",    -- Thalassisches Phönixöl / Thalassian Phoenix Oil (rank 2)
+    [243735] = "any",    -- Oil of Dawn (rank 1)
+    [243736] = "any",    -- Oil of Dawn (rank 2)
+    [243737] = "any",    -- Smuggler's Enchanted Edge (rank 1)
+    [243738] = "any",    -- Smuggler's Enchanted Edge (rank 2)
 }
 
 function CM.GetTargetTabForItem(targetID)

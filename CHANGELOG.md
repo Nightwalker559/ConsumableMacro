@@ -11,7 +11,7 @@ All notable changes to this project are documented here.
   - Correct item is auto-picked per weapon type (edged → Whetstone, blunt → Weightstone; Oils work on any weapon).
   - Only applies to a hand without an active temporary enchant - the other hand is left alone.
   - Only ever targets one hand per macro press (mainhand first, then offhand) - applying the same item to both hands in one click doesn't reliably work client-side. Using the item consumes it from the bags, which triggers the normal rebuild and points the macro at the other hand for the next press.
-  - Whetstone/Weightstone are recognized by an explicit item-ID list (`CM.WEAPONENHANCE_IDS`) instead of name matching - some Midnight items didn't classify correctly by name/subclass alone (locale-dependent, unreliable). Confirmed: Glänzender Gewichtstein (237369) = blunt. Add further quality-tier IDs there as they're found.
+  - Whetstone/Weightstone/Oil are recognized by an explicit item-ID list (`CM.WEAPONENHANCE_IDS`) instead of name matching - some Midnight items didn't classify correctly by name/subclass alone (locale-dependent, unreliable). Confirmed: Refulgent Weightstone (237367, 237369) = blunt, Refulgent Whetstone (237370, 237371) = edged, Thalassian Phoenix Oil (243733, 243734), Oil of Dawn (243735, 243736) and Smuggler's Enchanted Edge (243737, 243738) = any. Add further quality-tier IDs there as they're found.
   - Macro rebuilds on bag changes, weapon swaps, and periodically (also catches a naturally expired buff).
   - Supports Restock, Reminder and Min-Count like the other tabs.
 
