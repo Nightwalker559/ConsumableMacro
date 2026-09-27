@@ -20,12 +20,18 @@ All notable changes to this project are documented here.
 
 ### Fixed
 - `.toc` IconTexture pointed at a non-existent `icon.png`; addon list showed no icon. Corrected to the actual `Icon.tga`.
-- Weapon Enhancements macro showed a blank `#showtooltip` (no icon/tooltip) whenever there was nothing to apply that cycle (both hands already enchanted, or the hand that needs it has no weapon equipped - e.g. two-handers). It now always shows the top-priority item in bags, like every other tab, even when there's no action to append.
 
 ### Cleanup
 - New `WeaponEnhance.lua`: weapon-type detection, per-hand macro body builder, enchant-state polling.
 - New `CM.HideFrames(keys)` helper (Core.lua); replaces the duplicated hide-these-windows loop in `UI.lua` and `Profiles.lua`.
 - Full pre-release audit: no dead code, no unused locale strings, all 10 Lua files verified with `luac -p`.
+
+---
+
+## [2.0.1] – September 2026
+
+### Fixed
+- Weapon Enhancements macro showed a blank `#showtooltip` (no icon/tooltip) whenever there was nothing to apply that cycle (both hands already enchanted, or the hand that needs it has no weapon equipped - e.g. two-handers). It now always shows the top-priority item in bags, like every other tab, even when there's no action to append.
 
 ---
 
