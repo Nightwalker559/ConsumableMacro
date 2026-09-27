@@ -175,10 +175,7 @@ function CM.SetProfile(name)
 
     -- Store pending edits in the old profile, close windows bound to it.
     CM.CommitOptionsBoxes()
-    for _, key in ipairs({ "restockConfigFrame", "ieFrame", "resetFrame", "profileFrame" }) do
-        local sub = CM[key]
-        if sub and sub:IsShown() then sub:Hide() end
-    end
+    CM.HideFrames({ "restockConfigFrame", "ieFrame", "resetFrame", "profileFrame" })
 
     CM.charDb.profile = name
     CM.db = p

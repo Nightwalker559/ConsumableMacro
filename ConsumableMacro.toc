@@ -5,7 +5,7 @@
 ## Version: 2.0.0
 ## SavedVariables: ConsumableMacroDB
 ## SavedVariablesPerCharacter: ConsumableMacroCharDB
-## IconTexture: Interface\AddOns\ConsumableMacro\Media\icon.png
+## IconTexture: Interface\AddOns\ConsumableMacro\Media\Icon.tga
 
 # Locales (must be loaded first)
 Locales\ConsumableMacro_EN.lua

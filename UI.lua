@@ -186,10 +186,7 @@ end
 local SUB_FRAMES = { "optionsFrame", "ieFrame", "resetFrame", "autoPotionFrame", "restockConfigFrame", "profileFrame" }
 
 function CM.HideSubFrames()
-    for _, key in ipairs(SUB_FRAMES) do
-        local sub = CM[key]
-        if sub and sub:IsShown() then sub:Hide() end
-    end
+    CM.HideFrames(SUB_FRAMES)
 end
 
 function CM.BuildUI()
