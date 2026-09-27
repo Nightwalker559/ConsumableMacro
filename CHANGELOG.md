@@ -18,8 +18,13 @@ All notable changes to this project are documented here.
 ### Changed
 - Main window width now scales with the number of tabs; item list, rows and the drop-zone box scale with it too, so adding a tab can't overflow the frame or leave a dead gap.
 
+### Fixed
+- `.toc` IconTexture pointed at a non-existent `icon.png`; addon list showed no icon. Corrected to the actual `Icon.tga`.
+
 ### Cleanup
 - New `WeaponEnhance.lua`: weapon-type detection, per-hand macro body builder, enchant-state polling.
+- New `CM.HideFrames(keys)` helper (Core.lua); replaces the duplicated hide-these-windows loop in `UI.lua` and `Profiles.lua`.
+- Full pre-release audit: no dead code, no unused locale strings, all 10 Lua files verified with `luac -p`.
 
 ---
 

@@ -136,6 +136,14 @@ function CM.ShowItemTooltip(owner, itemID, anchor)
     GameTooltip:Show()
 end
 
+-- Hides every shown frame named by a CM.<key>, e.g. { "optionsFrame", "ieFrame" }.
+function CM.HideFrames(keys)
+    for _, key in ipairs(keys) do
+        local f = CM[key]
+        if f and f:IsShown() then f:Hide() end
+    end
+end
+
 -- Movable addon window: Blizzard frame, shared strata, closes on Escape, hidden.
 -- The caller sets size, anchor and title.
 function CM.CreateWindow(name)
