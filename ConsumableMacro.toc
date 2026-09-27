@@ -1,0 +1,28 @@
+## Interface: 120100, 120105
+## Title: |cff00FF98Consumable|rMacro
+## Notes: Automatically creates macros for the best available consumables in your bags.
+## Author: Nightwalker559
+## Version: 2.0.0
+## SavedVariables: ConsumableMacroDB
+## SavedVariablesPerCharacter: ConsumableMacroCharDB
+## IconTexture: Interface\AddOns\ConsumableMacro\Media\icon.png
+
+# Locales (must be loaded first)
+Locales\ConsumableMacro_EN.lua
+Locales\ConsumableMacro_DE.lua
+
+# Core (namespace, state, macro logic, shared helpers, profiles)
+Core.lua
+Profiles.lua
+
+# Features
+Reminder.lua
+Items.lua
+AutoPotion.lua
+Restock.lua
+WeaponEnhance.lua
+
+# UI, options, events + slash commands (last - uses everything above)
+UI.lua
+Options.lua
+Events.lua
