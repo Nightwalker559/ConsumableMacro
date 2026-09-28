@@ -164,9 +164,21 @@ function CM.GetReminderFrame()
 end
 
 -- ── Build reminder content ─────────────────────────────────────────────────────
+-- Fleeting/conjured items (e.g. cauldron flasks) can't be bought/restocked, so
+-- being low on one isn't actionable - skip them when picking the top-priority
+-- item, unless a tab tracks nothing else.
+local function AuctionableOnly(items)
+    if not CM.IsConjured then return items end
+    local filtered = {}
+    for _, item in ipairs(items) do
+        if not CM.IsConjured(item.id) then tinsert(filtered, item) end
+    end
+    return #filtered > 0 and filtered or items
+end
+
 -- Returns top-priority item count for a tab (first item in bags, priority order)
 local function getTopCount(items)
-    local id = CM.GetFirstInBags(items)
+    local id = CM.GetFirstInBags(AuctionableOnly(items))
     return id and C_Item.GetItemCount(id) or 0
 end
 

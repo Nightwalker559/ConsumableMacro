@@ -4,6 +4,16 @@ All notable changes to this project are documented here.
 
 ---
 
+## [2.0.2] – September 2026
+
+### New
+- Restock: optional per-item minimum count. When set, the item only shows in the AH panel once you're at or below it, instead of as soon as you're below target. Empty/0 falls back to the tab's minimum count (Options).
+
+### Changed
+- Reminder (login & post-instance) skips fleeting/conjured items (e.g. cauldron flasks) when picking the top-priority item in bags - they can't be restocked, so a low count on one isn't actionable.
+
+---
+
 ## [2.0.1] – September 2026
 
 ### Fixed
