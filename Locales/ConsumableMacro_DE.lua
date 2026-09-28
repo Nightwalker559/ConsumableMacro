@@ -86,11 +86,13 @@ L["BTN_RESTOCK_CONFIGURE"]      = "Nachkauf konfigurieren"
 L["RESTOCK_CONFIG_TITLE"]       = "Nachkauf-Einstellungen"
 L["CHECKBOX_RESTOCK_ENABLE"]    = "Nachkauf-Liste am AH anzeigen"
 L["CHECKBOX_RESTOCK_BANK"]      = "Bank / Warband-Bank mitzählen"
-L["RESTOCK_CONFIG_DESC"]        = "Items zum Nachkaufen anhaken und je eine Zielmenge festlegen."
+L["RESTOCK_CONFIG_DESC"]        = "Items zum Nachkaufen anhaken und je eine Zielmenge festlegen. Optionales Minimum pro Item (linke Box für Details überfahren)."
 L["RESTOCK_EMPTY"]              = "Noch keine Items. Zuerst im Hauptfenster hinzufügen."
 L["RESTOCK_TITLE"]              = "Nachkauf"
 L["RESTOCK_HINT"]               = "Zeile anklicken zum Suchen."
 L["RESTOCK_MORE"]               = "+%d weitere"
+L["RESTOCK_TARGET_TOOLTIP"]     = "Zielmenge, bis zu der nachgekauft wird."
+L["RESTOCK_MIN_TOOLTIP"]        = "Erscheint im AH-Panel erst ab dieser Menge oder darunter, statt sofort unter der Zielmenge. Leer/0 = nutzt die Mindestmenge dieses Tabs (Optionen)."
 
 L["PATTERN_FLEETING"]           = {"flüchtig"}
 

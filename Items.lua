@@ -193,7 +193,7 @@ function CM.ApplyImport(parsed, filter)
             for _, it in ipairs(CM.db[t.key].items or {}) do old[it.id] = it end
             for _, it in ipairs(parsed[t.key]) do
                 local prev = old[it.id]
-                if prev then it.restock = prev.restock; it.target = prev.target end
+                if prev then it.restock = prev.restock; it.target = prev.target; it.minCount = prev.minCount end
             end
             CM.db[t.key].items = parsed[t.key]
         end

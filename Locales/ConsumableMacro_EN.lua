@@ -85,11 +85,13 @@ L["BTN_RESTOCK_CONFIGURE"]      = "Configure Restock"
 L["RESTOCK_CONFIG_TITLE"]       = "Restock Setup"
 L["CHECKBOX_RESTOCK_ENABLE"]    = "Show restock list at the AH"
 L["CHECKBOX_RESTOCK_BANK"]      = "Count bank / warband bank"
-L["RESTOCK_CONFIG_DESC"]        = "Tick the items to restock and set a target amount for each."
+L["RESTOCK_CONFIG_DESC"]        = "Tick the items to restock and set a target amount for each. Optional per-item minimum (hover the left box for details)."
 L["RESTOCK_EMPTY"]              = "No items yet. Add items in the main window first."
 L["RESTOCK_TITLE"]              = "Restock"
 L["RESTOCK_HINT"]               = "Click a row to search."
 L["RESTOCK_MORE"]               = "+%d more"
+L["RESTOCK_TARGET_TOOLTIP"]     = "Target amount to restock up to."
+L["RESTOCK_MIN_TOOLTIP"]        = "Only shows in the AH panel once you're at or below this amount, instead of as soon as you're below target. Empty/0 = use this tab's minimum count (Options)."
 
 L["PATTERN_FLEETING"]           = {"fleeting"}
 

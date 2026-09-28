@@ -2,13 +2,17 @@
 -- Per-item restock targets. A small panel next to the Auction House lists
 -- every ticked item that is below its target amount; clicking a row searches
 -- for it (Auctionator if present, otherwise the default Blizzard AH).
--- Item entries in CM.db[tab].items: { id = n, restock = bool, target = n }
+-- Item entries in CM.db[tab].items: { id = n, restock = bool, target = n, minCount = n }
+-- minCount (optional) gates when the item shows up in the AH panel: only once
+-- have <= minCount, instead of as soon as have < target. 0/empty falls back to
+-- the tab's minCount (Options).
 local CM = ConsumableMacroAddon
 
 local ROW_H     = 28   -- AH panel row height
 local MAX_ROWS  = 12   -- AH panel row cap (rest is summarised as "+N more")
 local CFG_ROW_H = 26   -- config frame row height
-local CFG_ROW_W = 305  -- config frame row width
+local CFG_ROW_W = 360  -- config frame row width
+local CFG_BOX_W = 40   -- target/min edit box width
 
 -- AH state (reset on every AH visit)
 local ahOpen    = false
@@ -53,11 +57,13 @@ local function DisplayName(itemID)
     return RankMarkup(itemID) .. CM.GetItemDisplayName(itemID)
 end
 
-local function SkinRowWidgets(chk, box)
+local function SkinRowWidgets(chk, ...)
     local S = CM.GetElvSkins()
     if not S then return end
     CM.SkinCheckbox(S, chk)
-    if box and S.HandleEditBox then S:HandleEditBox(box) end
+    for _, box in ipairs({ ... }) do
+        if box and S.HandleEditBox then S:HandleEditBox(box) end
+    end
 end
 
 -- Items that can't be bought at the AH: conjured/fleeting (cauldron) items and
@@ -94,6 +100,7 @@ local function IsConjured(itemID)
     end
     return false
 end
+CM.IsConjured = IsConjured  -- exposed for Reminder.lua (fleeting items aren't worth restocking)
 
 local function IsBoundNoAH(itemID)
     -- bindType is the 14th return of C_Item.GetItemInfo (nil until cached)
@@ -108,19 +115,25 @@ function CM.IsAuctionable(itemID)
     return not IsConjured(itemID) and not IsBoundNoAH(itemID)
 end
 
--- Returns { {id, have, target, missing}, ... } for ticked items below target.
+-- Returns { {id, have, target, missing}, ... } for ticked items below target
+-- AND at/below their (effective) minimum count.
 function CM.GetRestockList()
     local list = {}
     if not CM.db then return list end
     for _, t in ipairs(CM.TABS) do
         if not CM.RESTOCK_SKIP[t.key] then
-            local items = CM.db[t.key] and CM.db[t.key].items or {}
+            local items  = CM.db[t.key] and CM.db[t.key].items or {}
+            local tabMin = tonumber(CM.db[t.key] and CM.db[t.key].minCount) or 0
             for _, item in ipairs(items) do
                 local target = tonumber(item.target) or 0
                 if item.restock and target > 0 and CM.IsAuctionable(item.id) then
                     local have = GetHave(item.id)
                     if have < target then
-                        tinsert(list, { id = item.id, have = have, target = target, missing = target - have })
+                        local min = tonumber(item.minCount) or 0
+                        if min <= 0 then min = tabMin end
+                        if min <= 0 or have <= min then
+                            tinsert(list, { id = item.id, have = have, target = target, missing = target - have })
+                        end
                     end
                 end
             end
@@ -311,13 +324,30 @@ local function GetConfigRow(f, i)
     row.icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
 
     row.box = CreateFrame("EditBox", nil, row, "InputBoxTemplate")
-    row.box:SetSize(46, 20)
+    row.box:SetSize(CFG_BOX_W, 20)
     row.box:SetPoint("RIGHT", -6, 0)
     row.box:SetMaxLetters(4)
+    row.box:SetScript("OnEnter", function(self)
+        GameTooltip:SetOwner(self, "ANCHOR_TOP")
+        GameTooltip:SetText(CM.L["RESTOCK_TARGET_TOOLTIP"], nil, nil, nil, nil, true)
+        GameTooltip:Show()
+    end)
+    row.box:SetScript("OnLeave", function() GameTooltip:Hide() end)
+
+    row.minBox = CreateFrame("EditBox", nil, row, "InputBoxTemplate")
+    row.minBox:SetSize(CFG_BOX_W, 20)
+    row.minBox:SetPoint("RIGHT", row.box, "LEFT", -6, 0)
+    row.minBox:SetMaxLetters(4)
+    row.minBox:SetScript("OnEnter", function(self)
+        GameTooltip:SetOwner(self, "ANCHOR_TOP")
+        GameTooltip:SetText(CM.L["RESTOCK_MIN_TOOLTIP"], nil, nil, nil, nil, true)
+        GameTooltip:Show()
+    end)
+    row.minBox:SetScript("OnLeave", function() GameTooltip:Hide() end)
 
     row.name = row:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
     row.name:SetPoint("LEFT",  row.icon, "RIGHT", 6, 0)
-    row.name:SetPoint("RIGHT", row.box,  "LEFT", -10, 0)
+    row.name:SetPoint("RIGHT", row.minBox, "LEFT", -10, 0)
     row.name:SetJustifyH("LEFT")
     row.name:SetWordWrap(false)
 
@@ -337,7 +367,14 @@ local function GetConfigRow(f, i)
         CM.RefreshRestockFrame()
     end)
 
-    SkinRowWidgets(row.chk, row.box)
+    CM.BindNumberBox(row.minBox, function(self)
+        local item = row.item
+        if not item then return end
+        item.minCount = tonumber(self:GetText()) or 0
+        CM.RefreshRestockFrame()
+    end)
+
+    SkinRowWidgets(row.chk, row.box, row.minBox)
     f.rows[i] = row
     return row
 end
@@ -359,7 +396,7 @@ function CM.RefreshRestockConfig()
                 n = n + 1
                 local hRow = GetConfigRow(f, n)
                 hRow.item = nil
-                hRow.chk:Hide(); hRow.icon:Hide(); hRow.name:Hide(); hRow.box:Hide()
+                hRow.chk:Hide(); hRow.icon:Hide(); hRow.name:Hide(); hRow.box:Hide(); hRow.minBox:Hide()
                 hRow.header:SetText(L[t.tabL] or t.key)
                 hRow.header:SetTextColor(unpack(t.color))
                 hRow.header:Show()
@@ -370,7 +407,7 @@ function CM.RefreshRestockConfig()
                     local r = GetConfigRow(f, n)
                     r.item = item
                     r.header:Hide()
-                    r.chk:Show(); r.icon:Show(); r.name:Show(); r.box:Show()
+                    r.chk:Show(); r.icon:Show(); r.name:Show(); r.box:Show(); r.minBox:Show()
                     r.chk:SetChecked(item.restock and true or false)
                     r.icon:SetTexture(CM.GetItemIcon(item.id))
                     r.name:SetText(DisplayName(item.id))
@@ -378,6 +415,10 @@ function CM.RefreshRestockConfig()
                     if not r.box:HasFocus() then
                         local target = tonumber(item.target) or 0
                         r.box:SetText(target > 0 and tostring(target) or "")
+                    end
+                    if not r.minBox:HasFocus() then
+                        local min = tonumber(item.minCount) or 0
+                        r.minBox:SetText(min > 0 and tostring(min) or "")
                     end
                     r:Show()
                 end
@@ -398,7 +439,7 @@ function CM.BuildRestockConfigFrame()
     local L = CM.L
 
     local f = CM.CreateWindow("CMRestockConfigFrame")
-    f:SetSize(360, 500)
+    f:SetSize(410, 500)
     f:SetPoint("LEFT", CM.optionsFrame, "RIGHT", 8, 0)
     f.TitleText:SetText(L["RESTOCK_CONFIG_TITLE"])
     f.rows = {}
@@ -407,7 +448,8 @@ function CM.BuildRestockConfigFrame()
     f:SetScript("OnHide", function()
         for _, row in ipairs(f.rows) do
             if row:IsShown() and row.item then
-                row.item.target = tonumber(row.box:GetText()) or 0
+                row.item.target   = tonumber(row.box:GetText()) or 0
+                row.item.minCount = tonumber(row.minBox:GetText()) or 0
             end
         end
         CM.RefreshRestockFrame()

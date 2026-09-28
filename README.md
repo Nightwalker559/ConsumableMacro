@@ -12,7 +12,7 @@ Automatically creates and maintains macros for the best available consumables in
 - **Auto-managed macros** for six categories: Flask, Potion, Heal Potion, Healthstone, Buff Food, Weapon Enhancements.
 - **Priority lists** per category — add items by Item-ID or drag & drop, reorder with `+`/`-`.
 - **Auto-update on bag change** (toggleable) — macros always use the best item currently in your bags.
-- **Reminder** — shows missing/low consumables on login and after leaving a dungeon, raid, delve, or scenario. Configurable minimum-count thresholds per tab (checked against your top-priority item in the bags).
+- **Reminder** — shows missing/low consumables on login and after leaving a dungeon, raid, delve, or scenario. Configurable minimum-count thresholds per tab (checked against your top-priority item in the bags). Fleeting/conjured items (e.g. cauldron flasks) are skipped when picking that item.
 - **AutoPotion** — optional panic-button macro combining a known class/racial self-heal spell, your top Heal Potion, and your Healthstone in one `/castsequence`. See below.
 - **Weapon Enhancements** — Whetstones, Weightstones and Weapon Oils in one list, auto-applied to whichever hand needs it based on your equipped weapon type. See below.
 - **Restock** — tick items and set a target amount per item; a panel at the Auction House lists what's short, with rank icons and one-click search (Auctionator or default AH). See below.
@@ -98,6 +98,7 @@ Keeps your consumables topped up via the Auction House.
 1. Options → **Configure Restock**.
 2. Enable **Show restock list at the AH**.
 3. Tick the items you actively use and enter a target amount for each item.
+4. Optional: set a per-item minimum (left box). The item then only shows up once you're at or below it, instead of as soon as you're below target. Empty/0 falls back to the tab's minimum count (Options → Minimum Count Warning).
 
 **At the Auction House**
 - A panel next to the AH lists every ticked item below its target (`have/target`), with its rank icon.
