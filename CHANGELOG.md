@@ -12,6 +12,9 @@ All notable changes to this project are documented here.
 ### Changed
 - Reminder (login & post-instance) skips fleeting/conjured items (e.g. cauldron flasks) when picking the top-priority item in bags - they can't be restocked, so a low count on one isn't actionable.
 
+### Fixed
+- Weapon Enhancements macro still went blank when nothing from the list was in the bags at all (the 2.0.1 fix only covered "something's in bags but nothing to apply this cycle"). Now falls back to the top-priority configured item, matching every other tab.
+
 ---
 
 ## [2.0.1] – September 2026
