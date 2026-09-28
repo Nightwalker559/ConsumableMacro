@@ -71,9 +71,11 @@ function CM.BuildWeaponEnhanceMacroBody(items)
 
     -- Always show an item on the button, like every other tab - even when
     -- there's nothing to apply this cycle (both hands already covered, or
-    -- the hand that needs it currently holds no weapon), so the macro never
-    -- looks like a dead/empty button.
-    local showID = itemID or CM.GetFirstInBags(items)
+    -- the hand that needs it currently holds no weapon), or nothing from the
+    -- list is currently in the bags at all (falls back to the top-priority
+    -- configured item, same as GetMacroBodyText in Core.lua) - so the macro
+    -- never looks like a dead/empty button.
+    local showID = itemID or CM.GetFirstInBags(items) or (items[1] and items[1].id)
     local lines = { showID and ("#showtooltip item:" .. showID) or "#showtooltip" }
 
     if itemID then AppendApplyLines(lines, itemID, slot) end
