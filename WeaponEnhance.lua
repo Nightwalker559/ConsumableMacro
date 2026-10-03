@@ -54,18 +54,33 @@ end
 -- covered. Using the item consumes it from the bags, which triggers the
 -- normal bag-update rebuild - so the very next rebuild already points at the
 -- other hand, ready for a second press.
-function CM.BuildWeaponEnhanceMacroBody(items)
-    -- GetWeaponEnchantInfo(): hasMainHandEnchant, mainHandExpiration,
-    -- mainHandCharges, mainHandEnchantID, hasOffHandEnchant, ... (5th value,
-    -- not 4th - mainHandEnchantID sits in between and is easy to miscount).
-    local hasMainHandEnchant, _, _, _, hasOffHandEnchant = _G.GetWeaponEnchantInfo()
+-- Which hand the next press should target, and that hand's weapon type.
+-- A hand with no enchant comes first (mainhand, then offhand). Once every
+-- weapon is covered, the hand with the least time left is refreshed - so the
+-- macro stays usable while an enchant is still running (e.g. 3 min left);
+-- applying over it just replaces it via the confirm popup.
+function CM.GetWeaponEnhanceTarget()
+    -- GetWeaponEnchantInfo(): hasMainHandEnchant, mainHandExpiration (ms),
+    -- mainHandCharges, mainHandEnchantID, hasOffHandEnchant, offHandExpiration,
+    -- ... (5th value, not 4th - mainHandEnchantID sits in between).
+    local hasMain, mainExp, _, _, hasOff, offExp = _G.GetWeaponEnchantInfo()
 
-    local slot, weaponType
-    if not hasMainHandEnchant then
-        slot, weaponType = 16, CM.GetEquippedWeaponType(16)
-    elseif not hasOffHandEnchant then
-        slot, weaponType = 17, CM.GetEquippedWeaponType(17)
+    local mainType, offType = CM.GetEquippedWeaponType(16), CM.GetEquippedWeaponType(17)
+
+    if not hasMain and mainType then return 16, mainType end
+    if not hasOff and offType then return 17, offType end
+
+    if hasMain and mainType and hasOff and offType then
+        if (offExp or 0) < (mainExp or 0) then return 17, offType end
+        return 16, mainType
     end
+    if hasMain and mainType then return 16, mainType end
+    if hasOff and offType then return 17, offType end
+    return nil, nil
+end
+
+function CM.BuildWeaponEnhanceMacroBody(items)
+    local slot, weaponType = CM.GetWeaponEnhanceTarget()
 
     local itemID = slot and weaponType and GetBestItemFor(items, weaponType)
 
@@ -87,14 +102,15 @@ end
 -- Neither fires a bag event, so this tab also rebuilds on a timer and on
 -- equipment changes, in addition to the normal bag-update trigger that already
 -- covers "just applied it" (the item leaving the bag).
-local lastMain, lastOff = nil, nil
+local lastMain, lastOff, lastSlot = nil, nil, nil
 
 local function CheckEnchantState()
     local items = CM.db and CM.db.weaponenhance and CM.db.weaponenhance.items
     if not items or #items == 0 then return end
     local hasMain, _, _, _, hasOff = _G.GetWeaponEnchantInfo()
-    if hasMain ~= lastMain or hasOff ~= lastOff then
-        lastMain, lastOff = hasMain, hasOff
+    local slot = CM.GetWeaponEnhanceTarget()
+    if hasMain ~= lastMain or hasOff ~= lastOff or slot ~= lastSlot then
+        lastMain, lastOff, lastSlot = hasMain, hasOff, slot
         CM.UpdateMacro("weaponenhance")
     end
 end

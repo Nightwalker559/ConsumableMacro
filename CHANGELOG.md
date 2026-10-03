@@ -4,6 +4,13 @@ All notable changes to this project are documented here.
 
 ---
 
+## [Unreleased]
+
+### Fixed
+- Weapon Enhancements macro could not be used while an enchant was still running (e.g. with 3 min left). Hands without an enchant still come first; once every weapon is covered, the hand with the least time left is refreshed (the replace popup is confirmed automatically). The macro also rebuilds when that target hand changes.
+
+---
+
 ## [2.0.2] – September 2026
 
 ### New
