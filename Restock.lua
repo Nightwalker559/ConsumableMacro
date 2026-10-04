@@ -58,10 +58,13 @@ local function DisplayName(itemID)
     return RankMarkup(itemID) .. CM.GetItemDisplayName(itemID)
 end
 
-local function SkinRowWidgets(chk, ...)
+local function SkinRowWidgets(row, chk, ...)
     local S = CM.GetElvSkins()
     if not S then return end
     CM.SkinCheckbox(S, chk)
+    -- remove button -> ElvUI close "X", fold icon -> ElvUI +/- (best-effort)
+    if S.HandleCloseButton then pcall(S.HandleCloseButton, S, row.delBtn) end
+    if S.HandleCollapseTexture then pcall(S.HandleCollapseTexture, S, row.toggle) end
     for _, box in ipairs({ ... }) do
         if box and S.HandleEditBox then S:HandleEditBox(box) end
     end
@@ -372,18 +375,20 @@ local function GetConfigRow(f, i)
     row.hdrBtn = CreateFrame("Button", nil, row)
     row.hdrBtn:SetAllPoints()
     row.hdrBtn:SetHighlightTexture("Interface\\Buttons\\UI-Listbox-Highlight2", "ADD")
-    row.toggle = row.hdrBtn:CreateTexture(nil, "ARTWORK")
+    row.toggle = CreateFrame("Button", nil, row.hdrBtn)  -- +/- icon (a real button so ElvUI can skin it)
     row.toggle:SetSize(16, 16)
     row.toggle:SetPoint("LEFT", 2, 0)
     row.header = row.hdrBtn:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     row.header:SetPoint("LEFT", row.toggle, "RIGHT", 4, 0)
-    row.hdrBtn:SetScript("OnClick", function()
+    local function fold()
         if not row.sectionKey then return end
         ReleaseConfigFocus(f)
         local collapsed = CM.db.restock.collapsed
         collapsed[row.sectionKey] = (not collapsed[row.sectionKey]) or nil
         CM.RefreshRestockConfig()
-    end)
+    end
+    row.hdrBtn:SetScript("OnClick", fold)
+    row.toggle:SetScript("OnClick", fold)
 
     row.chk = CreateFrame("CheckButton", nil, row, "UICheckButtonTemplate")
     row.chk:SetSize(22, 22)
@@ -449,7 +454,7 @@ local function GetConfigRow(f, i)
         end)
     end
 
-    SkinRowWidgets(row.chk, row.box, row.minBox)
+    SkinRowWidgets(row, row.chk, row.box, row.minBox)
     f.rows[i] = row
     return row
 end
@@ -486,7 +491,7 @@ function CM.RefreshRestockConfig()
         hRow.sectionKey = sec.key
         hRow.chk:Hide(); hRow.icon:Hide(); hRow.name:Hide(); hRow.box:Hide(); hRow.minBox:Hide(); hRow.delBtn:Hide()
         hRow.hdrBtn:Show()
-        hRow.toggle:SetTexture(folded and "Interface\\Buttons\\UI-PlusButton-Up" or "Interface\\Buttons\\UI-MinusButton-Up")
+        hRow.toggle:SetNormalTexture(folded and "Interface\\Buttons\\UI-PlusButton-Up" or "Interface\\Buttons\\UI-MinusButton-Up")
         hRow.header:SetText(sec.label .. (folded and (" (" .. #sec.items .. ")") or ""))
         hRow.header:SetTextColor(unpack(sec.color))
         hRow:Show()
