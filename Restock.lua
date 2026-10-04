@@ -66,8 +66,9 @@ local function SkinRowWidgets(chk, ...)
     end
 end
 
--- Items that can't be bought at the AH: conjured/fleeting (cauldron) items and
--- bound items (BoP, quest, account/Warband-bound - e.g. Hearty dishes).
+-- Items that can't be bought at the AH are conjured/fleeting (cauldron) items
+-- (IsConjured) and bound items - BoP, quest, account/Warband-bound, e.g. Hearty
+-- dishes (IsBoundNoAH). CM.IsAuctionable combines both.
 local conjuredCache = {}
 
 local function IsConjured(itemID)
@@ -189,8 +190,6 @@ function CM.SearchAuctionHouse(itemID, qty)
 end
 
 -- ── AH panel ───────────────────────────────────────────────────────────────────
-CM.restockFrame = nil
-
 local function GetPanelRow(f, i)
     local row = f.rows[i]
     if row then return row end
@@ -301,8 +300,6 @@ function CM.RefreshRestockFrame()
 end
 
 -- ── Config frame (tick items + target per item) ────────────────────────────────
-CM.restockConfigFrame = nil
-
 local function GetConfigRow(f, i)
     local row = f.rows[i]
     if row then return row end
@@ -327,23 +324,13 @@ local function GetConfigRow(f, i)
     row.box:SetSize(CFG_BOX_W, 20)
     row.box:SetPoint("RIGHT", -6, 0)
     row.box:SetMaxLetters(4)
-    row.box:SetScript("OnEnter", function(self)
-        GameTooltip:SetOwner(self, "ANCHOR_TOP")
-        GameTooltip:SetText(CM.L["RESTOCK_TARGET_TOOLTIP"], nil, nil, nil, nil, true)
-        GameTooltip:Show()
-    end)
-    row.box:SetScript("OnLeave", function() GameTooltip:Hide() end)
+    CM.AttachTooltip(row.box, CM.L["RESTOCK_TARGET_TOOLTIP"], "ANCHOR_TOP")
 
     row.minBox = CreateFrame("EditBox", nil, row, "InputBoxTemplate")
     row.minBox:SetSize(CFG_BOX_W, 20)
     row.minBox:SetPoint("RIGHT", row.box, "LEFT", -6, 0)
     row.minBox:SetMaxLetters(4)
-    row.minBox:SetScript("OnEnter", function(self)
-        GameTooltip:SetOwner(self, "ANCHOR_TOP")
-        GameTooltip:SetText(CM.L["RESTOCK_MIN_TOOLTIP"], nil, nil, nil, nil, true)
-        GameTooltip:Show()
-    end)
-    row.minBox:SetScript("OnLeave", function() GameTooltip:Hide() end)
+    CM.AttachTooltip(row.minBox, CM.L["RESTOCK_MIN_TOOLTIP"], "ANCHOR_TOP")
 
     row.name = row:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
     row.name:SetPoint("LEFT",  row.icon, "RIGHT", 6, 0)
@@ -360,19 +347,15 @@ local function GetConfigRow(f, i)
         CM.RefreshRestockFrame()
     end)
 
-    CM.BindNumberBox(row.box, function(self)
-        local item = row.item
-        if not item then return end
-        item.target = tonumber(self:GetText()) or 0
-        CM.RefreshRestockFrame()
-    end)
-
-    CM.BindNumberBox(row.minBox, function(self)
-        local item = row.item
-        if not item then return end
-        item.minCount = tonumber(self:GetText()) or 0
-        CM.RefreshRestockFrame()
-    end)
+    -- each box commits its number into one field of the row's item
+    for box, field in pairs({ [row.box] = "target", [row.minBox] = "minCount" }) do
+        CM.BindNumberBox(box, function(self)
+            local item = row.item
+            if not item then return end
+            item[field] = tonumber(self:GetText()) or 0
+            CM.RefreshRestockFrame()
+        end)
+    end
 
     SkinRowWidgets(row.chk, row.box, row.minBox)
     f.rows[i] = row

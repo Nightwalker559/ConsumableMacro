@@ -157,7 +157,7 @@ local function OnProfileChanged()
     CM.UpdateAllMacros()
     CM.UpdateReminderFrame()
     CM.RefreshRestockFrame()
-    if CM.mainFrame and CM.mainFrame:IsShown() then CM.RefreshList() end
+    CM.RefreshList()
     if CM.optionsFrame and CM.optionsFrame:IsShown() then CM.RefreshOptionsFrame() end
     if CM.autoPotionFrame and CM.autoPotionFrame:IsShown() then CM.RefreshAutoPotionFrame() end
     CM.RefreshProfileDropdown()

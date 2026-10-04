@@ -21,7 +21,18 @@ end
 local function RefreshBagState(updateMacros)
     if updateMacros then CM.UpdateAllMacros() end
     CM.UpdateReminderFrame()
-    if CM.mainFrame and CM.mainFrame:IsShown() then CM.RefreshList() end
+    CM.RefreshList()
+end
+
+-- Back in the open world after an instance: remind about low consumables.
+-- Called once the instance flag has been cleared; re-checks after the delay in
+-- case the player zoned straight into another instance.
+local function OnLeftInstance()
+    wasInInstance = false
+    _G.C_Timer.After(2.0, function()
+        if IsRealInstance() then return end
+        CM.CheckMissingConsumablesPostInstance()
+    end)
 end
 
 -- ── Event Handler ──────────────────────────────────────────────────────────────
@@ -62,12 +73,7 @@ ev:SetScript("OnEvent", function(_, event, arg1, arg2)
             -- Entered a real instance — arm the post-instance trigger
             wasInInstance = true
         elseif wasInInstance then
-            -- Left an instance, now in open world → post-instance reminder
-            wasInInstance = false
-            _G.C_Timer.After(2.0, function()
-                if IsRealInstance() then return end
-                CM.CheckMissingConsumablesPostInstance()
-            end)
+            OnLeftInstance()  -- left an instance, now in the open world
         elseif wasLoginPending and not arg2 then
             -- Fresh login (not /reload, not inside an instance). Bag data may not be
             -- fully cached at this exact instant, so wait briefly before checking —
@@ -90,11 +96,7 @@ ev:SetScript("OnEvent", function(_, event, arg1, arg2)
                 isLoginPending = false
             end
         elseif wasInInstance then
-            wasInInstance = false
-            _G.C_Timer.After(2.0, function()
-                if IsRealInstance() then return end
-                CM.CheckMissingConsumablesPostInstance()
-            end)
+            OnLeftInstance()
         end
 
     elseif event == "PLAYER_REGEN_DISABLED" then
@@ -120,7 +122,7 @@ ev:SetScript("OnEvent", function(_, event, arg1, arg2)
 
     elseif event == "ITEM_DATA_LOAD_RESULT" then
         -- fires once per loaded item: coalesce into a single list rebuild
-        if CM.mainFrame and CM.mainFrame:IsShown() then CM.Defer("refreshList", CM.RefreshList) end
+        CM.Defer("refreshList", CM.RefreshList)
     end
 end)
 

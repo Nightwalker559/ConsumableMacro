@@ -5,14 +5,16 @@
 ConsumableMacroAddon = {}
 local CM = ConsumableMacroAddon
 
-CM.ADDON_NAME = "ConsumableMacro"
+CM.ADDON_NAME   = "ConsumableMacro"
+CM.TITLE        = "|cff00FF98Consumable|r|cffffffffMacro|r"
+CM.ICON_UNKNOWN = 134400  -- question mark
 
 -- Locale (loaded before Core.lua via TOC)
 CM.L = _G["ConsumableMacroLocale"] or {}
 setmetatable(CM.L, {__index = function(_, k) return k end})
 
--- Shared state
-CM.db                     = nil   -- active profile (stored account-wide, see Profiles.lua)
+-- Shared state (window frames - optionsFrame, ieFrame, ... - are created lazily by their files)
+CM.db                    = nil   -- active profile (stored account-wide, see Profiles.lua)
 CM.charDb                 = nil   -- per-character SavedVariables (profile name, reminder position)
 CM.mainFrame              = nil
 CM.FRAME_STRATA           = "MEDIUM"  -- one strata for all addon windows
@@ -113,9 +115,6 @@ function CM.CreateCheckbox(parent, label, x, y)
     return chk
 end
 
-CM.TITLE        = "|cff00FF98Consumable|r|cffffffffMacro|r"
-CM.ICON_UNKNOWN = 134400  -- question mark
-
 -- Item icon texture (question mark while the item data isn't loaded yet).
 function CM.GetItemIcon(itemID)
     return C_Item.GetItemIconByID(itemID) or CM.ICON_UNKNOWN
@@ -134,6 +133,16 @@ function CM.ShowItemTooltip(owner, itemID, anchor)
     GameTooltip:SetOwner(owner, anchor or "ANCHOR_RIGHT")
     GameTooltip:SetItemByID(itemID)
     GameTooltip:Show()
+end
+
+-- Plain-text tooltip while the mouse is over `frame`.
+function CM.AttachTooltip(frame, text, anchor)
+    frame:SetScript("OnEnter", function(self)
+        GameTooltip:SetOwner(self, anchor or "ANCHOR_RIGHT")
+        GameTooltip:SetText(text, nil, nil, nil, nil, true)
+        GameTooltip:Show()
+    end)
+    frame:SetScript("OnLeave", function() GameTooltip:Hide() end)
 end
 
 -- Hides every shown frame named by a CM.<key>, e.g. { "optionsFrame", "ieFrame" }.
@@ -177,9 +186,10 @@ function CM.IsMaxLevel()
 end
 
 -- ── Macro Generation ───────────────────────────────────────────────────────────
--- Shared by Core.lua and AutoPotion.lua: trims a list of macro lines to fit the
--- 254-char macro body limit (255 incl. null terminator) and joins them.
-local function TrimMacroLines(lines)
+-- Shared by Core.lua, AutoPotion.lua and WeaponEnhance.lua: trims a list of macro
+-- lines to fit the 254-char macro body limit (255 incl. null terminator) and
+-- joins them.
+function CM.TrimMacroLines(lines)
     local finalLines, currentLength = {}, 0
     for _, line in ipairs(lines) do
         local lineLen = #line + (currentLength == 0 and 0 or 1)
@@ -189,50 +199,40 @@ local function TrimMacroLines(lines)
     end
     return table.concat(finalLines, "\n")
 end
-CM.TrimMacroLines = TrimMacroLines
 
-local function GetMacroBodyText(key)
+-- "#showtooltip" line for an item list: `itemID` if given, else the first item in
+-- the bags, else the top-priority configured item - so a button never looks empty.
+function CM.GetShowtooltipLine(items, itemID)
+    local id = itemID or CM.GetFirstInBags(items) or (items[1] and items[1].id)
+    return id and ("#showtooltip item:" .. id) or "#showtooltip"
+end
+
+function CM.GetMacroBodyText(key)
     local db = CM.db
     if not db or not db[key] or not db[key].items then return "" end
     local items = db[key].items
 
-    -- Weapon Enhancements (Whetstone/Weightstone/Oil) build their body very
-    -- differently (per-hand, weapon-type and enchant-state aware) - see
-    -- WeaponEnhance.lua. Guarded in case that file somehow isn't loaded.
+    -- Weapon Enhancements build their body very differently (per-hand,
+    -- weapon-type and enchant-state aware) - see WeaponEnhance.lua.
     if key == "weaponenhance" then
-        return CM.BuildWeaponEnhanceMacroBody and CM.BuildWeaponEnhanceMacroBody(items) or "#showtooltip"
+        return CM.BuildWeaponEnhanceMacroBody(items)
     end
 
-    local lines = { "#showtooltip", "/cqs", "/stopcasting" }
+    local lines = { CM.GetShowtooltipLine(items), "/cqs", "/stopcasting" }
 
-    -- Only potion and healpotion get the stacked fallback chain.
-    -- Flask, healthstone and bufffood use single best item only.
-    local useConditionalChain = (key == "potion" or key == "healpotion")
-
-    if useConditionalChain then
-        local available = {}
+    -- Only potion and healpotion get the stacked fallback chain (every item in
+    -- the bags, in priority order). Flask, healthstone and bufffood use the
+    -- single best item only.
+    if key == "potion" or key == "healpotion" then
         for _, item in ipairs(items) do
-            if CM.IsInBags(item.id) then tinsert(available, item.id) end
-        end
-        if #available == 0 then
-            if #items > 0 then lines[1] = "#showtooltip item:" .. items[1].id end
-        else
-            lines[1] = "#showtooltip item:" .. available[1]
-            for _, id in ipairs(available) do
-                tinsert(lines, "/use item:" .. id)
-            end
+            if CM.IsInBags(item.id) then tinsert(lines, "/use item:" .. item.id) end
         end
     else
         local firstMatch = CM.GetFirstInBags(items)
-        if firstMatch then
-            lines[1] = "#showtooltip item:" .. firstMatch
-            tinsert(lines, "/use item:" .. firstMatch)
-        elseif #items > 0 then
-            lines[1] = "#showtooltip item:" .. items[1].id
-        end
+        if firstMatch then tinsert(lines, "/use item:" .. firstMatch) end
     end
 
-    return TrimMacroLines(lines)
+    return CM.TrimMacroLines(lines)
 end
 
 -- Creates or updates an account macro. The write is skipped when the body is
@@ -260,7 +260,7 @@ function CM.UpdateMacro(key, createOnly)
         return
     end
     if not CM.db or not CM.MACRO_NAMES[key] then return end
-    CM.WriteMacro(CM.MACRO_NAMES[key], GetMacroBodyText(key), createOnly)
+    CM.WriteMacro(CM.MACRO_NAMES[key], CM.GetMacroBodyText(key), createOnly)
 end
 
 -- createOnly == true: only create missing macros, leave existing ones alone.
@@ -269,8 +269,5 @@ function CM.UpdateAllMacros(createOnly)
     for key in pairs(CM.MACRO_NAMES) do
         CM.UpdateMacro(key, createOnly)
     end
-    if CM.UpdateAutoPotionMacro then CM.UpdateAutoPotionMacro(createOnly) end
+    CM.UpdateAutoPotionMacro(createOnly)
 end
-
--- GetMacroBodyText is local; expose via CM for UI.lua access
-CM.GetMacroBodyText = GetMacroBodyText

@@ -83,6 +83,53 @@ function CM.ApplyElvUISkin()
 end
 
 -- ── RefreshList ────────────────────────────────────────────────────────────────
+-- One list row: icon, name, in-bags status and the up / down / delete buttons.
+local function CreateRow(i)
+    local content = CM.mainFrame.content
+    local row = CreateFrame("Frame", nil, content)
+    row:SetSize(content:GetWidth(), 32)
+    row:SetPoint("TOPLEFT", 5, -(i - 1) * 35)
+
+    row.bg = row:CreateTexture(nil, "BACKGROUND")
+    row.bg:SetAllPoints()
+    row.bg:SetColorTexture(0.2, 0.2, 0.2, 0.4)
+
+    row.icon = row:CreateTexture(nil, "ARTWORK")
+    row.icon:SetSize(24, 24)
+    row.icon:SetPoint("LEFT", 5, 0)
+    row.icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
+
+    row.text = row:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+    row.text:SetPoint("LEFT", row.icon, "RIGHT", 8, 0)
+
+    row.status = row:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+    row.status:SetPoint("RIGHT", -100, 0)
+
+    local function rowButton(action, label, width, anchor, relPoint, x)
+        local b = CreateFrame("Button", nil, row, "UIPanelButtonTemplate")
+        b:SetSize(width, 20)
+        b:SetText(label)
+        b:SetPoint("RIGHT", anchor, relPoint, x, 0)
+        b.action = action
+        b:SetScript("OnClick", CM.OnRowButtonClick)
+        return b
+    end
+    row.delBtn  = rowButton("delete", "X", 24, row,        "RIGHT", -5)
+    row.downBtn = rowButton("down",   "-", 28, row.delBtn, "LEFT",  -3)
+    row.upBtn   = rowButton("up",     "+", 28, row.downBtn, "LEFT", -3)
+
+    row:SetScript("OnEnter", function(s) CM.ShowItemTooltip(s, s.itemID) end)
+    row:SetScript("OnLeave", function() GameTooltip:Hide() end)
+
+    local S = CM.GetElvSkins()
+    if S and S.HandleButton then
+        S:HandleButton(row.delBtn)
+        S:HandleButton(row.downBtn)
+        S:HandleButton(row.upBtn)
+    end
+    return row
+end
+
 function CM.RefreshList()
     local f = CM.mainFrame
     if not f or not f:IsShown() or not CM.db then return end
@@ -110,55 +157,7 @@ function CM.RefreshList()
     for i, item in ipairs(items) do
         local row = CM.rowPool[i]
         if not row then
-            row = CreateFrame("Frame", nil, f.content)
-            row:SetSize(f.content:GetWidth(), 32)
-            row:SetPoint("TOPLEFT", 5, -(i - 1) * 35)
-
-            row.bg = row:CreateTexture(nil, "BACKGROUND")
-            row.bg:SetAllPoints()
-            row.bg:SetColorTexture(0.2, 0.2, 0.2, 0.4)
-
-            row.icon = row:CreateTexture(nil, "ARTWORK")
-            row.icon:SetSize(24, 24)
-            row.icon:SetPoint("LEFT", 5, 0)
-            row.icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
-
-            row.text = row:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-            row.text:SetPoint("LEFT", row.icon, "RIGHT", 8, 0)
-
-            row.status = row:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-            row.status:SetPoint("RIGHT", -100, 0)
-
-            row.delBtn = CreateFrame("Button", nil, row, "UIPanelButtonTemplate")
-            row.delBtn:SetSize(24, 20)
-            row.delBtn:SetText("X")
-            row.delBtn:SetPoint("RIGHT", -5, 0)
-            row.delBtn.action = "delete"
-            row.delBtn:SetScript("OnClick", CM.OnRowButtonClick)
-
-            row.downBtn = CreateFrame("Button", nil, row, "UIPanelButtonTemplate")
-            row.downBtn:SetSize(28, 20)
-            row.downBtn:SetText("-")
-            row.downBtn:SetPoint("RIGHT", row.delBtn, "LEFT", -3, 0)
-            row.downBtn.action = "down"
-            row.downBtn:SetScript("OnClick", CM.OnRowButtonClick)
-
-            row.upBtn = CreateFrame("Button", nil, row, "UIPanelButtonTemplate")
-            row.upBtn:SetSize(28, 20)
-            row.upBtn:SetText("+")
-            row.upBtn:SetPoint("RIGHT", row.downBtn, "LEFT", -3, 0)
-            row.upBtn.action = "up"
-            row.upBtn:SetScript("OnClick", CM.OnRowButtonClick)
-
-            row:SetScript("OnEnter", function(s) CM.ShowItemTooltip(s, s.itemID) end)
-            row:SetScript("OnLeave", function() GameTooltip:Hide() end)
-
-            local S = CM.GetElvSkins()
-            if S and S.HandleButton then
-                S:HandleButton(row.delBtn)
-                S:HandleButton(row.downBtn)
-                S:HandleButton(row.upBtn)
-            end
+            row = CreateRow(i)
             CM.rowPool[i] = row
         end
 
@@ -338,18 +337,14 @@ function CM.BuildUI()
     f.optionsBtn:SetPoint("RIGHT", f.updateBtn, "LEFT", -4, 0)
     -- PNG textures are supported natively since Patch 10.0.7; the ".png"
     -- extension must be included explicitly (unlike TGA/BLP).
-    f.optionsBtn:SetNormalTexture("Interface\\AddOns\\ConsumableMacro\\Media\\options.png")
-    f.optionsBtn:SetHighlightTexture("Interface\\AddOns\\ConsumableMacro\\Media\\options.png")
+    local optionsIcon = "Interface\\AddOns\\ConsumableMacro\\Media\\options.png"
+    f.optionsBtn:SetNormalTexture(optionsIcon)
+    f.optionsBtn:SetHighlightTexture(optionsIcon)
     f.optionsBtn:GetHighlightTexture():SetAlpha(0.6)
-    f.optionsBtn:SetPushedTexture("Interface\\AddOns\\ConsumableMacro\\Media\\options.png")
+    f.optionsBtn:SetPushedTexture(optionsIcon)
     f.optionsBtn:GetPushedTexture():SetVertexColor(0, 1, 0.5)
     f.optionsBtn:SetScript("OnClick", function() CM.ToggleOptionsFrame() end)
-    f.optionsBtn:SetScript("OnEnter", function(self)
-        GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
-        GameTooltip:SetText(CM.L["OPTIONS_TITLE"])
-        GameTooltip:Show()
-    end)
-    f.optionsBtn:SetScript("OnLeave", function() GameTooltip:Hide() end)
+    CM.AttachTooltip(f.optionsBtn, CM.L["OPTIONS_TITLE"])
 
     f:SetScript("OnShow", function() CM.RefreshList(); CM.ApplyElvUISkin() end)
     f:SetScript("OnHide", CM.HideSubFrames)

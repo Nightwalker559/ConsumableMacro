@@ -8,6 +8,11 @@ All notable changes to this project are documented here.
 
 ### Fixed
 - Weapon Enhancements: macro can now re-apply while an enchant is still running (refreshes the hand with the least time left).
+- Weapon Enhancements: skips a hand no item in the list fits instead of leaving the macro empty.
+- Weapon Enhancements: the periodic rebuild now respects Auto-Update.
+
+### Changed
+- Internal cleanup: shared helpers, removed dead code and outdated comments. No behavior change.
 
 ---
 

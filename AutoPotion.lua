@@ -270,7 +270,7 @@ function CM.ShowAutoPotionFrame()
     end
     CM.RefreshAutoPotionFrame()
     f:Show()
-    if CM.ApplyElvUISkin then CM.ApplyElvUISkin() end
+    CM.ApplyElvUISkin()
 end
 
 -- ── Keep the macro in sync with talent/spec changes ────────────────────────────
@@ -283,9 +283,9 @@ apEvents:SetScript("OnEvent", function(_, event, arg1)
     if event == "PLAYER_SPECIALIZATION_CHANGED" and arg1 ~= "player" then return end
 
     -- TRAIT_CONFIG_UPDATED fires for ANY trait config commit, including
-    -- profession trees (Old professions/first aid revamp), not just class
-    -- talents. arg1 here is the configID; only react to the player's active
-    -- class talent config so leveling a profession doesn't spam the hint.
+    -- profession trees, not just class talents. arg1 is the configID; only react
+    -- to the player's active class talent config so leveling a profession
+    -- doesn't spam the hint.
     if event == "TRAIT_CONFIG_UPDATED" then
         local activeConfigID = C_ClassTalents and C_ClassTalents.GetActiveConfigID and C_ClassTalents.GetActiveConfigID()
         if not activeConfigID or arg1 ~= activeConfigID then return end
@@ -296,7 +296,7 @@ apEvents:SetScript("OnEvent", function(_, event, arg1)
         -- reduces it by a fixed amount). We can't reliably re-read that
         -- without the spell actually being on cooldown, so just nudge the
         -- user to re-sync manually if they use a manual reset delay.
-        if (CM.db and CM.db.autoPotionResetSeconds or 0) > 0 then
+        if (CM.db.autoPotionResetSeconds or 0) > 0 then
             CM.Print(CM.L["AUTOPOTION_TALENT_CHANGED_HINT"])
         end
     end

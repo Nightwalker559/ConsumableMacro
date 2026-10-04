@@ -35,9 +35,8 @@ local function StartTimer()
         end
     end)
 end
--- ── Reminder Frame ─────────────────────────────────────────────────────────────
-CM.reminderFrame = nil
 
+-- ── Reminder Frame ─────────────────────────────────────────────────────────────
 -- Resize to fit content (header + sep + label + body + hint + button + bar).
 function CM.FitReminderHeight(rf)
     local bodyH = rf.body:GetStringHeight()
@@ -166,9 +165,8 @@ end
 -- ── Build reminder content ─────────────────────────────────────────────────────
 -- Fleeting/conjured items (e.g. cauldron flasks) can't be bought/restocked, so
 -- being low on one isn't actionable - skip them when picking the top-priority
--- item, unless a tab tracks nothing else.
+-- item, unless a tab tracks nothing else. (CM.IsConjured lives in Restock.lua.)
 local function AuctionableOnly(items)
-    if not CM.IsConjured then return items end
     local filtered = {}
     for _, item in ipairs(items) do
         if not CM.IsConjured(item.id) then tinsert(filtered, item) end
@@ -177,7 +175,7 @@ local function AuctionableOnly(items)
 end
 
 -- Returns top-priority item count for a tab (first item in bags, priority order)
-local function getTopCount(items)
+local function GetTopCount(items)
     local id = CM.GetFirstInBags(AuctionableOnly(items))
     return id and C_Item.GetItemCount(id) or 0
 end
@@ -209,7 +207,7 @@ local function BuildReminderContent()
                 anyIssue     = true
                 unconfigured = unconfigured + 1
             else
-                local part, issue = StatusPart(tabName, getTopCount(items), minCount)
+                local part, issue = StatusPart(tabName, GetTopCount(items), minCount)
                 tinsert(bodyParts, part)
                 if issue then anyIssue = true end
             end
@@ -258,7 +256,7 @@ function CM.CheckMissingConsumablesPostInstance()
             local items    = CM.db[t.key] and CM.db[t.key].items or {}
             local minCount = CM.db[t.key] and CM.db[t.key].minCount or 0
             if minCount > 0 then
-                local part, issue = StatusPart(L[t.tabL] or t.key, getTopCount(items), minCount)
+                local part, issue = StatusPart(L[t.tabL] or t.key, GetTopCount(items), minCount)
                 tinsert(bodyParts, part)
                 if issue then anyIssue = true end
             end

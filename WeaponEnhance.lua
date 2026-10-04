@@ -1,17 +1,20 @@
 -- ConsumableMacro Weapon Enhancement
 -- Whetstones, Weightstones and Weapon Oils share one priority list. The macro
 -- picks the right item by matching its weapon-type restriction (edged/blunt/
--- any) against the equipped weapon, and only ever targets ONE hand per click
--- - mainhand first, then offhand once mainhand is covered - since applying
--- the same item to both hands in a single macro press doesn't work reliably.
+-- any) against the equipped weapon, and only ever targets ONE hand per click,
+-- since applying the same item to both hands in a single macro press doesn't
+-- work reliably. A hand without an enchant comes first; once every weapon is
+-- covered, the hand with the least time left is refreshed.
 local CM = ConsumableMacroAddon
+
+local MAINHAND, OFFHAND = 16, 17
 
 -- classID 2 (Weapon) subclassIDs, grouped by what Whetstone/Weightstone accept.
 local EDGED_SUBCLASS = { [0] = true, [1] = true, [6] = true, [7] = true, [8] = true, [13] = true, [15] = true }
 local BLUNT_SUBCLASS = { [4] = true, [5] = true, [10] = true }
 
 -- "edged" | "blunt" | "other" | nil (empty slot, or not a weapon - e.g. a shield)
-function CM.GetEquippedWeaponType(slot)
+local function GetEquippedWeaponType(slot)
     local itemID = _G.GetInventoryItemID("player", slot)
     if not itemID then return nil end
     local _, _, _, _, _, classID, subclassID = C_Item.GetItemInfoInstant(itemID)
@@ -21,79 +24,61 @@ function CM.GetEquippedWeaponType(slot)
     return "other"
 end
 
--- "edged" | "blunt" | "any" - which weapon type a weapon-enhancement item
--- accepts. Known Whetstone/Weightstone IDs are listed in CM.WEAPONENHANCE_IDS
--- (Items.lua); anything else (oils, and any not-yet-listed item) is treated
--- as usable on any weapon.
-function CM.GetWeaponEnhanceType(itemID)
-    return CM.WEAPONENHANCE_IDS[itemID] or "any"
-end
-
 -- First item in the priority list that's in the bags and usable on weaponType.
+-- Known Whetstone/Weightstone IDs are listed in CM.WEAPONENHANCE_IDS (Items.lua);
+-- anything else (oils, and any not-yet-listed item) is usable on any weapon.
 local function GetBestItemFor(items, weaponType)
     for _, item in ipairs(items) do
         if CM.IsInBags(item.id) then
-            local wtype = CM.GetWeaponEnhanceType(item.id)
+            local wtype = CM.WEAPONENHANCE_IDS[item.id] or "any"
             if wtype == "any" or wtype == weaponType then return item.id end
         end
     end
     return nil
 end
 
--- Applies itemID to equip slot, confirming the "replace enchant?" popup if
--- one appears (community-verified macro pattern for these items).
-local function AppendApplyLines(lines, itemID, slot)
-    tinsert(lines, "/use item:" .. itemID)
-    tinsert(lines, "/use " .. slot)
-    tinsert(lines, "/click StaticPopup1Button1")
-end
-
--- Only one hand per click - using the same item twice (once per hand) inside
--- a single macro press doesn't reliably apply both in practice, so the macro
--- only ever targets ONE hand: mainhand first, then offhand once mainhand is
--- covered. Using the item consumes it from the bags, which triggers the
--- normal bag-update rebuild - so the very next rebuild already points at the
--- other hand, ready for a second press.
--- Which hand the next press should target, and that hand's weapon type.
--- A hand with no enchant comes first (mainhand, then offhand). Once every
--- weapon is covered, the hand with the least time left is refreshed - so the
--- macro stays usable while an enchant is still running (e.g. 3 min left);
--- applying over it just replaces it via the confirm popup.
-function CM.GetWeaponEnhanceTarget()
+-- Which hand the next press should target, and the item to use on it:
+-- slot, itemID (nil, nil if no hand has a weapon an item from the list fits).
+-- Hands without an enchant come first (mainhand, then offhand), then enchanted
+-- ones by least time left. A hand no item fits is skipped.
+function CM.GetWeaponEnhanceTarget(items)
     -- GetWeaponEnchantInfo(): hasMainHandEnchant, mainHandExpiration (ms),
     -- mainHandCharges, mainHandEnchantID, hasOffHandEnchant, offHandExpiration,
     -- ... (5th value, not 4th - mainHandEnchantID sits in between).
     local hasMain, mainExp, _, _, hasOff, offExp = _G.GetWeaponEnchantInfo()
 
-    local mainType, offType = CM.GetEquippedWeaponType(16), CM.GetEquippedWeaponType(17)
-
-    if not hasMain and mainType then return 16, mainType end
-    if not hasOff and offType then return 17, offType end
-
-    if hasMain and mainType and hasOff and offType then
-        if (offExp or 0) < (mainExp or 0) then return 17, offType end
-        return 16, mainType
+    local order
+    if hasMain and hasOff then
+        order = (offExp or 0) < (mainExp or 0) and { OFFHAND, MAINHAND } or { MAINHAND, OFFHAND }
+    elseif hasOff then
+        order = { MAINHAND, OFFHAND }  -- mainhand is bare
+    elseif hasMain then
+        order = { OFFHAND, MAINHAND }  -- offhand is bare
+    else
+        order = { MAINHAND, OFFHAND }
     end
-    if hasMain and mainType then return 16, mainType end
-    if hasOff and offType then return 17, offType end
+
+    for _, slot in ipairs(order) do
+        local weaponType = GetEquippedWeaponType(slot)
+        local itemID = weaponType and GetBestItemFor(items, weaponType)
+        if itemID then return slot, itemID end
+    end
     return nil, nil
 end
 
 function CM.BuildWeaponEnhanceMacroBody(items)
-    local slot, weaponType = CM.GetWeaponEnhanceTarget()
+    local slot, itemID = CM.GetWeaponEnhanceTarget(items)
 
-    local itemID = slot and weaponType and GetBestItemFor(items, weaponType)
+    -- Always show an item on the button, even when there's nothing to apply
+    -- this cycle (see CM.GetShowtooltipLine).
+    local lines = { CM.GetShowtooltipLine(items, itemID) }
 
-    -- Always show an item on the button, like every other tab - even when
-    -- there's nothing to apply this cycle (both hands already covered, or
-    -- the hand that needs it currently holds no weapon), or nothing from the
-    -- list is currently in the bags at all (falls back to the top-priority
-    -- configured item, same as GetMacroBodyText in Core.lua) - so the macro
-    -- never looks like a dead/empty button.
-    local showID = itemID or CM.GetFirstInBags(items) or (items[1] and items[1].id)
-    local lines = { showID and ("#showtooltip item:" .. showID) or "#showtooltip" }
-
-    if itemID then AppendApplyLines(lines, itemID, slot) end
+    if itemID then
+        tinsert(lines, "/use item:" .. itemID)
+        tinsert(lines, "/use " .. slot)
+        -- confirms the "replace enchant?" popup (community-verified macro pattern)
+        tinsert(lines, "/click StaticPopup1Button1")
+    end
 
     return CM.TrimMacroLines(lines)
 end
@@ -102,13 +87,16 @@ end
 -- Neither fires a bag event, so this tab also rebuilds on a timer and on
 -- equipment changes, in addition to the normal bag-update trigger that already
 -- covers "just applied it" (the item leaving the bag).
-local lastMain, lastOff, lastSlot = nil, nil, nil
+local lastMain, lastOff, lastSlot
 
 local function CheckEnchantState()
-    local items = CM.db and CM.db.weaponenhance and CM.db.weaponenhance.items
+    local db = CM.db
+    if not db or not db.autoUpdate then return end
+    local items = db.weaponenhance and db.weaponenhance.items
     if not items or #items == 0 then return end
+
     local hasMain, _, _, _, hasOff = _G.GetWeaponEnchantInfo()
-    local slot = CM.GetWeaponEnhanceTarget()
+    local slot = CM.GetWeaponEnhanceTarget(items)
     if hasMain ~= lastMain or hasOff ~= lastOff or slot ~= lastSlot then
         lastMain, lastOff, lastSlot = hasMain, hasOff, slot
         CM.UpdateMacro("weaponenhance")

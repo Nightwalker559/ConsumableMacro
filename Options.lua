@@ -140,12 +140,7 @@ function CM.BuildOptionsFrame()
     o.apSyncBtn:SetPoint("LEFT", o.apResetBox, "RIGHT", 6, 0)
     o.apSyncBtn:SetText(L["BTN_AUTOPOTION_SYNC"])
     o.apSyncBtn:SetScript("OnClick", function() CM.SyncAutoPotionResetFromCooldown() end)
-    o.apSyncBtn:SetScript("OnEnter", function(self)
-        _G.GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
-        _G.GameTooltip:SetText(L["AUTOPOTION_SYNC_TOOLTIP"], nil, nil, nil, nil, true)
-        _G.GameTooltip:Show()
-    end)
-    o.apSyncBtn:SetScript("OnLeave", function() _G.GameTooltip:Hide() end)
+    CM.AttachTooltip(o.apSyncBtn, L["AUTOPOTION_SYNC_TOOLTIP"])
     y = y - 32
 
     o.apConfigureBtn = CreateFrame("Button", nil, c, "UIPanelButtonTemplate")
@@ -323,7 +318,6 @@ local function BuildTabDialog(frameName, width, btnWidth)
     f.checkboxes = {}
     for _, t in ipairs(CM.TABS) do
         local chk = CM.CreateCheckbox(f, CM.L[t.tabL] or t.key, 14, y)
-        chk.tabLabel = chk.text
         chk.enabledColor = t.color  -- used when (re)coloring the label on show
         f.checkboxes[t.key] = chk
         y = y - rowH
@@ -377,9 +371,9 @@ local function SetAvailableTabs(f, isAvailable)
         chk:SetEnabled(enabled)
         chk:SetChecked(enabled)
         if enabled then
-            chk.tabLabel:SetTextColor(unpack(chk.enabledColor))
+            chk.text:SetTextColor(unpack(chk.enabledColor))
         else
-            chk.tabLabel:SetTextColor(0.4, 0.4, 0.4)
+            chk.text:SetTextColor(0.4, 0.4, 0.4)
         end
     end
 end
@@ -448,7 +442,7 @@ function CM.BuildResetFrame()
     f.descLbl:SetText(L["RESET_DESC"])
     for _, t in ipairs(CM.TABS) do
         local chk = f.checkboxes[t.key]
-        chk.tabLabel:SetTextColor(unpack(t.color))
+        chk.text:SetTextColor(unpack(t.color))
         chk:SetChecked(true)
     end
 

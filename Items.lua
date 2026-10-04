@@ -55,8 +55,7 @@ function CM.GetTargetTabForItem(targetID)
 
     if classID == 0 and subclassID == 5 then return "bufffood" end
     if classID == 0 and subclassID == 1 then return "potion" end
-    if classID == 0 and subclassID == 3 then return "flask" end
-    if classID == 0 and subclassID == 2 then return "flask" end
+    if classID == 0 and (subclassID == 2 or subclassID == 3) then return "flask" end  -- elixir / flask
     -- "Item Enhancement" subclass - fallback for anything not caught by name above
     if classID == 0 and subclassID == 6 then return "weaponenhance" end
 
@@ -83,7 +82,7 @@ function CM.AddItemToDatabase(itemID)
             end
             tinsert(CM.db[targetTab].items, { id = id })
             CM.activeTab = targetTab
-            if CM.mainFrame and CM.mainFrame:IsShown() then CM.RefreshList() end
+            CM.RefreshList()
             CM.UpdateMacro(targetTab)
         else
             CM.ShowError(CM.L["ERROR_INVALID_ITEM"])
@@ -116,7 +115,7 @@ end
 
 -- ── Import / Export ────────────────────────────────────────────────────────────
 -- Format: CM:1:flask=191534,191533:potion=191338:healpotion=191380:bufffood=197784
--- Tabs with no items are omitted. All tabs including healthstone are supported.
+-- Tabs with no items are omitted. Every tab in CM.TABS is supported.
 -- Item order reflects priority (index 1 = highest priority).
 
 -- filter: optional { [tabKey] = true } — only include those tabs.
@@ -177,7 +176,7 @@ function CM.ClearTabs(filter)
         if not filter or filter[t.key] then CM.db[t.key].items = {} end
     end
     CM.UpdateAllMacros()
-    if CM.mainFrame and CM.mainFrame:IsShown() then CM.RefreshList() end
+    CM.RefreshList()
 end
 
 -- Overwrites item lists for tabs present in parsed and selected by filter,
@@ -199,5 +198,5 @@ function CM.ApplyImport(parsed, filter)
         end
     end
     CM.UpdateAllMacros()
-    if CM.mainFrame and CM.mainFrame:IsShown() then CM.RefreshList() end
+    CM.RefreshList()
 end

@@ -86,7 +86,7 @@ One priority list for Whetstones, Weightstones and Weapon Oils — no need for s
 - **Weightstone** → blunt weapons (maces, staves)
 - **Weapon Oils** (and anything else in the list) → any weapon
 
-The macro only reapplies to a hand that currently has **no active temporary enchant** — a hand that's already enhanced is left untouched, so clicking it never wastes an item. It rebuilds on bag changes, on weapon swaps, and periodically, so a naturally expired buff gets picked up even without a bag change.
+Each click targets one hand: a hand with **no active temporary enchant** comes first (mainhand, then offhand). Once every weapon is covered, the hand with the **least time left** is refreshed - so you can re-apply at any time, even with a few minutes left (the replace popup is confirmed for you). A hand no item in your list fits is skipped. The macro rebuilds on bag changes, on weapon swaps, and periodically (with Auto-Update on), so an expired buff gets picked up even without a bag change.
 
 ---
 
