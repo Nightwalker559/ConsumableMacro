@@ -47,8 +47,12 @@ function CM.GetTargetTabForItem(targetID)
     -- checks below instead of bailing out as "invalid".
     if name then
         name = name:lower()
-        if CM.MatchesAny(name, L["PATTERN_EXCLUDE"])     then return nil end
+        -- word-end match: plain "tea" would also hit "steak" / "steamed fish"
+        if CM.MatchesWordEnd(name, L["PATTERN_EXCLUDE"]) then return nil end
         if CM.MatchesAny(name, L["PATTERN_HEALTHSTONE"]) then return "healthstone" end
+        -- Food & Drink never is a flask or heal potion - checked before the name
+        -- patterns so e.g. German "Heilbutt" (halibut) doesn't match "heil".
+        if classID == 0 and subclassID == 5 then return "bufffood" end
         if CM.MatchesAny(name, L["PATTERN_FLASK"])       then return "flask" end
         if CM.MatchesAny(name, L["PATTERN_HEAL"])        then return "healpotion" end
     end

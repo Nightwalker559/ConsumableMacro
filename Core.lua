@@ -91,6 +91,17 @@ function CM.MatchesAny(lowerName, patterns)
     return false
 end
 
+-- Like MatchesAny, but a pattern only counts at the END of a word: "tea" hits
+-- "iced tea" / "frühlingstee"-style compounds, not "steak" or "steamed fish".
+-- Meant for short patterns that are common letter runs inside other words.
+function CM.MatchesWordEnd(lowerName, patterns)
+    for _, p in ipairs(patterns or {}) do
+        local escaped = (p:lower():gsub("%p", "%%%0"))
+        if lowerName:find(escaped .. "%f[%A]") then return true end
+    end
+    return false
+end
+
 -- ElvUI Skins module, or nil if ElvUI isn't loaded.
 function CM.GetElvSkins()
     local E = _G.ElvUI and _G.ElvUI[1]
