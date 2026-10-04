@@ -98,7 +98,9 @@ Keeps your consumables topped up via the Auction House.
 1. Options → **Configure Restock**.
 2. Enable **Show restock list at the AH**.
 3. Tick the items you actively use and enter a target amount for each item.
-4. Optional: set a per-item minimum (left box). The item then only shows up once you're at or below it, instead of as soon as you're below target. Empty/0 falls back to the tab's minimum count (Options → Minimum Count Warning).
+4. Items without a tab (e.g. something you buy regularly): add them under **Other Items** via the field at the bottom (item ID, item link, or drag from your bags). The X removes them again.
+5. Click a section header to fold/unfold it.
+6. Optional: set a per-item minimum (left box). The item then only shows up once you're at or below it, instead of as soon as you're below target. Empty/0 falls back to the tab's minimum count (Options → Minimum Count Warning).
 
 **At the Auction House**
 - A panel next to the AH lists every ticked item below its target (`have/target`), with its rank icon.

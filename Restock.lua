@@ -13,6 +13,7 @@ local MAX_ROWS  = 12   -- AH panel row cap (rest is summarised as "+N more")
 local CFG_ROW_H = 26   -- config frame row height
 local CFG_ROW_W = 360  -- config frame row width
 local CFG_BOX_W = 40   -- target/min edit box width
+local EXTRA_COLOR = { 0.8, 0.8, 0.8 }  -- header colour of the "other items" section
 
 -- AH state (reset on every AH visit)
 local ahOpen    = false
@@ -116,31 +117,80 @@ function CM.IsAuctionable(itemID)
     return not IsConjured(itemID) and not IsBoundNoAH(itemID)
 end
 
--- Returns { {id, have, target, missing}, ... } for ticked items below target
--- AND at/below their (effective) minimum count.
+-- Appends the item to list if it is ticked, below target AND at/below its
+-- effective minimum count (own minCount, else tabMin).
+local function AddIfDue(list, item, tabMin)
+    local target = tonumber(item.target) or 0
+    if not (item.restock and target > 0 and CM.IsAuctionable(item.id)) then return end
+    local have = GetHave(item.id)
+    if have >= target then return end
+    local min = tonumber(item.minCount) or 0
+    if min <= 0 then min = tabMin end
+    if min <= 0 or have <= min then
+        tinsert(list, { id = item.id, have = have, target = target, missing = target - have })
+    end
+end
+
+-- Returns { {id, have, target, missing}, ... } for all due items: the tab items,
+-- then the extra items (no tab, no tab minimum).
 function CM.GetRestockList()
     local list = {}
     if not CM.db then return list end
     for _, t in ipairs(CM.TABS) do
         if not CM.RESTOCK_SKIP[t.key] then
-            local items  = CM.db[t.key] and CM.db[t.key].items or {}
             local tabMin = tonumber(CM.db[t.key] and CM.db[t.key].minCount) or 0
-            for _, item in ipairs(items) do
-                local target = tonumber(item.target) or 0
-                if item.restock and target > 0 and CM.IsAuctionable(item.id) then
-                    local have = GetHave(item.id)
-                    if have < target then
-                        local min = tonumber(item.minCount) or 0
-                        if min <= 0 then min = tabMin end
-                        if min <= 0 or have <= min then
-                            tinsert(list, { id = item.id, have = have, target = target, missing = target - have })
-                        end
-                    end
-                end
+            for _, item in ipairs(CM.db[t.key] and CM.db[t.key].items or {}) do
+                AddIfDue(list, item, tabMin)
             end
         end
     end
+    for _, item in ipairs(CM.db.restock and CM.db.restock.extra or {}) do
+        AddIfDue(list, item, 0)
+    end
     return list
+end
+
+-- True if the item already has a restock entry (any tab or the extra list).
+local function IsTracked(itemID)
+    for _, t in ipairs(CM.TABS) do
+        if not CM.RESTOCK_SKIP[t.key] then
+            for _, item in ipairs(CM.db[t.key] and CM.db[t.key].items or {}) do
+                if item.id == itemID then return true end
+            end
+        end
+    end
+    for _, item in ipairs(CM.db.restock.extra) do
+        if item.id == itemID then return true end
+    end
+    return false
+end
+
+-- Adds an item (ID, item link or name of a cached item) to the extra list.
+function CM.AddRestockExtra(input)
+    local rs = CM.db and CM.db.restock
+    input = strtrim(tostring(input or ""))
+    local id = rs and C_Item.GetItemInfoInstant(tonumber(input) or input)
+    if not id then
+        CM.ShowError(CM.L["ERROR_INVALID_ITEM"])
+        return false
+    end
+    if IsTracked(id) then
+        CM.ShowError(CM.L["RESTOCK_ERR_DUPLICATE"])
+        return false
+    end
+    -- bind type / tooltip need the item data
+    local obj = Item:CreateFromItemID(id)
+    obj:ContinueOnItemLoad(function()
+        if not CM.db or IsTracked(id) then return end
+        if not CM.IsAuctionable(id) then
+            CM.ShowError(CM.L["RESTOCK_ERR_NOAH"])
+            return
+        end
+        tinsert(CM.db.restock.extra, { id = id, restock = true })
+        CM.db.restock.collapsed.extra = nil
+        CM.RefreshRestockConfig()
+    end)
+    return true
 end
 
 -- ── AH search ──────────────────────────────────────────────────────────────────
@@ -300,6 +350,16 @@ function CM.RefreshRestockFrame()
 end
 
 -- ── Config frame (tick items + target per item) ────────────────────────────────
+-- Commits and drops the focus of every number box. Needed before rows get
+-- re-assigned to other items (fold/unfold, remove), so pending text lands in
+-- the item it was typed for.
+local function ReleaseConfigFocus(f)
+    for _, row in ipairs(f.rows) do
+        if row.box:HasFocus() then row.box:ClearFocus() end
+        if row.minBox:HasFocus() then row.minBox:ClearFocus() end
+    end
+end
+
 local function GetConfigRow(f, i)
     local row = f.rows[i]
     if row then return row end
@@ -308,8 +368,22 @@ local function GetConfigRow(f, i)
     row:SetSize(CFG_ROW_W, CFG_ROW_H - 2)
     row:SetPoint("TOPLEFT", 0, -(i - 1) * CFG_ROW_H)
 
-    row.header = row:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    row.header:SetPoint("LEFT", 6, 0)
+    -- section header: click anywhere on the row to fold/unfold
+    row.hdrBtn = CreateFrame("Button", nil, row)
+    row.hdrBtn:SetAllPoints()
+    row.hdrBtn:SetHighlightTexture("Interface\\Buttons\\UI-Listbox-Highlight2", "ADD")
+    row.toggle = row.hdrBtn:CreateTexture(nil, "ARTWORK")
+    row.toggle:SetSize(16, 16)
+    row.toggle:SetPoint("LEFT", 2, 0)
+    row.header = row.hdrBtn:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    row.header:SetPoint("LEFT", row.toggle, "RIGHT", 4, 0)
+    row.hdrBtn:SetScript("OnClick", function()
+        if not row.sectionKey then return end
+        ReleaseConfigFocus(f)
+        local collapsed = CM.db.restock.collapsed
+        collapsed[row.sectionKey] = (not collapsed[row.sectionKey]) or nil
+        CM.RefreshRestockConfig()
+    end)
 
     row.chk = CreateFrame("CheckButton", nil, row, "UICheckButtonTemplate")
     row.chk:SetSize(22, 22)
@@ -320,9 +394,27 @@ local function GetConfigRow(f, i)
     row.icon:SetPoint("LEFT", row.chk, "RIGHT", 2, 0)
     row.icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
 
+    -- remove button, only for extra items (the slot stays reserved on every row)
+    row.delBtn = CreateFrame("Button", nil, row)
+    row.delBtn:SetSize(16, 16)
+    row.delBtn:SetPoint("RIGHT", -4, 0)
+    row.delBtn:SetNormalTexture("Interface\\Buttons\\UI-GroupLoot-Pass-Up")
+    row.delBtn:SetHighlightTexture("Interface\\Buttons\\UI-GroupLoot-Pass-Highlight", "ADD")
+    CM.AttachTooltip(row.delBtn, CM.L["RESTOCK_REMOVE_TOOLTIP"], "ANCHOR_TOP")
+    row.delBtn:SetScript("OnClick", function()
+        local item = row.item
+        if not item then return end
+        ReleaseConfigFocus(f)
+        for idx, it in ipairs(CM.db.restock.extra) do
+            if it == item then tremove(CM.db.restock.extra, idx); break end
+        end
+        CM.RefreshRestockConfig()
+        CM.RefreshRestockFrame()
+    end)
+
     row.box = CreateFrame("EditBox", nil, row, "InputBoxTemplate")
     row.box:SetSize(CFG_BOX_W, 20)
-    row.box:SetPoint("RIGHT", -6, 0)
+    row.box:SetPoint("RIGHT", -26, 0)
     row.box:SetMaxLetters(4)
     CM.AttachTooltip(row.box, CM.L["RESTOCK_TARGET_TOOLTIP"], "ANCHOR_TOP")
 
@@ -367,7 +459,10 @@ function CM.RefreshRestockConfig()
     if not f or not CM.db then return end
     local L = CM.L
     local n = 0
+    local collapsed = CM.db.restock.collapsed
 
+    -- sections: one per tab with AH-buyable items, plus the always-present extra list
+    local sections = {}
     for _, t in ipairs(CM.TABS) do
         if not CM.RESTOCK_SKIP[t.key] then
             -- only items that can be bought at the AH are listed
@@ -376,35 +471,48 @@ function CM.RefreshRestockConfig()
                 if CM.IsAuctionable(item.id) then tinsert(items, item) end
             end
             if #items > 0 then
-                n = n + 1
-                local hRow = GetConfigRow(f, n)
-                hRow.item = nil
-                hRow.chk:Hide(); hRow.icon:Hide(); hRow.name:Hide(); hRow.box:Hide(); hRow.minBox:Hide()
-                hRow.header:SetText(L[t.tabL] or t.key)
-                hRow.header:SetTextColor(unpack(t.color))
-                hRow.header:Show()
-                hRow:Show()
+                tinsert(sections, { key = t.key, label = L[t.tabL] or t.key, color = t.color, items = items })
+            end
+        end
+    end
+    tinsert(sections, { key = "extra", label = L["RESTOCK_EXTRA_HEADER"], color = EXTRA_COLOR,
+                        items = CM.db.restock.extra, isExtra = true })
 
-                for _, item in ipairs(items) do
-                    n = n + 1
-                    local r = GetConfigRow(f, n)
-                    r.item = item
-                    r.header:Hide()
-                    r.chk:Show(); r.icon:Show(); r.name:Show(); r.box:Show(); r.minBox:Show()
-                    r.chk:SetChecked(item.restock and true or false)
-                    r.icon:SetTexture(CM.GetItemIcon(item.id))
-                    r.name:SetText(DisplayName(item.id))
-                    -- don't overwrite what the user is typing right now
-                    if not r.box:HasFocus() then
-                        local target = tonumber(item.target) or 0
-                        r.box:SetText(target > 0 and tostring(target) or "")
-                    end
-                    if not r.minBox:HasFocus() then
-                        local min = tonumber(item.minCount) or 0
-                        r.minBox:SetText(min > 0 and tostring(min) or "")
-                    end
-                    r:Show()
+    for _, sec in ipairs(sections) do
+        local folded = collapsed[sec.key] and true or false
+        n = n + 1
+        local hRow = GetConfigRow(f, n)
+        hRow.item = nil
+        hRow.sectionKey = sec.key
+        hRow.chk:Hide(); hRow.icon:Hide(); hRow.name:Hide(); hRow.box:Hide(); hRow.minBox:Hide(); hRow.delBtn:Hide()
+        hRow.hdrBtn:Show()
+        hRow.toggle:SetTexture(folded and "Interface\\Buttons\\UI-PlusButton-Up" or "Interface\\Buttons\\UI-MinusButton-Up")
+        hRow.header:SetText(sec.label .. (folded and (" (" .. #sec.items .. ")") or ""))
+        hRow.header:SetTextColor(unpack(sec.color))
+        hRow:Show()
+
+        if not folded then
+            for _, item in ipairs(sec.items) do
+                n = n + 1
+                local r = GetConfigRow(f, n)
+                r.item = item
+                r.sectionKey = nil
+                r.hdrBtn:Hide()
+                r.chk:Show(); r.icon:Show(); r.name:Show(); r.box:Show(); r.minBox:Show()
+                r.delBtn:SetShown(sec.isExtra)
+                r.chk:SetChecked(item.restock and true or false)
+                r.icon:SetTexture(CM.GetItemIcon(item.id))
+                r.name:SetText(DisplayName(item.id))
+                -- don't overwrite what the user is typing right now
+                if not r.box:HasFocus() then
+                    local target = tonumber(item.target) or 0
+                    r.box:SetText(target > 0 and tostring(target) or "")
                 end
+                if not r.minBox:HasFocus() then
+                    local min = tonumber(item.minCount) or 0
+                    r.minBox:SetText(min > 0 and tostring(min) or "")
+                end
+                r:Show()
             end
         end
     end
@@ -414,7 +522,6 @@ function CM.RefreshRestockConfig()
         f.rows[i].item = nil
     end
     f.content:SetHeight(math.max(1, n * CFG_ROW_H))
-    f.emptyLbl:SetShown(n == 0)
 end
 
 function CM.BuildRestockConfigFrame()
@@ -422,7 +529,7 @@ function CM.BuildRestockConfigFrame()
     local L = CM.L
 
     local f = CM.CreateWindow("CMRestockConfigFrame")
-    f:SetSize(410, 500)
+    f:SetSize(410, 540)
     f:SetPoint("LEFT", CM.optionsFrame, "RIGHT", 8, 0)
     f.TitleText:SetText(L["RESTOCK_CONFIG_TITLE"])
     f.rows = {}
@@ -460,8 +567,8 @@ function CM.BuildRestockConfigFrame()
     f.descLbl:SetTextColor(0.65, 0.65, 0.65)
 
     f.scrollBg = CreateFrame("Frame", nil, f, "InsetFrameTemplate")
-    f.scrollBg:SetPoint("TOPLEFT",     10, -115)
-    f.scrollBg:SetPoint("BOTTOMRIGHT", -10, 12)
+    f.scrollBg:SetPoint("TOPLEFT",     10, -128)
+    f.scrollBg:SetPoint("BOTTOMRIGHT", -10, 44)
 
     local scroll = CreateFrame("ScrollFrame", "CMRestockScroll", f.scrollBg, "UIPanelScrollFrameTemplate")
     scroll:SetPoint("TOPLEFT",     4, -4)
@@ -471,12 +578,41 @@ function CM.BuildRestockConfigFrame()
     f.content:SetWidth(CFG_ROW_W)
     f.content:SetHeight(1)
 
-    f.emptyLbl = f.scrollBg:CreateFontString(nil, "OVERLAY", "GameFontDisable")
-    f.emptyLbl:SetPoint("TOPLEFT", 12, -14)
-    f.emptyLbl:SetPoint("TOPRIGHT", -12, -14)
-    f.emptyLbl:SetJustifyH("LEFT")
-    f.emptyLbl:SetWordWrap(true)
-    f.emptyLbl:SetText(L["RESTOCK_EMPTY"])
+    -- Add an item that has no tab: ID / item link typed or pasted, or dropped from the bags
+    f.addLbl = f:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    f.addLbl:SetPoint("BOTTOMLEFT", 14, 16)
+    f.addLbl:SetText(L["RESTOCK_ADD_LABEL"])
+
+    f.addBox = CreateFrame("EditBox", nil, f, "InputBoxTemplate")
+    f.addBox:SetSize(150, 22)
+    f.addBox:SetPoint("LEFT", f.addLbl, "RIGHT", 10, 0)
+    f.addBox:SetAutoFocus(false)
+    CM.AttachTooltip(f.addBox, L["RESTOCK_ADD_TOOLTIP"], "ANCHOR_TOP")
+
+    f.addBtn = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
+    f.addBtn:SetSize(100, 22)
+    f.addBtn:SetPoint("LEFT", f.addBox, "RIGHT", 6, 0)
+    f.addBtn:SetText(L["BTN_ADD"])
+
+    -- item dragged from the bags onto the box or the button
+    local function takeInput()
+        local t, id = GetCursorInfo()
+        if t == "item" and tonumber(id) then
+            ClearCursor()
+            return tostring(id)
+        end
+        return strtrim(f.addBox:GetText())
+    end
+    local function submit()
+        local input = takeInput()
+        if input ~= "" and CM.AddRestockExtra(input) then f.addBox:SetText("") end
+        f.addBox:ClearFocus()
+    end
+    f.addBox:SetScript("OnEnterPressed",  submit)
+    f.addBox:SetScript("OnEscapePressed", f.addBox.ClearFocus)
+    f.addBox:SetScript("OnReceiveDrag",   submit)
+    f.addBtn:SetScript("OnClick",         submit)
+    f.addBtn:SetScript("OnReceiveDrag",   submit)
 
     CM.restockConfigFrame = f
     return f

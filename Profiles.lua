@@ -40,6 +40,8 @@ function CM.FillProfileDefaults(p)
     if p.showReminder == nil then p.showReminder = true end
     p.autoPotion = p.autoPotion or { enabled = false, stopCasting = true }
     p.restock    = p.restock    or { enabled = false, countBank = false }
+    p.restock.extra     = p.restock.extra     or {}  -- items without a tab: { id, restock, target, minCount }
+    p.restock.collapsed = p.restock.collapsed or {}  -- [sectionKey] = true while folded in the setup
     p.autoPotionResetSeconds = p.autoPotionResetSeconds or 0
     p.autoPotionOrder        = p.autoPotionOrder or DeepCopy(DEFAULT_ORDER)
 end

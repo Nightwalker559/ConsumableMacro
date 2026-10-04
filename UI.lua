@@ -74,6 +74,7 @@ function CM.ApplyElvUISkin()
     if rc then
         frame(rc); frame(rc.scrollBg)
         check(rc.enableChk); check(rc.bankChk)
+        edit(rc.addBox); button(rc.addBtn)
         scrollbar("CMRestockScrollScrollBar")
     end
 

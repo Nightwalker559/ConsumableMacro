@@ -4,6 +4,14 @@ All notable changes to this project are documented here.
 
 ---
 
+## [Unreleased]
+
+### New
+- Restock: new section "Other Items" for items without a tab. Add by ID, item link or drag & drop; remove with the X.
+- Restock setup: click a section header to fold/unfold it.
+
+---
+
 ## [2.0.3] – October 2026
 
 ### Fixed
