@@ -4,7 +4,7 @@ All notable changes to this project are documented here.
 
 ---
 
-## [Unreleased]
+## [2.0.4] – October 2026
 
 ### New
 - Restock: new section "Other Items" for items without a tab. Add by ID, item link or drag & drop; remove with the X.
