@@ -37,7 +37,7 @@ Automatically creates and maintains macros for the best available consumables in
 Type an Item-ID into the input box and press Enter/click **Add**, or drag an item from your bags onto the drop zone. The addon detects the correct tab automatically (by item subclass, or by name pattern as a fallback).
 
 ### Options
-Click the gear icon in the main window for:
+Click the **Options** button in the main window for:
 - Auto-Update toggle, Reminder toggle
 - Per-tab minimum count (post-instance/login warning threshold)
 - Import/Export

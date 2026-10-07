@@ -31,9 +31,7 @@ function CM.ApplyElvUISkin()
     -- Main window
     frame(mf); frame(mf.scrollBg)
     edit(mf.editBox); edit(mf.dropSkin)
-    button(mf.addBtn); button(mf.updateBtn)
-    -- optionsBtn intentionally excluded: it is an icon-only button;
-    -- HandleButton would cover the texture with ElvUI's backdrop
+    button(mf.addBtn); button(mf.updateBtn); button(mf.optionsBtn)
     for _, b in pairs(mf.tabBtns) do button(b) end
     close(mf.CloseButton)
     scrollbar("CMScrollScrollBar")
@@ -106,28 +104,37 @@ local function CreateRow(i)
     row.status = row:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
     row.status:SetPoint("RIGHT", -100, 0)
 
-    local function rowButton(action, label, width, anchor, relPoint, x)
-        local b = CreateFrame("Button", nil, row, "UIPanelButtonTemplate")
-        b:SetSize(width, 20)
-        b:SetText(label)
+    -- Icon-only buttons (no panel template, so no ElvUI skin is needed). The
+    -- icon files are white on transparent and get recoloured with `tint`;
+    -- `iconSize` is the drawn size of the 64x64 file (it may exceed the button).
+    local ICON_PATH = "Interface\\AddOns\\ConsumableMacro\\Media\\"
+    local GOLD, RED = { 1, 0.82, 0 }, { 0.9, 0.15, 0.15 }
+    local function rowButton(action, file, tint, iconSize, anchor, relPoint, x)
+        local b = CreateFrame("Button", nil, row)
+        b:SetSize(20, 20)
         b:SetPoint("RIGHT", anchor, relPoint, x, 0)
         b.action = action
+        b:SetNormalTexture(ICON_PATH .. file)
+        b:SetHighlightTexture(ICON_PATH .. file, "ADD")
+        local normal, glow = b:GetNormalTexture(), b:GetHighlightTexture()
+        for _, t in ipairs({ normal, glow }) do
+            t:ClearAllPoints()
+            t:SetPoint("CENTER")
+            t:SetSize(iconSize, iconSize)
+            t:SetVertexColor(tint[1], tint[2], tint[3])
+        end
+        glow:SetAlpha(0.35)
+        b:SetScript("OnMouseDown", function() normal:SetAlpha(0.6) end)
+        b:SetScript("OnMouseUp",   function() normal:SetAlpha(1) end)
         b:SetScript("OnClick", CM.OnRowButtonClick)
         return b
     end
-    row.delBtn  = rowButton("delete", "X", 24, row,        "RIGHT", -5)
-    row.downBtn = rowButton("down",   "-", 28, row.delBtn, "LEFT",  -3)
-    row.upBtn   = rowButton("up",     "+", 28, row.downBtn, "LEFT", -3)
+    row.delBtn  = rowButton("delete", "remove.png", RED,  20, row,         "RIGHT", -5)
+    row.downBtn = rowButton("down",   "down.png",   GOLD, 32, row.delBtn,  "LEFT",  -4)
+    row.upBtn   = rowButton("up",     "up.png",     GOLD, 32, row.downBtn, "LEFT",  -4)
 
     row:SetScript("OnEnter", function(s) CM.ShowItemTooltip(s, s.itemID) end)
     row:SetScript("OnLeave", function() GameTooltip:Hide() end)
-
-    local S = CM.GetElvSkins()
-    if S and S.HandleButton then
-        S:HandleButton(row.delBtn)
-        S:HandleButton(row.downBtn)
-        S:HandleButton(row.upBtn)
-    end
     return row
 end
 
@@ -326,26 +333,18 @@ function CM.BuildUI()
     f.previewText:SetHeight(50)
     f.previewText:SetJustifyH("LEFT")
 
-    -- Bottom bar: Update button + Options button
+    -- Bottom bar: Options button (far right) + Update button
+    f.optionsBtn = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
+    f.optionsBtn:SetSize(100, 26)
+    f.optionsBtn:SetText(CM.L["OPTIONS_TITLE"])
+    f.optionsBtn:SetPoint("BOTTOMRIGHT", -12, 12)
+    f.optionsBtn:SetScript("OnClick", function() CM.ToggleOptionsFrame() end)
+
     f.updateBtn = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
     f.updateBtn:SetSize(120, 26)
     f.updateBtn:SetText(CM.L["BTN_UPDATE"])
-    f.updateBtn:SetPoint("BOTTOMRIGHT", -12, 12)
+    f.updateBtn:SetPoint("RIGHT", f.optionsBtn, "LEFT", -4, 0)
     f.updateBtn:SetScript("OnClick", function() CM.UpdateAllMacros() end)
-
-    f.optionsBtn = CreateFrame("Button", nil, f)
-    f.optionsBtn:SetSize(26, 26)
-    f.optionsBtn:SetPoint("RIGHT", f.updateBtn, "LEFT", -4, 0)
-    -- PNG textures are supported natively since Patch 10.0.7; the ".png"
-    -- extension must be included explicitly (unlike TGA/BLP).
-    local optionsIcon = "Interface\\AddOns\\ConsumableMacro\\Media\\options.png"
-    f.optionsBtn:SetNormalTexture(optionsIcon)
-    f.optionsBtn:SetHighlightTexture(optionsIcon)
-    f.optionsBtn:GetHighlightTexture():SetAlpha(0.6)
-    f.optionsBtn:SetPushedTexture(optionsIcon)
-    f.optionsBtn:GetPushedTexture():SetVertexColor(0, 1, 0.5)
-    f.optionsBtn:SetScript("OnClick", function() CM.ToggleOptionsFrame() end)
-    CM.AttachTooltip(f.optionsBtn, CM.L["OPTIONS_TITLE"])
 
     f:SetScript("OnShow", function() CM.RefreshList(); CM.ApplyElvUISkin() end)
     f:SetScript("OnHide", CM.HideSubFrames)
