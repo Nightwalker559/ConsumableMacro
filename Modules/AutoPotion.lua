@@ -205,16 +205,12 @@ function CM.BuildAutoPotionFrame()
         row.label = row:CreateFontString(nil, "OVERLAY", "GameFontNormal")
         row.label:SetPoint("LEFT", 6, 0)
 
-        row.downBtn = CreateFrame("Button", nil, row, "UIPanelButtonTemplate")
-        row.downBtn:SetSize(26, 20)
-        row.downBtn:SetText("-")
-        row.downBtn:SetPoint("RIGHT", -4, 0)
+        row.downBtn = CM.CreateIconButton(row, "down")
+        row.downBtn:SetPoint("RIGHT", -6, 0)
         row.downBtn:SetScript("OnClick", function() CM.MoveAutoPotionRow(row.index, 1) end)
 
-        row.upBtn = CreateFrame("Button", nil, row, "UIPanelButtonTemplate")
-        row.upBtn:SetSize(26, 20)
-        row.upBtn:SetText("+")
-        row.upBtn:SetPoint("RIGHT", row.downBtn, "LEFT", -3, 0)
+        row.upBtn = CM.CreateIconButton(row, "up")
+        row.upBtn:SetPoint("RIGHT", row.downBtn, "LEFT", -4, 0)
         row.upBtn:SetScript("OnClick", function() CM.MoveAutoPotionRow(row.index, -1) end)
 
         f.rows[i] = row

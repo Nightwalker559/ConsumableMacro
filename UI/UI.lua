@@ -63,7 +63,6 @@ function CM.ApplyElvUISkin()
     local ap = CM.autoPotionFrame
     if ap then
         frame(ap); button(ap.closeBtn)
-        for _, row in ipairs(ap.rows or {}) do button(row.upBtn); button(row.downBtn) end
     end
 
     -- Restock: AH panel + config frame
@@ -79,6 +78,40 @@ function CM.ApplyElvUISkin()
     -- IE selection + Reset frames
     dialog(CM.ieFrame)
     dialog(CM.resetFrame)
+end
+
+-- ── Icon Buttons ───────────────────────────────────────────────────────────────
+-- Icon-only buttons (no panel template, so no ElvUI skin is needed). The icon
+-- files are white on transparent and get recoloured with `tint`; `size` is the
+-- drawn size of the 64x64 file (it may exceed the 20x20 button). Disabling the
+-- button greys the icon out. The caller sets position and OnClick.
+local ICON_PATH = "Interface\\AddOns\\ConsumableMacro\\Media\\"
+local GOLD, RED = { 1, 0.82, 0 }, { 0.9, 0.15, 0.15 }
+local ICON_KINDS = {
+    up     = { file = "up.png",     tint = GOLD, size = 32 },
+    down   = { file = "down.png",   tint = GOLD, size = 32 },
+    delete = { file = "remove.png", tint = RED,  size = 20 },
+}
+
+function CM.CreateIconButton(parent, kind)
+    local k = ICON_KINDS[kind]
+    local b = CreateFrame("Button", nil, parent)
+    b:SetSize(20, 20)
+    b:SetNormalTexture(ICON_PATH .. k.file)
+    b:SetHighlightTexture(ICON_PATH .. k.file, "ADD")
+    local normal, glow = b:GetNormalTexture(), b:GetHighlightTexture()
+    for _, t in ipairs({ normal, glow }) do
+        t:ClearAllPoints()
+        t:SetPoint("CENTER")
+        t:SetSize(k.size, k.size)
+        t:SetVertexColor(k.tint[1], k.tint[2], k.tint[3])
+    end
+    glow:SetAlpha(0.35)
+    b:SetScript("OnMouseDown", function() normal:SetAlpha(0.6) end)
+    b:SetScript("OnMouseUp",   function() normal:SetAlpha(1) end)
+    b:SetScript("OnDisable", function() normal:SetDesaturated(true); normal:SetAlpha(0.3); glow:SetAlpha(0) end)
+    b:SetScript("OnEnable",  function() normal:SetDesaturated(false); normal:SetAlpha(1); glow:SetAlpha(0.35) end)
+    return b
 end
 
 -- ── RefreshList ────────────────────────────────────────────────────────────────
@@ -104,34 +137,16 @@ local function CreateRow(i)
     row.status = row:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
     row.status:SetPoint("RIGHT", -100, 0)
 
-    -- Icon-only buttons (no panel template, so no ElvUI skin is needed). The
-    -- icon files are white on transparent and get recoloured with `tint`;
-    -- `iconSize` is the drawn size of the 64x64 file (it may exceed the button).
-    local ICON_PATH = "Interface\\AddOns\\ConsumableMacro\\Media\\"
-    local GOLD, RED = { 1, 0.82, 0 }, { 0.9, 0.15, 0.15 }
-    local function rowButton(action, file, tint, iconSize, anchor, relPoint, x)
-        local b = CreateFrame("Button", nil, row)
-        b:SetSize(20, 20)
+    local function rowButton(kind, anchor, relPoint, x)
+        local b = CM.CreateIconButton(row, kind)
         b:SetPoint("RIGHT", anchor, relPoint, x, 0)
-        b.action = action
-        b:SetNormalTexture(ICON_PATH .. file)
-        b:SetHighlightTexture(ICON_PATH .. file, "ADD")
-        local normal, glow = b:GetNormalTexture(), b:GetHighlightTexture()
-        for _, t in ipairs({ normal, glow }) do
-            t:ClearAllPoints()
-            t:SetPoint("CENTER")
-            t:SetSize(iconSize, iconSize)
-            t:SetVertexColor(tint[1], tint[2], tint[3])
-        end
-        glow:SetAlpha(0.35)
-        b:SetScript("OnMouseDown", function() normal:SetAlpha(0.6) end)
-        b:SetScript("OnMouseUp",   function() normal:SetAlpha(1) end)
+        b.action = kind
         b:SetScript("OnClick", CM.OnRowButtonClick)
         return b
     end
-    row.delBtn  = rowButton("delete", "remove.png", RED,  20, row,         "RIGHT", -5)
-    row.downBtn = rowButton("down",   "down.png",   GOLD, 32, row.delBtn,  "LEFT",  -4)
-    row.upBtn   = rowButton("up",     "up.png",     GOLD, 32, row.downBtn, "LEFT",  -4)
+    row.delBtn  = rowButton("delete", row,         "RIGHT", -5)
+    row.downBtn = rowButton("down",   row.delBtn,  "LEFT",  -4)
+    row.upBtn   = rowButton("up",     row.downBtn, "LEFT",  -4)
 
     row:SetScript("OnEnter", function(s) CM.ShowItemTooltip(s, s.itemID) end)
     row:SetScript("OnLeave", function() GameTooltip:Hide() end)
