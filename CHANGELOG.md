@@ -8,6 +8,7 @@ All notable changes to this project are documented here.
 
 ### Changed
 - Internal: next-frame deferrals now use `RunNextFrame` instead of `C_Timer.After(0, …)`.
+- Internal: Lua files moved into `Core/`, `Modules/` and `UI/` folders (load order unchanged).
 
 ---
 

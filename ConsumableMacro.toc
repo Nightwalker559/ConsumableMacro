@@ -12,17 +12,19 @@ Locales\ConsumableMacro_EN.lua
 Locales\ConsumableMacro_DE.lua
 
 # Core (namespace, state, macro logic, shared helpers, profiles)
-Core.lua
-Profiles.lua
+Core\Core.lua
+Core\Profiles.lua
 
-# Features
-Reminder.lua
-Items.lua
-AutoPotion.lua
-Restock.lua
-WeaponEnhance.lua
+# Modules (features)
+Modules\Reminder.lua
+Modules\Items.lua
+Modules\AutoPotion.lua
+Modules\Restock.lua
+Modules\WeaponEnhance.lua
 
-# UI, options, events + slash commands (last - uses everything above)
-UI.lua
-Options.lua
-Events.lua
+# UI and options
+UI\UI.lua
+UI\Options.lua
+
+# Events + slash commands (last - uses everything above)
+Core\Events.lua
