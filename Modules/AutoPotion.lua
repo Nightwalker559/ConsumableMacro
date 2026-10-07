@@ -265,6 +265,7 @@ function CM.ShowAutoPotionFrame()
         return
     end
     CM.RefreshAutoPotionFrame()
+    CM.HideSidePanels("autoPotionFrame")
     f:Show()
     CM.ApplyElvUISkin()
 end

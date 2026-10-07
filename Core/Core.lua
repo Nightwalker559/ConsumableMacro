@@ -164,6 +164,20 @@ function CM.HideFrames(keys)
     end
 end
 
+-- Windows that open to the right of Options and would overlap each other.
+-- Opening one closes the others; closing Options closes all of them.
+local SIDE_PANELS = { "ieFrame", "resetFrame", "autoPotionFrame", "restockConfigFrame", "profileFrame" }
+
+-- Hides all side panels except the keys passed in (e.g. the one about to open).
+function CM.HideSidePanels(...)
+    local keep = {}
+    for _, key in ipairs({ ... }) do keep[key] = true end
+    for _, key in ipairs(SIDE_PANELS) do
+        local f = CM[key]
+        if not keep[key] and f and f:IsShown() then f:Hide() end
+    end
+end
+
 -- Movable addon window: Blizzard frame, shared strata, closes on Escape, hidden.
 -- The caller sets size, anchor and title.
 function CM.CreateWindow(name)

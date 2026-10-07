@@ -635,6 +635,7 @@ function CM.ShowRestockConfigFrame()
     f.enableChk:SetChecked(rs and rs.enabled or false)
     f.bankChk:SetChecked(rs and rs.countBank or false)
     CM.RefreshRestockConfig()
+    CM.HideSidePanels("restockConfigFrame")
     f:Show()
     CM.ApplyElvUISkin()
 end

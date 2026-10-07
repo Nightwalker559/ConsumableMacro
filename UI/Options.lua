@@ -26,7 +26,10 @@ function CM.BuildOptionsFrame()
     o:SetWidth(320)
     o:SetPoint("LEFT", CM.mainFrame, "RIGHT", 8, 0)
     o.TitleText:SetText(CM.TITLE .. " – " .. L["OPTIONS_TITLE"])
-    o:SetScript("OnHide", function() CM.CommitOptionsBoxes(true) end)
+    o:SetScript("OnHide", function()
+        CM.CommitOptionsBoxes(true)
+        CM.HideSidePanels()
+    end)
 
     CM.optionsFrame = o
 
@@ -428,6 +431,7 @@ function CM.ShowIEFrame(mode, parsed)
     end
 
     AnchorDialog(f)
+    CM.HideSidePanels("ieFrame")
     f:Show()
     CM.ApplyElvUISkin()
 end
@@ -469,6 +473,7 @@ function CM.ShowResetFrame()
         chk:SetChecked(true)
     end
     AnchorDialog(f)
+    CM.HideSidePanels("resetFrame")
     f:Show()
     CM.ApplyElvUISkin()
 end
@@ -605,6 +610,8 @@ function CM.ShowProfileDialog(mode, target)
         if ok then f:Hide() end
     end)
 
+    -- the import dialog stacks below the import/export window; others replace any open panel
+    if isImp then CM.HideSidePanels("profileFrame", "ieFrame") else CM.HideSidePanels("profileFrame") end
     f:Show()
     if not isDel then
         f.editBox:SetFocus()
