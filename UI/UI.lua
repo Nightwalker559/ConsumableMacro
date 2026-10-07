@@ -186,6 +186,8 @@ function CM.RefreshList()
 
         row.index  = i
         row.itemID = item.id
+        row.upBtn:SetEnabled(i > 1)
+        row.downBtn:SetEnabled(i < #items)
         row:Show()
 
         row.icon:SetTexture(CM.GetItemIcon(item.id))

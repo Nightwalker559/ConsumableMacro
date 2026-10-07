@@ -8,7 +8,7 @@ All notable changes to this project are documented here.
 
 ### Changed
 - Internal: next-frame deferrals now use `RunNextFrame` instead of `C_Timer.After(0, …)`.
-- List rows and AutoPotion priority window: text buttons (+ / - / X) replaced by icon buttons (up / down arrows, red cross).
+- List rows and AutoPotion priority window: text buttons (+ / - / X) replaced by icon buttons (up / down arrows, red cross). The first row's up arrow and the last row's down arrow are greyed out.
 - Windows next to Options (AutoPotion priority, Restock setup, import/export, reset, profile) no longer overlap: opening one closes the other. Closing Options closes them all.
 - Options: gear icon replaced by a normal "Options" button.
 - Internal: Lua files moved into `Core/`, `Modules/` and `UI/` folders (load order unchanged).
