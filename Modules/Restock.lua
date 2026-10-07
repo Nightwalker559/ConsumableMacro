@@ -41,7 +41,7 @@ function CM.GetItemRank(itemID)
 end
 
 -- Rank icon markup (falls back to plain text if the atlas is missing).
-local function RankMarkup(itemID)
+function CM.RankMarkup(itemID)
     local q = CM.GetItemRank(itemID)
     if not q then return "" end
     for _, fmt in ipairs({ "Professions-ChatIcon-Quality-12-Tier%d", "Professions-ChatIcon-Quality-Tier%d" }) do
@@ -55,7 +55,7 @@ end
 
 -- Item name prefixed with its rank icon (icon first so it survives truncation).
 local function DisplayName(itemID)
-    return RankMarkup(itemID) .. CM.GetItemDisplayName(itemID)
+    return CM.RankMarkup(itemID) .. CM.GetItemDisplayName(itemID)
 end
 
 local function SkinRowWidgets(row, chk, ...)

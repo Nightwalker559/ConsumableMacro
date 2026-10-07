@@ -191,7 +191,7 @@ function CM.RefreshList()
         row:Show()
 
         row.icon:SetTexture(CM.GetItemIcon(item.id))
-        row.text:SetText((CM.L["ITEM_LABEL"]):format(CM.GetItemDisplayName(item.id), item.id))
+        row.text:SetText(CM.RankMarkup(item.id) .. (CM.L["ITEM_LABEL"]):format(CM.GetItemDisplayName(item.id), item.id))
 
         local inBags = CM.IsInBags(item.id)
         row.text:SetTextColor(inBags and 1 or 0.5, inBags and 1 or 0.5, inBags and 1 or 0.5)
