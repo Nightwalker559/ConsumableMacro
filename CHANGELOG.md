@@ -4,6 +4,13 @@ All notable changes to this project are documented here.
 
 ---
 
+## [2.0.5] – October 2026
+
+### Changed
+- Internal: next-frame deferrals now use `RunNextFrame` instead of `C_Timer.After(0, …)`.
+
+---
+
 ## [2.0.4] – October 2026
 
 ### New

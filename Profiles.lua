@@ -150,7 +150,7 @@ end
 function CM.RefreshProfileDropdown()
     local dd = CM.optionsFrame and CM.optionsFrame.profileDD
     if dd and dd.GenerateMenu then
-        _G.C_Timer.After(0, function() dd:GenerateMenu() end)
+        _G.RunNextFrame(function() dd:GenerateMenu() end)
     end
 end
 

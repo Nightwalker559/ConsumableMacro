@@ -174,7 +174,7 @@ function CM.BuildOptionsFrame()
     o.ieBox:SetScript("OnKeyDown", function(self, key)
         if key == "C" and IsControlKeyDown() then
             -- clear on next frame so clipboard is written before the text disappears
-            _G.C_Timer.After(0, function() self:SetText("") end)
+            _G.RunNextFrame(function() self:SetText("") end)
         end
     end)
     y = y - 32
