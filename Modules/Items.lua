@@ -26,6 +26,16 @@ CM.WEAPONENHANCE_IDS = {
     [243738] = "any",    -- Smuggler's Enchanted Edge (rank 2)
 }
 
+-- Consumable item class/subclass IDs (Enum.ItemClass / Enum.ItemConsumableSubclass),
+-- with the fixed numeric values as fallback.
+local ENUM_SUB   = Enum and Enum.ItemConsumableSubclass or {}
+local CLASS_CONSUMABLE = Enum and Enum.ItemClass and Enum.ItemClass.Consumable or 0
+local SUB_POTION       = ENUM_SUB.Potion          or 1
+local SUB_ELIXIR       = ENUM_SUB.Elixir          or 2
+local SUB_FLASK        = ENUM_SUB.Flasksphials    or 3
+local SUB_FOOD         = ENUM_SUB.Fooddrink       or 5
+local SUB_ENHANCEMENT  = ENUM_SUB.Itemenhancement or 6
+
 function CM.GetTargetTabForItem(targetID)
     if not targetID then return nil end
     local L = CM.L
@@ -52,16 +62,18 @@ function CM.GetTargetTabForItem(targetID)
         if CM.MatchesAny(name, L["PATTERN_HEALTHSTONE"]) then return "healthstone" end
         -- Food & Drink never is a flask or heal potion - checked before the name
         -- patterns so e.g. German "Heilbutt" (halibut) doesn't match "heil".
-        if classID == 0 and subclassID == 5 then return "bufffood" end
+        if classID == CLASS_CONSUMABLE and subclassID == SUB_FOOD then return "bufffood" end
         if CM.MatchesAny(name, L["PATTERN_FLASK"])       then return "flask" end
         if CM.MatchesAny(name, L["PATTERN_HEAL"])        then return "healpotion" end
     end
 
-    if classID == 0 and subclassID == 5 then return "bufffood" end
-    if classID == 0 and subclassID == 1 then return "potion" end
-    if classID == 0 and (subclassID == 2 or subclassID == 3) then return "flask" end  -- elixir / flask
-    -- "Item Enhancement" subclass - fallback for anything not caught by name above
-    if classID == 0 and subclassID == 6 then return "weaponenhance" end
+    if classID == CLASS_CONSUMABLE then
+        if subclassID == SUB_FOOD   then return "bufffood" end
+        if subclassID == SUB_POTION then return "potion" end
+        if subclassID == SUB_ELIXIR or subclassID == SUB_FLASK then return "flask" end
+        -- "Item Enhancement" subclass - fallback for anything not caught by name above
+        if subclassID == SUB_ENHANCEMENT then return "weaponenhance" end
+    end
 
     return nil
 end

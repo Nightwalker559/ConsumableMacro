@@ -11,7 +11,9 @@ CM.AUTOPOTION_MACRO_NAME = "CM_AutoPotion"
 -- has, so stale or removed IDs are simply skipped - no per-class lookup needed.
 -- Note: only classes with a clear, reliable self-only heal cooldown are listed;
 -- classes without one (Druid, Shaman, Mage, Demon Hunter, Evoker) fall back to
--- the Heal Potion / Healthstone slots only.
+-- the Heal Potion / Healthstone slots only. Passive talents (e.g. the Monk's
+-- Healing Elixir, which triggers by itself below 40% health) can't go in a
+-- castsequence and are deliberately left out.
 CM.AUTOPOTION_SPELLS = {
     -- Rogue
     185311, -- Crimson Vial
@@ -23,7 +25,6 @@ CM.AUTOPOTION_SPELLS = {
     19236,  -- Desperate Prayer
     -- Monk
     322101, -- Expel Harm
-    122281, -- Healing Elixir
     -- Death Knight
     48743,  -- Death Pact
     55233,  -- Vampiric Blood
@@ -48,11 +49,14 @@ CM.AUTOPOTION_SPELLS = {
 -- The legacy global IsSpellKnown() has become unreliable in current retail
 -- (Blizzard moved spellbook queries to C_SpellBook in the API overhaul), so
 -- C_SpellBook.IsSpellKnown is checked first, with a fallback for older clients.
+-- IsPlayerSpell is the extra fallback: talent-granted spells are not always
+-- reported as "known" by the spellbook query alone.
 local function isSpellKnown(id)
-    if C_SpellBook and C_SpellBook.IsSpellKnown then
-        return C_SpellBook.IsSpellKnown(id)
+    if C_SpellBook and C_SpellBook.IsSpellKnown and C_SpellBook.IsSpellKnown(id) then
+        return true
     end
-    return IsSpellKnown and IsSpellKnown(id)
+    if IsSpellKnown and IsSpellKnown(id) then return true end
+    return IsPlayerSpell and IsPlayerSpell(id) or false
 end
 
 -- Returns the spell ID of the first known self-heal/racial spell, or nil.
