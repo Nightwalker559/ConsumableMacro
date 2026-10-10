@@ -4,14 +4,6 @@ All notable changes to this project are documented here.
 
 ---
 
-## [Unreleased]
-
-### Fixed
-- ElvUI: the profile dropdown no longer gets another arrow texture every time a window opens.
-- ElvUI: the fold icon in the Restock setup is skinned without relying on a swallowed error.
-
----
-
 ## [2.0.6] – October 2026
 
 ### Changed
@@ -21,6 +13,8 @@ All notable changes to this project are documented here.
 ### Fixed
 - AutoPotion: talent-granted self-heal spells are now recognized reliably.
 - AutoPotion: "Sync" no longer reads the global cooldown (1.5 s) as the spell's cooldown.
+- ElvUI: the profile dropdown no longer gets another arrow texture every time a window opens.
+- ElvUI: the fold icon in the Restock setup is skinned without relying on a swallowed error.
 
 ---
 
