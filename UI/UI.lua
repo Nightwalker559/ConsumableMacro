@@ -48,8 +48,11 @@ function CM.ApplyElvUISkin()
         check(o.apEnableChk); check(o.apStopCastChk); edit(o.apResetBox)
         button(o.apSyncBtn); button(o.apConfigureBtn)
         button(o.rsConfigBtn)
-        -- best-effort skin for the Blizzard dropdown
-        if o.profileDD and S.HandleDropDownBox then pcall(S.HandleDropDownBox, S, o.profileDD, 288) end
+        -- best-effort, once only: ElvUI adds a new arrow texture on every call
+        if o.profileDD and S.HandleDropDownBox and not o.profileDD.cmSkinned then
+            o.profileDD.cmSkinned = true
+            pcall(S.HandleDropDownBox, S, o.profileDD, 288)
+        end
     end
 
     -- Profile name / delete dialog

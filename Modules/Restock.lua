@@ -381,6 +381,7 @@ local function GetConfigRow(f, i)
     row.toggle = CreateFrame("Button", nil, row.hdrBtn)  -- +/- icon, a real button for ElvUI
     row.toggle:SetSize(16, 16)
     row.toggle:SetPoint("LEFT", 2, 0)
+    row.toggle:SetNormalTexture("Interface\\Buttons\\UI-MinusButton-Up")  -- ElvUI's collapse skin needs one
     row.header = row.hdrBtn:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     row.header:SetPoint("LEFT", row.toggle, "RIGHT", 4, 0)
     local function fold()

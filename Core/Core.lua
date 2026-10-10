@@ -106,11 +106,8 @@ function CM.GetElvSkins()
     return E and E:GetModule("Skins", true) or nil
 end
 
--- Some ElvUI versions expose HandleCheckBox, older ones HandleCheckButton.
 function CM.SkinCheckbox(S, cb)
-    if not S or not cb then return end
-    if S.HandleCheckBox then S:HandleCheckBox(cb)
-    elseif S.HandleCheckButton then S:HandleCheckButton(cb) end
+    if S and cb and S.HandleCheckBox then S:HandleCheckBox(cb) end
 end
 
 -- Checkbox with a text label to its right, anchored at (x, y) from the top left.
