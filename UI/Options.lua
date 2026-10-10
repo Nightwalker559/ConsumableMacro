@@ -1,5 +1,5 @@
 -- ConsumableMacro Options
--- Options window, import/export selection frame and reset frame.
+-- Options window, import/export and reset dialogs, profile dialog.
 local CM = ConsumableMacroAddon
 
 -- Section header with a separator line below; returns the y offset under it.
@@ -33,7 +33,7 @@ function CM.BuildOptionsFrame()
 
     CM.optionsFrame = o
 
-    -- Invisible scrolling: mouse wheel only, no scrollbar. All widgets live in `c`.
+    -- Mouse-wheel scrolling without a scrollbar; all widgets live in `c`.
     local scroll = CreateFrame("ScrollFrame", nil, o)
     scroll:SetPoint("TOPLEFT", 4, -26)
     scroll:SetPoint("BOTTOMRIGHT", -4, 6)
@@ -49,18 +49,15 @@ function CM.BuildOptionsFrame()
 
     local y = -8
 
+    -- Widget values are loaded by CM.RefreshOptionsFrame on every open.
     -- ── General section ──
     y = AddSection(c, y, L["OPTIONS_GENERAL"], 14)
 
-    -- Auto-Update checkbox
     o.autoUpdateChk = CM.CreateCheckbox(c, L["CHECKBOX_AUTO"], 14, y)
-    o.autoUpdateChk:SetChecked(CM.db and CM.db.autoUpdate)
     o.autoUpdateChk:SetScript("OnClick", function(self) CM.db.autoUpdate = self:GetChecked() end)
     y = y - 30
 
-    -- Reminder checkbox
     o.reminderChk = CM.CreateCheckbox(c, L["CHECKBOX_REMINDER"], 14, y)
-    o.reminderChk:SetChecked(CM.db and CM.db.showReminder)
     o.reminderChk:SetScript("OnClick", function(self) CM.db.showReminder = self:GetChecked() end)
     y = y - 38
 
@@ -176,7 +173,7 @@ function CM.BuildOptionsFrame()
     o.ieBox:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
     o.ieBox:SetScript("OnKeyDown", function(self, key)
         if key == "C" and IsControlKeyDown() then
-            -- clear on next frame so clipboard is written before the text disappears
+            -- next frame, so the clipboard is written before the text disappears
             _G.RunNextFrame(function() self:SetText("") end)
         end
     end)
@@ -208,7 +205,7 @@ function CM.BuildOptionsFrame()
 
     y = AddSection(c, y, L["PROFILE_HEADER"], 10)
 
-    -- Blizzard Menu API (DropdownButton + SetupMenu); the menu is rebuilt on each open.
+    -- Blizzard Menu API; the menu is rebuilt on each open.
     o.profileDD = CreateFrame("DropdownButton", nil, c, "WowStyle1DropdownTemplate")
     o.profileDD:SetPoint("TOPLEFT", 14, y)
     o.profileDD:SetWidth(288)
@@ -245,7 +242,7 @@ function CM.BuildOptionsFrame()
     o.resetBtn:SetText(L["BTN_RESET"])
     o.resetBtn:SetScript("OnClick", function() CM.ShowResetFrame() end)
 
-    -- Fit the frame to the content, capped to the screen; the rest scrolls.
+    -- fit to the content, capped to the screen height; the rest scrolls
     local contentH = -y + 24 + 16
     c:SetHeight(contentH)
     o:SetHeight(math.min(contentH + 34, OPTIONS_MAX_H, math.floor(_G.UIParent:GetHeight() * 0.85)))
@@ -253,8 +250,8 @@ function CM.BuildOptionsFrame()
     return o
 end
 
--- Writes the text of all number boxes into the active profile. Skipped while the
--- frame is hidden (boxes are stale/empty) unless force is set (OnHide).
+-- Saves all number boxes into the active profile. Skipped while the frame is
+-- hidden (stale boxes) unless forced (OnHide).
 function CM.CommitOptionsBoxes(force)
     local o = CM.optionsFrame
     if not o or not CM.db or not o.minBoxes then return end
@@ -293,7 +290,7 @@ function CM.ToggleOptionsFrame()
     CM.ApplyElvUISkin()
 end
 
--- Dialogs open right of the Options window, or of the main window if Options isn't open.
+-- Dialogs open right of Options, or of the main window if Options is closed.
 local function AnchorDialog(f)
     local o = CM.optionsFrame
     f:ClearAllPoints()
@@ -301,8 +298,8 @@ local function AnchorDialog(f)
 end
 
 -- ── Tab selection dialogs ─────────────────────────────────────────────────────
--- Small movable dialog with one checkbox per tab plus OK / Cancel buttons.
--- Returns the frame with f.descLbl, f.checkboxes[tabKey], f.okBtn, f.cancelBtn.
+-- Dialog with one checkbox per tab plus OK / Cancel: f.descLbl, f.checkboxes[tabKey],
+-- f.okBtn, f.cancelBtn.
 local function BuildTabDialog(frameName, width, btnWidth)
     local rowH   = 28
     local frameH = 30 + 22 + (#CM.TABS * rowH) + 14 + 24 + 20
@@ -321,7 +318,7 @@ local function BuildTabDialog(frameName, width, btnWidth)
     f.checkboxes = {}
     for _, t in ipairs(CM.TABS) do
         local chk = CM.CreateCheckbox(f, CM.L[t.tabL] or t.key, 14, y)
-        chk.enabledColor = t.color  -- used when (re)coloring the label on show
+        chk.enabledColor = t.color
         f.checkboxes[t.key] = chk
         y = y - rowH
     end
@@ -341,8 +338,7 @@ local function BuildTabDialog(frameName, width, btnWidth)
     return f
 end
 
--- Set of tab keys whose checkbox is ticked (and enabled, if requested);
--- nil if none.
+-- Set of ticked (and, if requested, enabled) tab keys; nil if none.
 local function GetCheckedTabs(f, requireEnabled)
     local filter, any = {}, false
     for key, chk in pairs(f.checkboxes) do
@@ -355,18 +351,14 @@ local function GetCheckedTabs(f, requireEnabled)
 end
 
 -- ── IE Selection Frame ─────────────────────────────────────────────────────────
--- Shared frame for both Export and Import tab selection.
--- mode = "export": checkboxes enabled for tabs with items; OK generates string.
--- mode = "import": checkboxes enabled for tabs present in parsed; OK applies import.
-
+-- One tab-selection frame for export and import (see CM.ShowIEFrame).
 function CM.BuildIEFrame()
     if CM.ieFrame then return CM.ieFrame end
     CM.ieFrame = BuildTabDialog("CMIEFrame", 250, 110)
     return CM.ieFrame
 end
 
--- Ticks and enables the checkbox of every tab for which isAvailable(key) is true;
--- the others are greyed out.
+-- Ticks and enables the tabs for which isAvailable(key) is true; greys out the rest.
 local function SetAvailableTabs(f, isAvailable)
     for _, t in ipairs(CM.TABS) do
         local chk     = f.checkboxes[t.key]
@@ -381,7 +373,8 @@ local function SetAvailableTabs(f, isAvailable)
     end
 end
 
--- mode: "export" or "import". parsed: only required for "import".
+-- mode "export": tabs with items are selectable, OK writes the string.
+-- mode "import": tabs present in `parsed` are selectable, OK asks for the target profile.
 function CM.ShowIEFrame(mode, parsed)
     local f  = CM.BuildIEFrame()
     local L  = CM.L
@@ -425,7 +418,6 @@ function CM.ShowIEFrame(mode, parsed)
         f.okBtn:SetScript("OnClick", function()
             local filter = getFilter()
             if not filter then return end
-            -- ask: new profile or current profile (dialog stays below this frame)
             CM.ShowProfileDialog("import", { parsed = parsed, filter = filter })
         end)
     end
@@ -479,8 +471,7 @@ function CM.ShowResetFrame()
 end
 
 -- ── Profile dialog ─────────────────────────────────────────────────────────────
--- One small dialog for all profile actions: new / copy / rename (name input)
--- and delete (confirmation, `target` = profile to delete).
+-- One dialog for all profile actions (see CM.ShowProfileDialog).
 function CM.BuildProfileFrame()
     if CM.profileFrame then return CM.profileFrame end
 
@@ -507,7 +498,7 @@ function CM.BuildProfileFrame()
     f.okBtn:SetSize(120, 24)
     f.okBtn:SetPoint("BOTTOMLEFT", 14, 14)
 
-    -- import mode only: apply to the current profile instead of a new one
+    -- import only: apply to the current profile instead of a new one
     f.altBtn = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
     f.altBtn:SetSize(88, 24)
     f.altBtn:SetPoint("LEFT", f.okBtn, "RIGHT", 4, 0)
@@ -523,7 +514,7 @@ function CM.BuildProfileFrame()
     return f
 end
 
--- Applies a parsed import to the active profile and closes the import windows.
+-- Applies a parsed import to the active profile and closes the import window.
 local function FinishImport(job)
     CM.ApplyImport(job.parsed, job.filter)
     local box = _G["CMImportExportBox"]
@@ -542,7 +533,7 @@ local function FreeImportName()
 end
 
 -- mode: "new" | "copy" | "rename" | "delete" | "import"
--- target: profile to delete (delete) or { parsed, filter } (import).
+-- target: profile name (delete) or { parsed, filter } (import).
 function CM.ShowProfileDialog(mode, target)
     local f       = CM.BuildProfileFrame()
     local L       = CM.L
@@ -600,7 +591,7 @@ function CM.ShowProfileDialog(mode, target)
         elseif mode == "rename" then
             ok = CM.RenameProfile(current, text)
         elseif mode == "import" then
-            -- new (empty) profile, switch to it, then apply the import there
+            -- into a new profile: create, switch, apply
             local name = CM.CreateProfile(text)
             ok = name and CM.SetProfile(name)
             if ok then FinishImport(target) end
@@ -610,7 +601,7 @@ function CM.ShowProfileDialog(mode, target)
         if ok then f:Hide() end
     end)
 
-    -- the import dialog stacks below the import/export window; others replace any open panel
+    -- the import dialog stacks below the import/export window
     if isImp then CM.HideSidePanels("profileFrame", "ieFrame") else CM.HideSidePanels("profileFrame") end
     f:Show()
     if not isDel then

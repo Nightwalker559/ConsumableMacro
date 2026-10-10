@@ -1,11 +1,8 @@
 -- ConsumableMacro Restock
--- Per-item restock targets. A small panel next to the Auction House lists
--- every ticked item that is below its target amount; clicking a row searches
--- for it (Auctionator if present, otherwise the default Blizzard AH).
--- Item entries in CM.db[tab].items: { id = n, restock = bool, target = n, minCount = n }
--- minCount (optional) gates when the item shows up in the AH panel: only once
--- have <= minCount, instead of as soon as have < target. 0/empty falls back to
--- the tab's minCount (Options).
+-- A panel next to the Auction House lists every ticked item below its target;
+-- clicking a row searches for it (Auctionator if present, else the default AH).
+-- Items: { id, restock = bool, target = n, minCount = n }. minCount (optional) delays
+-- the AH entry until have <= minCount; 0/empty falls back to the tab's minCount.
 local CM = ConsumableMacroAddon
 
 local ROW_H     = 28   -- AH panel row height
@@ -27,8 +24,8 @@ local function GetHave(itemID)
     return C_Item.GetItemCount(itemID, withBank, false, withBank, withBank) or 0
 end
 
--- Crafting quality (rank) of an item. Every rank has its own item ID, so the
--- rank can be read straight from the ID (nil for non-tiered items).
+-- Crafting quality (rank) of an item; every rank has its own item ID. Nil for
+-- items without ranks.
 function CM.GetItemRank(itemID)
     local api = _G.C_TradeSkillUI
     if not api then return nil end
@@ -40,17 +37,26 @@ function CM.GetItemRank(itemID)
     return nil
 end
 
--- Rank icon markup (falls back to plain text if the atlas is missing).
-function CM.RankMarkup(itemID)
-    local q = CM.GetItemRank(itemID)
-    if not q then return "" end
+-- Rank icon markup per rank (plain text if the atlas is missing).
+local rankMarkup = {}
+local function MarkupForRank(q)
+    local markup = rankMarkup[q]
+    if markup then return markup end
+    markup = "|cffAAAAAA[" .. q .. "]|r "
     for _, fmt in ipairs({ "Professions-ChatIcon-Quality-12-Tier%d", "Professions-ChatIcon-Quality-Tier%d" }) do
         local atlas = fmt:format(q)
-        if not (C_Texture and C_Texture.GetAtlasInfo) or C_Texture.GetAtlasInfo(atlas) then
-            return "|A:" .. atlas .. ":14:14|a "
+        if C_Texture.GetAtlasInfo(atlas) then
+            markup = "|A:" .. atlas .. ":14:14|a "
+            break
         end
     end
-    return "|cffAAAAAA[" .. q .. "]|r "
+    rankMarkup[q] = markup
+    return markup
+end
+
+function CM.RankMarkup(itemID)
+    local q = CM.GetItemRank(itemID)
+    return q and MarkupForRank(q) or ""
 end
 
 -- Item name prefixed with its rank icon (icon first so it survives truncation).
@@ -70,9 +76,8 @@ local function SkinRowWidgets(row, chk, ...)
     end
 end
 
--- Items that can't be bought at the AH are conjured/fleeting (cauldron) items
--- (IsConjured) and bound items - BoP, quest, account/Warband-bound, e.g. Hearty
--- dishes (IsBoundNoAH). CM.IsAuctionable combines both.
+-- Not buyable at the AH: conjured/fleeting items (IsConjured) and bound items
+-- (BoP, quest, account/Warband-bound; IsBoundNoAH). CM.IsAuctionable covers both.
 local conjuredCache = {}
 
 local function IsConjured(itemID)
@@ -80,13 +85,13 @@ local function IsConjured(itemID)
     if cached ~= nil then return cached end
 
     local name = C_Item.GetItemNameByID(itemID)
-    if not name then return false end  -- data not loaded yet, don't cache
+    if not name then return false end  -- not loaded yet, don't cache
     if CM.MatchesAny(name:lower(), CM.L["PATTERN_FLEETING"]) then
         conjuredCache[itemID] = true
         return true
     end
 
-    -- Tooltip line "Conjured Item" (localized global string)
+    -- tooltip line "Conjured Item" (localized global string)
     local conj = _G.ITEM_CONJURED
     if conj and C_TooltipInfo and C_TooltipInfo.GetItemByID then
         local ok, data = pcall(C_TooltipInfo.GetItemByID, itemID)
@@ -105,13 +110,12 @@ local function IsConjured(itemID)
     end
     return false
 end
-CM.IsConjured = IsConjured  -- exposed for Reminder.lua (fleeting items aren't worth restocking)
+CM.IsConjured = IsConjured  -- also used by Reminder.lua
 
 local function IsBoundNoAH(itemID)
-    -- bindType is the 14th return of C_Item.GetItemInfo (nil until cached)
-    local bindType = select(14, C_Item.GetItemInfo(itemID))
-    local B = Enum and Enum.ItemBind
-    if not bindType or not B then return false end
+    local bindType = select(14, C_Item.GetItemInfo(itemID))  -- nil until cached
+    if not bindType then return false end
+    local B = Enum.ItemBind
     return bindType == B.OnAcquire or bindType == B.Quest
         or bindType == B.ToWoWAccount or bindType == B.ToBnetAccount
 end
@@ -120,8 +124,8 @@ function CM.IsAuctionable(itemID)
     return not IsConjured(itemID) and not IsBoundNoAH(itemID)
 end
 
--- Appends the item to list if it is ticked, below target AND at/below its
--- effective minimum count (own minCount, else tabMin).
+-- Appends the item if it is ticked, below target and at/below its minimum count
+-- (own minCount, else tabMin).
 local function AddIfDue(list, item, tabMin)
     local target = tonumber(item.target) or 0
     if not (item.restock and target > 0 and CM.IsAuctionable(item.id)) then return end
@@ -134,8 +138,8 @@ local function AddIfDue(list, item, tabMin)
     end
 end
 
--- Returns { {id, have, target, missing}, ... } for all due items: the tab items,
--- then the extra items (no tab, no tab minimum).
+-- { {id, have, target, missing}, ... } of all due items: tab items first, then the
+-- extra items (no tab minimum).
 function CM.GetRestockList()
     local list = {}
     if not CM.db then return list end
@@ -153,7 +157,7 @@ function CM.GetRestockList()
     return list
 end
 
--- True if the item already has a restock entry (any tab or the extra list).
+-- True if the item is already in a tab or the extra list.
 local function IsTracked(itemID)
     for _, t in ipairs(CM.TABS) do
         if not CM.RESTOCK_SKIP[t.key] then
@@ -168,7 +172,7 @@ local function IsTracked(itemID)
     return false
 end
 
--- Adds an item (ID, item link or name of a cached item) to the extra list.
+-- Adds an item (ID, item link or cached item name) to the extra list.
 function CM.AddRestockExtra(input)
     local rs = CM.db and CM.db.restock
     input = strtrim(tostring(input or ""))
@@ -181,7 +185,7 @@ function CM.AddRestockExtra(input)
         CM.ShowError(CM.L["RESTOCK_ERR_DUPLICATE"])
         return false
     end
-    -- bind type / tooltip need the item data
+    -- the bind type and tooltip need the item data
     local obj = Item:CreateFromItemID(id)
     obj:ContinueOnItemLoad(function()
         if not CM.db or IsTracked(id) then return end
@@ -197,10 +201,9 @@ function CM.AddRestockExtra(input)
 end
 
 -- ── AH search ──────────────────────────────────────────────────────────────────
--- Auctionator: public API (selects its Shopping tab itself).
--- Default AH: drives Blizzard's own search bar. These are internals, not a
+-- Auctionator: its public API. Default AH: Blizzard's own search bar, which is not a
 -- stable API, so every step is pcall'd and degrades to "press Enter yourself".
--- qty: amount still missing; passed on so the buy quantity is pre-filled.
+-- qty (amount still missing) pre-fills the buy quantity.
 local pendingBuy = nil  -- { itemID, qty, selected } for the default AH
 
 function CM.SearchAuctionHouse(itemID, qty)
@@ -211,8 +214,7 @@ function CM.SearchAuctionHouse(itemID, qty)
     end
     pendingBuy = nil
 
-    -- Auctionator: term table with exact name, rank (tier) and purchase quantity.
-    -- Falls back to fewer fields if a build rejects one of them.
+    -- Auctionator: exact name, rank (tier) and quantity; fewer fields if rejected.
     local api = _G.Auctionator and _G.Auctionator.API and _G.Auctionator.API.v1
     if api and api.MultiSearchAdvanced then
         local rank = CM.GetItemRank(itemID)
@@ -226,8 +228,8 @@ function CM.SearchAuctionHouse(itemID, qty)
         end
     end
 
-    -- Default AH: search by name, then open this exact rank and fill the quantity
-    -- (see the browse/commodity events below).
+    -- Default AH: search by name; the browse/commodity events below then open
+    -- this rank and fill the quantity.
     local ah  = _G.AuctionHouseFrame
     local box = ah and ah.SearchBar and ah.SearchBar.SearchBox
     if not box then return end
@@ -347,15 +349,14 @@ function CM.RefreshRestockFrame()
     local extra = #list - shown
     f.foot:SetText(CM.L["RESTOCK_HINT"] .. (extra > 0 and ("  " .. (CM.L["RESTOCK_MORE"]):format(extra)) or ""))
     f:SetHeight(30 + shown * ROW_H + 26)
-    -- the AH frame may not have existed yet when the panel was created
+    -- the AH frame may not have existed when the panel was created
     if not f:IsShown() then AnchorPanel(f) end
     f:Show()
 end
 
 -- ── Config frame (tick items + target per item) ────────────────────────────────
--- Commits and drops the focus of every number box. Needed before rows get
--- re-assigned to other items (fold/unfold, remove), so pending text lands in
--- the item it was typed for.
+-- Commits and drops the focus of every number box. Needed before rows are
+-- re-assigned to other items, so pending text lands in the item it was typed for.
 local function ReleaseConfigFocus(f)
     for _, row in ipairs(f.rows) do
         if row.box:HasFocus() then row.box:ClearFocus() end
@@ -371,13 +372,13 @@ local function GetConfigRow(f, i)
     row:SetSize(CFG_ROW_W, CFG_ROW_H - 2)
     row:SetPoint("TOPLEFT", 0, -(i - 1) * CFG_ROW_H)
 
-    -- section header: click anywhere on the row to fold/unfold
+    -- section header: the whole row folds/unfolds
     row.hdrBtn = CreateFrame("Button", nil, row)
     row.hdrBtn:SetAllPoints()
     row.hdrBtn.hl = row.hdrBtn:CreateTexture(nil, "HIGHLIGHT")
     row.hdrBtn.hl:SetAllPoints()
     row.hdrBtn.hl:SetColorTexture(1, 1, 1, 0.08)
-    row.toggle = CreateFrame("Button", nil, row.hdrBtn)  -- +/- icon (a real button so ElvUI can skin it)
+    row.toggle = CreateFrame("Button", nil, row.hdrBtn)  -- +/- icon, a real button for ElvUI
     row.toggle:SetSize(16, 16)
     row.toggle:SetPoint("LEFT", 2, 0)
     row.header = row.hdrBtn:CreateFontString(nil, "OVERLAY", "GameFontNormal")
@@ -401,7 +402,7 @@ local function GetConfigRow(f, i)
     row.icon:SetPoint("LEFT", row.chk, "RIGHT", 2, 0)
     row.icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
 
-    -- remove button, only for extra items (the slot stays reserved on every row)
+    -- remove button, only shown for extra items
     row.delBtn = CreateFrame("Button", nil, row)
     row.delBtn:SetSize(16, 16)
     row.delBtn:SetPoint("RIGHT", -4, 0)
@@ -441,12 +442,12 @@ local function GetConfigRow(f, i)
         local item = row.item
         if not item then return end
         item.restock = self:GetChecked() and true or false
-        -- No target yet: jump into the amount box so the tick has an effect.
+        -- no target yet: jump into the amount box so the tick has an effect
         if item.restock and (tonumber(item.target) or 0) <= 0 then row.box:SetFocus() end
         CM.RefreshRestockFrame()
     end)
 
-    -- each box commits its number into one field of the row's item
+    -- each box saves its number into one field of the row's item
     for box, field in pairs({ [row.box] = "target", [row.minBox] = "minCount" }) do
         CM.BindNumberBox(box, function(self)
             local item = row.item
@@ -468,11 +469,10 @@ function CM.RefreshRestockConfig()
     local n = 0
     local collapsed = CM.db.restock.collapsed
 
-    -- sections: one per tab with AH-buyable items, plus the always-present extra list
+    -- one section per tab with AH-buyable items, plus the extra list
     local sections = {}
     for _, t in ipairs(CM.TABS) do
         if not CM.RESTOCK_SKIP[t.key] then
-            -- only items that can be bought at the AH are listed
             local items = {}
             for _, item in ipairs(CM.db[t.key] and CM.db[t.key].items or {}) do
                 if CM.IsAuctionable(item.id) then tinsert(items, item) end
@@ -541,7 +541,7 @@ function CM.BuildRestockConfigFrame()
     f.TitleText:SetText(L["RESTOCK_CONFIG_TITLE"])
     f.rows = {}
 
-    -- Save any box that still has pending text (focus-lost may not fire on hide)
+    -- save pending box text (focus-lost may not fire on hide)
     f:SetScript("OnHide", function()
         for _, row in ipairs(f.rows) do
             if row:IsShown() and row.item then
@@ -585,7 +585,7 @@ function CM.BuildRestockConfigFrame()
     f.content:SetWidth(CFG_ROW_W)
     f.content:SetHeight(1)
 
-    -- Add an item that has no tab: ID / item link typed or pasted, or dropped from the bags
+    -- add an item without a tab: ID or link, typed or dragged from the bags
     f.addLbl = f:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     f.addLbl:SetPoint("BOTTOMLEFT", 14, 16)
     f.addLbl:SetText(L["RESTOCK_ADD_LABEL"])
@@ -601,7 +601,6 @@ function CM.BuildRestockConfigFrame()
     f.addBtn:SetPoint("LEFT", f.addBox, "RIGHT", 6, 0)
     f.addBtn:SetText(L["BTN_ADD"])
 
-    -- item dragged from the bags onto the box or the button
     local function takeInput()
         local t, id = GetCursorInfo()
         if t == "item" and tonumber(id) then
@@ -641,9 +640,8 @@ function CM.ShowRestockConfigFrame()
 end
 
 -- ── Default AH: open the exact rank and pre-fill the quantity ──────────────────
--- Blizzard internals (SelectBrowseResult, BuyDisplay.QuantityInput) are not a
--- stable API: everything is guarded/pcall'd, worst case the player clicks the
--- result and types the amount themselves.
+-- Blizzard internals, not a stable API: everything is guarded/pcall'd, worst case
+-- the player clicks the result and types the amount.
 local function TrySelectBrowseResult()
     local p  = pendingBuy
     local ah = _G.AuctionHouseFrame
@@ -692,8 +690,8 @@ ev:SetScript("OnEvent", function(_, event, arg1)
     elseif event == "AUCTION_HOUSE_BROWSE_RESULTS_UPDATED" or event == "AUCTION_HOUSE_BROWSE_RESULTS_ADDED" then
         TrySelectBrowseResult()
     elseif event == "COMMODITY_SEARCH_RESULTS_UPDATED" then
-        -- arg1 = itemID. Blizzard may reset the quantity while it populates,
-        -- so set it a little later, twice; the second pass ends the pending buy.
+        -- arg1 = itemID. Blizzard may reset the quantity while populating, so set it
+        -- twice; the second pass ends the pending buy.
         if pendingBuy and pendingBuy.itemID == arg1 then
             C_Timer.After(0.05, function() ApplyPendingQuantity(arg1, false) end)
             C_Timer.After(0.4,  function() ApplyPendingQuantity(arg1, true) end)

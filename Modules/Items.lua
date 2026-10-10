@@ -2,17 +2,14 @@
 local CM = ConsumableMacroAddon
 
 -- ── Item Classification ────────────────────────────────────────────────────────
--- Known Healthstone item IDs across expansions
 CM.HEALTHSTONE_IDS = {
-    [5512]   = true,  -- Classic Healthstone
-    [224464] = true,  -- Demonic Healthstone (Midnight 12.0+)
+    [5512]   = true,  -- Healthstone
+    [224464] = true,  -- Demonic Healthstone (Pact of Gluttony)
 }
 
--- Known Whetstone ("edged") / Weightstone ("blunt") item IDs, one entry per
--- quality tier. Name-based detection turned out unreliable for these (locale-
--- dependent, and some Midnight items didn't match even the right pattern) -
--- an explicit ID list is deterministic and works in any client language.
--- Add further quality-tier IDs here as they turn up in-game.
+-- Whetstones ("edged"), Weightstones ("blunt") and oils ("any"), one entry per
+-- quality tier. Name matching was unreliable for these, so the IDs are listed
+-- explicitly; add new tiers here as they turn up.
 CM.WEAPONENHANCE_IDS = {
     [237367] = "blunt",  -- Glänzender Gewichtstein / Refulgent Weightstone (rank 1)
     [237369] = "blunt",  -- Glänzender Gewichtstein / Refulgent Weightstone (rank 2)
@@ -26,55 +23,43 @@ CM.WEAPONENHANCE_IDS = {
     [243738] = "any",    -- Smuggler's Enchanted Edge (rank 2)
 }
 
--- Consumable item class/subclass IDs (Enum.ItemClass / Enum.ItemConsumableSubclass),
--- with the fixed numeric values as fallback.
-local ENUM_SUB   = Enum and Enum.ItemConsumableSubclass or {}
-local CLASS_CONSUMABLE = Enum and Enum.ItemClass and Enum.ItemClass.Consumable or 0
-local SUB_POTION       = ENUM_SUB.Potion          or 1
-local SUB_ELIXIR       = ENUM_SUB.Elixir          or 2
-local SUB_FLASK        = ENUM_SUB.Flasksphials    or 3
-local SUB_FOOD         = ENUM_SUB.Fooddrink       or 5
-local SUB_ENHANCEMENT  = ENUM_SUB.Itemenhancement or 6
+local CLASS_CONSUMABLE = Enum.ItemClass.Consumable
+local SUB = Enum.ItemConsumableSubclass
 
+-- Tab key for an item ID, or nil if it fits none. ID lists win, then the name
+-- patterns, then the class/subclass fallback.
 function CM.GetTargetTabForItem(targetID)
     if not targetID then return nil end
     local L = CM.L
 
-    -- Direct ID match for soulbound items like Healthstones, and for
-    -- Whetstone/Weightstone (see CM.WEAPONENHANCE_IDS - name-based detection
-    -- for those turned out unreliable, an ID list works in any language)
     if CM.HEALTHSTONE_IDS[targetID] then return "healthstone" end
     if CM.WEAPONENHANCE_IDS[targetID] then return "weaponenhance" end
 
-    -- GetItemInfoInstant: 7 returns – classID=[6], subclassID=[7]. Unlike the
-    -- name, this needs no data load and is always available immediately.
+    -- Class IDs come without an item data load; the name may still be missing for
+    -- very recent items, in which case only the class checks apply.
     local _, _, _, _, _, classID, subclassID = C_Item.GetItemInfoInstant(targetID)
     local name = C_Item.GetItemNameByID(targetID)
+    name = name and name:lower()
 
-    -- Name-based checks only run once the name is actually cached - some very
-    -- recent items report a nil name for a while even via ContinueOnItemLoad.
-    -- Without a name we fall straight through to the classID/subclassID
-    -- checks below instead of bailing out as "invalid".
     if name then
-        name = name:lower()
-        -- word-end match: plain "tea" would also hit "steak" / "steamed fish"
+        -- word-end match: a plain "tea" would also hit "steak" / "steamed fish"
         if CM.MatchesWordEnd(name, L["PATTERN_EXCLUDE"]) then return nil end
         if CM.MatchesAny(name, L["PATTERN_HEALTHSTONE"]) then return "healthstone" end
-        -- Food & Drink never is a flask or heal potion - checked before the name
-        -- patterns so e.g. German "Heilbutt" (halibut) doesn't match "heil".
-        if classID == CLASS_CONSUMABLE and subclassID == SUB_FOOD then return "bufffood" end
-        if CM.MatchesAny(name, L["PATTERN_FLASK"])       then return "flask" end
-        if CM.MatchesAny(name, L["PATTERN_HEAL"])        then return "healpotion" end
     end
 
-    if classID == CLASS_CONSUMABLE then
-        if subclassID == SUB_FOOD   then return "bufffood" end
-        if subclassID == SUB_POTION then return "potion" end
-        if subclassID == SUB_ELIXIR or subclassID == SUB_FLASK then return "flask" end
-        -- "Item Enhancement" subclass - fallback for anything not caught by name above
-        if subclassID == SUB_ENHANCEMENT then return "weaponenhance" end
+    local isConsumable = classID == CLASS_CONSUMABLE
+
+    -- Food before the name patterns, so e.g. "Heilbutt" (halibut) doesn't match "heil".
+    if isConsumable and subclassID == SUB.Fooddrink then return "bufffood" end
+    if name then
+        if CM.MatchesAny(name, L["PATTERN_FLASK"]) then return "flask" end
+        if CM.MatchesAny(name, L["PATTERN_HEAL"])  then return "healpotion" end
     end
 
+    if not isConsumable then return nil end
+    if subclassID == SUB.Potion then return "potion" end
+    if subclassID == SUB.Elixir or subclassID == SUB.Flasksphials then return "flask" end
+    if subclassID == SUB.Itemenhancement then return "weaponenhance" end
     return nil
 end
 
@@ -131,11 +116,9 @@ end
 
 -- ── Import / Export ────────────────────────────────────────────────────────────
 -- Format: CM:1:flask=191534,191533:potion=191338:healpotion=191380:bufffood=197784
--- Tabs with no items are omitted. Every tab in CM.TABS is supported.
--- Item order reflects priority (index 1 = highest priority).
+-- Tabs without items are omitted; item order is priority order.
 
--- filter: optional { [tabKey] = true } — only include those tabs.
--- If nil, all tabs with items are exported.
+-- filter: optional { [tabKey] = true } - only those tabs (default: all tabs with items).
 function CM.ExportString(filter)
     if not CM.db then return "" end
     local parts = {}
@@ -157,14 +140,14 @@ end
 -- Returns { [tabKey] = { {id=n}, ... } } or nil if the string is invalid.
 function CM.ParseImportString(str)
     if type(str) ~= "string" then return nil end
-    str = str:match("^%s*(.-)%s*$")  -- trim whitespace
+    str = str:trim()
     if not str:match("^CM:1:") then return nil end
 
     local validKeys = {}
     for _, t in ipairs(CM.TABS) do validKeys[t.key] = true end
 
     local result = {}
-    -- append sentinel ":" so the last segment is captured by the pattern
+    -- the sentinel ":" makes the last segment match too
     for segment in (str:sub(6) .. ":"):gmatch("([^:]*):") do
         if segment ~= "" then
             local key, idList = segment:match("^([^=]+)=(.*)$")
@@ -184,8 +167,7 @@ function CM.ParseImportString(str)
     return next(result) and result or nil
 end
 
--- Empties the item lists of the tabs in filter (all tabs if nil) and rebuilds
--- the macros.
+-- Empties the item lists of the tabs in filter (default: all) and rebuilds the macros.
 function CM.ClearTabs(filter)
     if not CM.db then return end
     for _, t in ipairs(CM.TABS) do
@@ -195,15 +177,13 @@ function CM.ClearTabs(filter)
     CM.RefreshList()
 end
 
--- Overwrites item lists for tabs present in parsed and selected by filter,
--- then rebuilds macros.
--- filter: optional { [tabKey] = true } — only apply those tabs.
--- If nil, all tabs present in parsed are applied.
+-- Overwrites the item lists of the tabs in `parsed` (optionally only those in filter)
+-- and rebuilds the macros.
 function CM.ApplyImport(parsed, filter)
     if not CM.db or not parsed then return end
     for _, t in ipairs(CM.TABS) do
         if parsed[t.key] and (not filter or filter[t.key]) then
-            -- keep restock settings for IDs that already exist in this tab
+            -- keep restock settings of IDs that are already in this tab
             local old = {}
             for _, it in ipairs(CM.db[t.key].items or {}) do old[it.id] = it end
             for _, it in ipairs(parsed[t.key]) do

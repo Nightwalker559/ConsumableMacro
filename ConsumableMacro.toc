@@ -2,7 +2,7 @@
 ## Title: |cff00FF98Consumable|rMacro
 ## Notes: Automatically creates macros for the best available consumables in your bags.
 ## Author: Nightwalker559
-## Version: 2.0.5
+## Version: 2.0.6
 ## SavedVariables: ConsumableMacroDB
 ## SavedVariablesPerCharacter: ConsumableMacroCharDB
 ## IconTexture: Interface\AddOns\ConsumableMacro\Media\Icon.tga

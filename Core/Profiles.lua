@@ -1,10 +1,9 @@
 -- ConsumableMacro Profiles
--- Profile storage and management. Item lists and all settings live in a profile;
--- each character only remembers which profile it uses.
+-- Item lists and all settings live in a profile; each character only remembers
+-- which profile it uses.
 --   ConsumableMacroDB     = { dbVersion, profiles = { [name] = profile }, aliases = { [oldName] = newName } }
 --   ConsumableMacroCharDB = { profile = name, reminderPos = {...} }
--- CM.db always points at the active profile table, so the rest of the addon
--- keeps reading CM.db.<tab>, CM.db.autoUpdate etc. unchanged.
+-- CM.db points at the active profile (CM.db.<tab>, CM.db.autoUpdate, ...).
 local CM = ConsumableMacroAddon
 
 local DEFAULT_PROFILE = "Default"  -- target of the one-time migration
@@ -62,7 +61,7 @@ function CM.InitProfiles()
     local root = ConsumableMacroDB
 
     if not root.profiles then
-        -- One-time migration: the old account-wide data becomes profile "Default".
+        -- one-time migration: the old account-wide data becomes profile "Default"
         local legacy = {}
         for k, v in pairs(root) do legacy[k] = v end
         _G.wipe(root)

@@ -37,7 +37,7 @@ local function StartTimer()
 end
 
 -- ── Reminder Frame ─────────────────────────────────────────────────────────────
--- Resize to fit content (header + sep + label + body + hint + button + bar).
+-- Resizes the frame to its content (header, label, body, hint, button, bar).
 function CM.FitReminderHeight(rf)
     local bodyH = rf.body:GetStringHeight()
     local hintH = rf.hint:GetStringHeight()
@@ -45,7 +45,7 @@ function CM.FitReminderHeight(rf)
     rf:SetHeight(math.max(130, 12 + 28 + 10 + 18 + 10 + math.max(bodyH, 16) + extra + 14 + 22 + 8 + 14))
 end
 
--- Fills label, body and setup-hint lines.
+-- Fills the label, body and setup-hint lines.
 function CM.FillReminder(rf, bodyParts, unconfigured)
     rf.label:SetText(CM.L["REMINDER_MISSING"])
     rf.body:SetText(table.concat(bodyParts, "  ·  "))
@@ -73,7 +73,6 @@ function CM.GetReminderFrame()
     end)
     f:Hide()
     tinsert(UISpecialFrames, "CMReminderFrame")
-    -- Backdrop: ElvUI handles its own, default UI gets Blizzard style
     if S and S.HandleFrame then
         S:HandleFrame(f)
     else
@@ -86,25 +85,21 @@ function CM.GetReminderFrame()
         f:SetBackdropColor(0.05, 0.05, 0.05, 0.95)
         f:SetBackdropBorderColor(0.4, 0.4, 0.4, 1)
     end
-    -- Header
     f.header = f:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
     f.header:SetPoint("TOPLEFT", 14, -12)
     f.header:SetText(CM.TITLE)
     f.header:SetShadowOffset(1, -1)
     f.header:SetShadowColor(0, 0, 0, 1)
-    -- Separator
     f.sep = f:CreateTexture(nil, "ARTWORK")
     f.sep:SetHeight(1)
     f.sep:SetPoint("TOPLEFT",  f, "TOPLEFT",  10, -38)
     f.sep:SetPoint("TOPRIGHT", f, "TOPRIGHT", -10, -38)
     f.sep:SetColorTexture(0.3, 0.3, 0.3, 0.8)
-    -- Label
     f.label = f:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     f.label:SetPoint("TOPLEFT", 14, -48)
     f.label:SetTextColor(0.9, 0.9, 0.9)
     f.label:SetShadowOffset(1, -1)
     f.label:SetShadowColor(0, 0, 0, 1)
-    -- Body
     f.body = f:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
     f.body:SetPoint("TOPLEFT",  14, -66)
     f.body:SetPoint("TOPRIGHT", -14, -66)
@@ -112,13 +107,13 @@ function CM.GetReminderFrame()
     f.body:SetWordWrap(true)
     f.body:SetShadowOffset(1, -1)
     f.body:SetShadowColor(0, 0, 0, 1)
-    -- Setup hint line (shown when unconfigured tabs exist)
+    -- hint line, shown while unconfigured tabs exist
     f.hint = f:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
     f.hint:SetPoint("TOPLEFT",  f.body, "BOTTOMLEFT",  0, -6)
     f.hint:SetPoint("TOPRIGHT", f.body, "BOTTOMRIGHT", 0, -6)
     f.hint:SetJustifyH("LEFT")
     f.hint:SetWordWrap(true)
-    -- Okay button — skin first so OnClick is never overridden by ElvUI
+    -- skin before setting OnClick, so ElvUI can't override it
     f.okBtn = CreateFrame("Button", "CMReminderOkay", f, "UIPanelButtonTemplate")
     f.okBtn:SetSize(80, 22)
     f.okBtn:SetPoint("BOTTOMRIGHT", f, "BOTTOMRIGHT", -8, 18)
@@ -128,7 +123,7 @@ function CM.GetReminderFrame()
         StopTimer()
         f:Hide()
     end)
-    -- Countdown bar (gold, BigWigs style)
+    -- countdown bar
     local bar = CreateFrame("StatusBar", "CMReminderBar", f)
     bar:SetPoint("BOTTOMLEFT",  f, "BOTTOMLEFT",  8, 6)
     bar:SetPoint("BOTTOMRIGHT", f, "BOTTOMRIGHT", -8, 6)
@@ -148,7 +143,6 @@ function CM.GetReminderFrame()
     end
     f.bar = bar
     f:SetScript("OnShow", function(self)
-        -- Restore saved position
         if CM.charDb and CM.charDb.reminderPos then
             local p = CM.charDb.reminderPos
             self:ClearAllPoints()
@@ -163,9 +157,8 @@ function CM.GetReminderFrame()
 end
 
 -- ── Build reminder content ─────────────────────────────────────────────────────
--- Fleeting/conjured items (e.g. cauldron flasks) can't be bought/restocked, so
--- being low on one isn't actionable - skip them when picking the top-priority
--- item, unless a tab tracks nothing else. (CM.IsConjured lives in Restock.lua.)
+-- Fleeting/conjured items (e.g. cauldron flasks) can't be restocked, so a low count
+-- on one isn't actionable: skip them unless the tab has nothing else.
 local function AuctionableOnly(items)
     local filtered = {}
     for _, item in ipairs(items) do
@@ -174,14 +167,14 @@ local function AuctionableOnly(items)
     return #filtered > 0 and filtered or items
 end
 
--- Returns top-priority item count for a tab (first item in bags, priority order)
+-- Count of the tab's top-priority item that is in the bags.
 local function GetTopCount(items)
     local id = CM.GetFirstInBags(AuctionableOnly(items))
     return id and C_Item.GetItemCount(id) or 0
 end
 
--- Colored label for one tab: red = none in bags, orange = at/below the minimum,
--- green = fine. Second return value is true for red/orange.
+-- Colored tab label: red = none, orange = at/below the minimum, green = fine.
+-- The second return value is true for red/orange.
 local function StatusPart(tabName, topCount, minCount)
     if topCount == 0 then
         return "|cffFF4444" .. tabName .. "|r", true
@@ -228,6 +221,7 @@ function CM.CheckMissingConsumables()
 end
 
 -- ── Live update on bag change ──────────────────────────────────────────────────
+-- Refreshes an open reminder; hides it once nothing is missing.
 function CM.UpdateReminderFrame()
     local rf = CM.reminderFrame
     if not rf or not rf:IsShown() then return end
@@ -243,8 +237,7 @@ function CM.UpdateReminderFrame()
 end
 
 -- ── Post-Instance Reminder ─────────────────────────────────────────────────────
--- Only warns about tabs with minCount > 0 that are at/below threshold.
--- Tabs with minCount = 0 are considered "disabled" for this trigger.
+-- Only tabs with minCount > 0 count here (0 = off for this trigger).
 function CM.CheckMissingConsumablesPostInstance()
     if not CM.db or not CM.db.showReminder then return end
     if not CM.IsMaxLevel() then return end

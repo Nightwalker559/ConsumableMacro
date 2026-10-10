@@ -1,15 +1,13 @@
 -- ConsumableMacro Weapon Enhancement
--- Whetstones, Weightstones and Weapon Oils share one priority list. The macro
--- picks the right item by matching its weapon-type restriction (edged/blunt/
--- any) against the equipped weapon, and only ever targets ONE hand per click,
--- since applying the same item to both hands in a single macro press doesn't
--- work reliably. A hand without an enchant comes first; once every weapon is
--- covered, the hand with the least time left is refreshed.
+-- Whetstones, Weightstones and oils share one priority list. The macro matches an
+-- item's weapon-type restriction (edged/blunt/any) against the equipped weapon and
+-- targets ONE hand per press (both hands in one press doesn't work reliably): a
+-- bare hand first, then the hand with the least time left.
 local CM = ConsumableMacroAddon
 
 local MAINHAND, OFFHAND = 16, 17
 
--- classID 2 (Weapon) subclassIDs, grouped by what Whetstone/Weightstone accept.
+-- Weapon (class 2) subclassIDs, grouped by what Whetstone/Weightstone accept.
 local EDGED_SUBCLASS = { [0] = true, [1] = true, [6] = true, [7] = true, [8] = true, [13] = true, [15] = true }
 local BLUNT_SUBCLASS = { [4] = true, [5] = true, [10] = true }
 
@@ -24,9 +22,8 @@ local function GetEquippedWeaponType(slot)
     return "other"
 end
 
--- First item in the priority list that's in the bags and usable on weaponType.
--- Known Whetstone/Weightstone IDs are listed in CM.WEAPONENHANCE_IDS (Items.lua);
--- anything else (oils, and any not-yet-listed item) is usable on any weapon.
+-- First item in the list that's in the bags and usable on weaponType. Items not in
+-- CM.WEAPONENHANCE_IDS count as usable on any weapon.
 local function GetBestItemFor(items, weaponType)
     for _, item in ipairs(items) do
         if CM.IsInBags(item.id) then
@@ -37,14 +34,11 @@ local function GetBestItemFor(items, weaponType)
     return nil
 end
 
--- Which hand the next press should target, and the item to use on it:
--- slot, itemID (nil, nil if no hand has a weapon an item from the list fits).
--- Hands without an enchant come first (mainhand, then offhand), then enchanted
--- ones by least time left. A hand no item fits is skipped.
+-- Hand the next press should target and the item for it: slot, itemID (nil, nil if
+-- no hand has a weapon an item fits). Bare hands first (mainhand, then offhand),
+-- then by least time left.
 function CM.GetWeaponEnhanceTarget(items)
-    -- GetWeaponEnchantInfo(): hasMainHandEnchant, mainHandExpiration (ms),
-    -- mainHandCharges, mainHandEnchantID, hasOffHandEnchant, offHandExpiration,
-    -- ... (5th value, not 4th - mainHandEnchantID sits in between).
+    -- returns: hasMain, mainExpiration (ms), mainCharges, mainEnchantID, hasOff, offExpiration, ...
     local hasMain, mainExp, _, _, hasOff, offExp = _G.GetWeaponEnchantInfo()
 
     local order
@@ -69,24 +63,20 @@ end
 function CM.BuildWeaponEnhanceMacroBody(items)
     local slot, itemID = CM.GetWeaponEnhanceTarget(items)
 
-    -- Always show an item on the button, even when there's nothing to apply
-    -- this cycle (see CM.GetShowtooltipLine).
     local lines = { CM.GetShowtooltipLine(items, itemID) }
 
     if itemID then
         tinsert(lines, "/use item:" .. itemID)
         tinsert(lines, "/use " .. slot)
-        -- confirms the "replace enchant?" popup (community-verified macro pattern)
-        tinsert(lines, "/click StaticPopup1Button1")
+        tinsert(lines, "/click StaticPopup1Button1")  -- confirms "replace enchant?"
     end
 
     return CM.TrimMacroLines(lines)
 end
 
--- ── Keep the macro in sync when a buff expires or a weapon is swapped ──────────
--- Neither fires a bag event, so this tab also rebuilds on a timer and on
--- equipment changes, in addition to the normal bag-update trigger that already
--- covers "just applied it" (the item leaving the bag).
+-- ── Keep the macro in sync ─────────────────────────────────────────────────────
+-- An expiring buff or a weapon swap fires no bag event, so this tab also rebuilds
+-- on a timer and on equipment changes.
 local lastMain, lastOff, lastSlot
 
 local function CheckEnchantState()

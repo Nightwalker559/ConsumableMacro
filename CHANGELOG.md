@@ -4,14 +4,15 @@ All notable changes to this project are documented here.
 
 ---
 
-## [Unreleased]
+## [2.0.6] – October 2026
 
 ### Changed
 - AutoPotion: removed the passive Healing Elixir talent from the spell list (it can't be cast).
-- Internal: item detection uses Blizzard's item class names instead of bare numbers (no behavior change).
+- Internal: release check - item detection uses Blizzard's item class names, shared window list, fewer and shorter comments, dead and duplicate code removed. No behavior change.
 
 ### Fixed
 - AutoPotion: talent-granted self-heal spells are now recognized reliably.
+- AutoPotion: "Sync" no longer reads the global cooldown (1.5 s) as the spell's cooldown.
 
 ---
 

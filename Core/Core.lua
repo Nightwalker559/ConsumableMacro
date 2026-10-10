@@ -60,8 +60,8 @@ function CM.ShowError(msg)
     _G.UIErrorsFrame:AddMessage("|cffFF0000" .. msg .. "|r", 1.0, 0.1, 0.1, 1.0)
 end
 
--- Runs fn once after `delay` seconds. Further calls with the same key are
--- dropped until it has run (coalesces bursts of events into one update).
+-- Runs fn after `delay` seconds (default 0.1); calls with the same key are
+-- dropped until it has run, which coalesces event bursts into one update.
 local deferred = {}
 function CM.Defer(key, fn, delay)
     if deferred[key] then return end
@@ -82,8 +82,7 @@ function CM.GetItemDisplayName(itemID)
     return name
 end
 
--- Plain-text, case-insensitive match of an already lowercased name against a
--- locale pattern list.
+-- True if the (already lowercased) name contains any pattern of the list, as plain text.
 function CM.MatchesAny(lowerName, patterns)
     for _, p in ipairs(patterns or {}) do
         if lowerName:find(p:lower(), 1, true) then return true end
@@ -91,9 +90,8 @@ function CM.MatchesAny(lowerName, patterns)
     return false
 end
 
--- Like MatchesAny, but a pattern only counts at the END of a word: "tea" hits
--- "iced tea" / "frühlingstee"-style compounds, not "steak" or "steamed fish".
--- Meant for short patterns that are common letter runs inside other words.
+-- Like MatchesAny, but a pattern only counts at the end of a word ("tea" hits
+-- "iced tea", not "steak"). For short patterns that sit inside other words.
 function CM.MatchesWordEnd(lowerName, patterns)
     for _, p in ipairs(patterns or {}) do
         local escaped = (p:lower():gsub("%p", "%%%0"))
@@ -164,11 +162,11 @@ function CM.HideFrames(keys)
     end
 end
 
--- Windows that open to the right of Options and would overlap each other.
--- Opening one closes the others; closing Options closes all of them.
+-- Windows that open next to Options and would overlap: opening one closes the
+-- others, closing Options closes all of them.
 local SIDE_PANELS = { "ieFrame", "resetFrame", "autoPotionFrame", "restockConfigFrame", "profileFrame" }
 
--- Hides all side panels except the keys passed in (e.g. the one about to open).
+-- Hides all side panels except the given keys (e.g. the one about to open).
 function CM.HideSidePanels(...)
     local keep = {}
     for _, key in ipairs({ ... }) do keep[key] = true end
@@ -178,8 +176,7 @@ function CM.HideSidePanels(...)
     end
 end
 
--- Movable addon window: Blizzard frame, shared strata, closes on Escape, hidden.
--- The caller sets size, anchor and title.
+-- Movable, hidden window that closes on Escape. The caller sets size, anchor and title.
 function CM.CreateWindow(name)
     local f = CreateFrame("Frame", name, UIParent, "BasicFrameTemplateWithInset")
     f:SetMovable(true)
@@ -193,8 +190,7 @@ function CM.CreateWindow(name)
     return f
 end
 
--- Numeric edit box that commits via onSave(box) whenever it loses focus.
--- Enter and Escape just drop the focus (which triggers the save).
+-- Numeric edit box that calls onSave(box) when it loses focus (Enter/Escape drop the focus).
 function CM.BindNumberBox(box, onSave)
     box:SetAutoFocus(false)
     box:SetNumeric(true)
@@ -203,17 +199,14 @@ function CM.BindNumberBox(box, onSave)
     box:SetScript("OnEditFocusLost", onSave)
 end
 
--- Reminder should only bother max-level characters (consumables are
--- irrelevant while leveling).
+-- The reminder only bothers max-level characters.
 function CM.IsMaxLevel()
     local maxLevel = _G.GetMaxPlayerLevel and _G.GetMaxPlayerLevel() or 80
     return _G.UnitLevel("player") >= maxLevel
 end
 
 -- ── Macro Generation ───────────────────────────────────────────────────────────
--- Shared by Core.lua, AutoPotion.lua and WeaponEnhance.lua: trims a list of macro
--- lines to fit the 254-char macro body limit (255 incl. null terminator) and
--- joins them.
+-- Joins macro lines, dropping the ones that no longer fit the 254-char body limit.
 function CM.TrimMacroLines(lines)
     local finalLines, currentLength = {}, 0
     for _, line in ipairs(lines) do

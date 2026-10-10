@@ -3,8 +3,8 @@
 local CM = ConsumableMacroAddon
 
 -- ── ElvUI Skin ─────────────────────────────────────────────────────────────────
--- Skins every addon frame that exists so far. Missing frames/handlers are
--- skipped, so it is safe to call at any time (e.g. after a frame was created).
+-- Skins every addon frame that exists so far; missing frames/handlers are skipped,
+-- so it is safe to call at any time.
 function CM.ApplyElvUISkin()
     local mf = CM.mainFrame
     if not mf then return end
@@ -20,7 +20,7 @@ function CM.ApplyElvUISkin()
         local sb = _G[name]
         if sb and S.HandleScrollBar then S:HandleScrollBar(sb) end
     end
-    -- checkbox + button + tab pairs shared by the IE and Reset frames
+    -- shared by the IE and Reset frames
     local function dialog(f)
         if not f then return end
         frame(f)
@@ -35,7 +35,7 @@ function CM.ApplyElvUISkin()
     for _, b in pairs(mf.tabBtns) do button(b) end
     close(mf.CloseButton)
     scrollbar("CMScrollScrollBar")
-    -- Reminder frame: backdrop and okBtn are skinned at creation time in GetReminderFrame.
+    -- the reminder frame skins itself when it is created
 
     -- Options
     local o = CM.optionsFrame
@@ -48,7 +48,7 @@ function CM.ApplyElvUISkin()
         check(o.apEnableChk); check(o.apStopCastChk); edit(o.apResetBox)
         button(o.apSyncBtn); button(o.apConfigureBtn)
         button(o.rsConfigBtn)
-        -- Blizzard DropdownButton (Menu API): skin is best-effort, width kept explicit
+        -- best-effort skin for the Blizzard dropdown
         if o.profileDD and S.HandleDropDownBox then pcall(S.HandleDropDownBox, S, o.profileDD, 288) end
     end
 
@@ -81,10 +81,9 @@ function CM.ApplyElvUISkin()
 end
 
 -- ── Icon Buttons ───────────────────────────────────────────────────────────────
--- Icon-only buttons (no panel template, so no ElvUI skin is needed). The icon
--- files are white on transparent and get recoloured with `tint`; `size` is the
--- drawn size of the 64x64 file (it may exceed the 20x20 button). Disabling the
--- button greys the icon out. The caller sets position and OnClick.
+-- Icon-only buttons (no ElvUI skin needed). The white icon files are tinted;
+-- `size` is the drawn size of the 64x64 file and may exceed the 20x20 button.
+-- A disabled button greys out. The caller sets position and OnClick.
 local ICON_PATH = "Interface\\AddOns\\ConsumableMacro\\Media\\"
 local GOLD, RED = { 1, 0.82, 0 }, { 0.9, 0.15, 0.15 }
 local ICON_KINDS = {
@@ -206,22 +205,18 @@ function CM.RefreshList()
 end
 
 -- ── BuildUI ────────────────────────────────────────────────────────────────────
--- Windows opened from the main window. They close together with it.
-local SUB_FRAMES = { "optionsFrame", "ieFrame", "resetFrame", "autoPotionFrame", "restockConfigFrame", "profileFrame" }
-
+-- Options and the windows next to it close together with the main window.
 function CM.HideSubFrames()
-    CM.HideFrames(SUB_FRAMES)
+    CM.HideFrames({ "optionsFrame" })
+    CM.HideSidePanels()
 end
 
 function CM.BuildUI()
     if CM.mainFrame then return end
-    -- Tab-button layout (margin/width/gap) drives the window width, so adding
-    -- a tab to CM.TABS can never make the strip overflow the frame again.
+    -- The tab buttons set the window width, so a new tab in CM.TABS can't overflow
+    -- the strip; the content and drop zone widths follow from it.
     local TAB_MARGIN, TAB_WIDTH, TAB_GAP = 10, 116, 4
     local windowWidth = TAB_MARGIN * 2 + (#CM.TABS - 1) * (TAB_WIDTH + TAB_GAP) + TAB_WIDTH
-    -- Both derived from windowWidth so the whole frame scales together:
-    -- content matches the scroll viewport (window margins + scrollbar inset);
-    -- the drop-zone box keeps the same right margin the item-ID row has.
     local CONTENT_WIDTH  = windowWidth - 50
     local DROPZONE_WIDTH = windowWidth - 130
 
@@ -231,7 +226,6 @@ function CM.BuildUI()
     f.TitleText:SetText(CM.TITLE)
     CM.mainFrame = f
 
-    -- Tab buttons
     f.tabBtns = {}
     for i, t in ipairs(CM.TABS) do
         local btn = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
@@ -243,7 +237,6 @@ function CM.BuildUI()
         f.tabBtns[t.key] = btn
     end
 
-    -- Info labels
     f.infoLabel  = f:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     f.infoLabel:SetPoint("TOPLEFT", 15, -70)
     f.countLabel = f:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
@@ -253,7 +246,6 @@ function CM.BuildUI()
     f.subLabel:SetPoint("TOPLEFT", f.infoLabel, "BOTTOMLEFT", 0, -2)
     f.subLabel:SetTextColor(0.6, 0.6, 0.6)
 
-    -- Scroll area
     local scrollBg = CreateFrame("Frame", nil, f, "InsetFrameTemplate")
     scrollBg:SetPoint("TOPLEFT",  10, -110)
     scrollBg:SetPoint("TOPRIGHT", -10, 0)
@@ -269,7 +261,7 @@ function CM.BuildUI()
     f.content:SetWidth(CONTENT_WIDTH)
     f.content:SetHeight(1)
 
-    -- ID Input
+    -- item ID input
     f.editLabel = f:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     f.editLabel:SetPoint("TOPLEFT", scrollBg, "BOTTOMLEFT", 10, -15)
     f.editLabel:SetText(CM.L["LABEL_INPUT_PREFIX"])
@@ -299,7 +291,7 @@ function CM.BuildUI()
     f.editTip:SetPoint("LEFT", f.addBtn, "RIGHT", 10, 0)
     f.editTip:SetText(CM.L["LABEL_INPUT_TIP"])
 
-    -- Drag & Drop
+    -- drop zone for items dragged from the bags
     f.dropLabel = f:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     f.dropLabel:SetPoint("TOPLEFT", f.editLabel, "BOTTOMLEFT", 0, -20)
     f.dropLabel:SetText(CM.L["DROP_ZONE_TITLE"])
@@ -343,14 +335,13 @@ function CM.BuildUI()
     f.dropZone:SetScript("OnReceiveDrag", handleDrop)
     f.dropZone:SetScript("OnMouseDown",   handleDrop)
 
-    -- Preview text
+    -- macro preview
     f.previewText = f:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
     f.previewText:SetPoint("BOTTOMLEFT",  15, 46)
     f.previewText:SetPoint("BOTTOMRIGHT", -15, 46)
     f.previewText:SetHeight(50)
     f.previewText:SetJustifyH("LEFT")
 
-    -- Bottom bar: Options button (far right) + Update button
     f.optionsBtn = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
     f.optionsBtn:SetSize(100, 26)
     f.optionsBtn:SetText(CM.L["OPTIONS_TITLE"])
