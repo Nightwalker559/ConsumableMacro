@@ -8,6 +8,7 @@ All notable changes to this project are documented here.
 
 ### Changed
 - Windows now use the current Blizzard look (flat frame, top tabs, minimal scrollbar), also with ElvUI.
+- Options and Restock setup windows are as tall as the main window.
 
 ---
 

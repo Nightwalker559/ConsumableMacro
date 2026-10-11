@@ -15,8 +15,6 @@ local function AddSection(o, y, title, gap)
     return y - gap
 end
 
-local OPTIONS_MAX_H = 520  -- visible height of the options window; the rest scrolls
-
 -- ── Options Frame ───────────────────────────────────────────────────────────────
 function CM.BuildOptionsFrame()
     if CM.optionsFrame then return CM.optionsFrame end
@@ -242,10 +240,9 @@ function CM.BuildOptionsFrame()
     o.resetBtn:SetText(L["BTN_RESET"])
     o.resetBtn:SetScript("OnClick", function() CM.ShowResetFrame() end)
 
-    -- fit to the content, capped to the screen height; the rest scrolls
-    local contentH = -y + 24 + 16
-    c:SetHeight(contentH)
-    o:SetHeight(math.min(contentH + 34, OPTIONS_MAX_H, math.floor(_G.UIParent:GetHeight() * 0.85)))
+    -- same height as the main window; the rest scrolls
+    c:SetHeight(-y + 24 + 16)
+    o:SetHeight(CM.mainFrame:GetHeight())
 
     return o
 end

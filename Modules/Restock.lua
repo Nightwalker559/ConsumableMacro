@@ -537,7 +537,7 @@ function CM.BuildRestockConfigFrame()
     local L = CM.L
 
     local f = CM.CreateWindow("CMRestockConfigFrame")
-    f:SetSize(410, 540)
+    f:SetSize(410, CM.mainFrame:GetHeight())
     f:SetPoint("LEFT", CM.optionsFrame, "RIGHT", 8, 0)
     f.TitleText:SetText(L["RESTOCK_CONFIG_TITLE"])
     f.rows = {}
