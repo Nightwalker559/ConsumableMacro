@@ -64,18 +64,6 @@ local function DisplayName(itemID)
     return CM.RankMarkup(itemID) .. CM.GetItemDisplayName(itemID)
 end
 
-local function SkinRowWidgets(row, chk, ...)
-    local S = CM.GetElvSkins()
-    if not S then return end
-    CM.SkinCheckbox(S, chk)
-    -- remove button -> ElvUI close "X", fold icon -> ElvUI +/- (best-effort)
-    if S.HandleCloseButton then pcall(S.HandleCloseButton, S, row.delBtn) end
-    if S.HandleCollapseTexture then pcall(S.HandleCollapseTexture, S, row.toggle) end
-    for _, box in ipairs({ ... }) do
-        if box and S.HandleEditBox then S:HandleEditBox(box) end
-    end
-end
-
 -- Not buyable at the AH: conjured/fleeting items (IsConjured) and bound items
 -- (BoP, quest, account/Warband-bound; IsBoundNoAH). CM.IsAuctionable covers both.
 local conjuredCache = {}
@@ -458,7 +446,7 @@ local function GetConfigRow(f, i)
         end)
     end
 
-    SkinRowWidgets(row, row.chk, row.box, row.minBox)
+    CM.SkinRestockRow(row)
     f.rows[i] = row
     return row
 end

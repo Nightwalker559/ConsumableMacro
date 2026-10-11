@@ -10,6 +10,7 @@ All notable changes to this project are documented here.
 - Windows now use the current Blizzard look (flat frame, minimal scrollbar), also with ElvUI.
 - Main window: categories are a list on the left instead of tabs on top, so the window is narrower.
 - Options and Restock setup windows are as tall as the main window.
+- Internal: all ElvUI skinning moved into its own file (UI/ElvUISkin.lua).
 
 ---
 

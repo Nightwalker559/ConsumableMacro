@@ -100,16 +100,6 @@ function CM.MatchesWordEnd(lowerName, patterns)
     return false
 end
 
--- ElvUI Skins module, or nil if ElvUI isn't loaded.
-function CM.GetElvSkins()
-    local E = _G.ElvUI and _G.ElvUI[1]
-    return E and E:GetModule("Skins", true) or nil
-end
-
-function CM.SkinCheckbox(S, cb)
-    if S and cb and S.HandleCheckBox then S:HandleCheckBox(cb) end
-end
-
 -- Checkbox with a text label to its right, anchored at (x, y) from the top left.
 function CM.CreateCheckbox(parent, label, x, y)
     local chk = CreateFrame("CheckButton", nil, parent, "UICheckButtonTemplate")

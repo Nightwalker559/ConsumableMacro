@@ -22,7 +22,8 @@ Modules\AutoPotion.lua
 Modules\Restock.lua
 Modules\WeaponEnhance.lua
 
-# UI and options
+# UI, options and ElvUI skin
+UI\ElvUISkin.lua
 UI\UI.lua
 UI\Options.lua
 
