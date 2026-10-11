@@ -7,7 +7,8 @@ All notable changes to this project are documented here.
 ## [2.0.7] – October 2026
 
 ### Changed
-- Windows now use the current Blizzard look (flat frame, top tabs, minimal scrollbar), also with ElvUI.
+- Windows now use the current Blizzard look (flat frame, minimal scrollbar), also with ElvUI.
+- Main window: categories are a list on the left instead of tabs on top, so the window is narrower.
 - Options and Restock setup windows are as tall as the main window.
 
 ---

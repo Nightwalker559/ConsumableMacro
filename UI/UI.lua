@@ -16,7 +16,6 @@ function CM.ApplyElvUISkin()
     local function edit(e)   if e and S.HandleEditBox     then S:HandleEditBox(e)     end end
     local function close(b)  if b and S.HandleCloseButton then S:HandleCloseButton(b) end end
     local function check(c)  CM.SkinCheckbox(S, c) end
-    local function tab(b)    if b and S.HandleTab         then S:HandleTab(b)         end end
     local function scrollbar(scroll)  -- the minimal scrollbar of CM.CreateScrollFrame
         local sb = scroll and scroll.ScrollBar
         if sb and S.HandleTrimScrollBar then S:HandleTrimScrollBar(sb) end
@@ -33,7 +32,11 @@ function CM.ApplyElvUISkin()
     frame(mf); frame(mf.scrollBg)
     edit(mf.editBox); edit(mf.dropSkin)
     button(mf.addBtn); button(mf.updateBtn); button(mf.optionsBtn)
-    for _, b in pairs(mf.tabBtns) do tab(b) end
+    frame(mf.sideBar)
+    -- flat selection tint in ElvUI's accent colour instead of Blizzard's list atlases
+    local E = _G.ElvUI[1]
+    CM.flatTabColor = E.media and E.media.rgbvaluecolor or { 1, 0.82, 0 }
+    for _, b in pairs(mf.tabBtns) do CM.SetSideTabSelected(b, b.selected) end
     close(mf.CloseButton)
     scrollbar(mf.scroll)
     -- the reminder frame skins itself when it is created
@@ -117,6 +120,63 @@ function CM.CreateIconButton(parent, kind)
     return b
 end
 
+-- ── Side Tabs ──────────────────────────────────────────────────────────────────
+-- Category list entry in the style of the Blizzard settings list: a bar in the
+-- category colour, the label, and a highlight on the selected / hovered entry.
+CM.SIDE_TAB_HEIGHT = 26
+
+-- Selection fill: Blizzard's list atlases, or a flat tint once ElvUI skinned the window.
+local function StyleSideTabFill(btn, atlas)
+    local flat = CM.flatTabColor
+    if flat then
+        btn.fill:SetColorTexture(flat[1], flat[2], flat[3], atlas == "Options_List_Active" and 0.3 or 0.15)
+    else
+        btn.fill:SetAtlas(atlas)
+    end
+end
+
+function CM.CreateSideTab(parent, tabInfo)
+    local btn = CreateFrame("Button", nil, parent)
+    btn:SetHeight(CM.SIDE_TAB_HEIGHT)
+
+    btn.fill = btn:CreateTexture(nil, "BACKGROUND")
+    btn.fill:SetAllPoints()
+    btn.fill:Hide()
+
+    btn.bar = btn:CreateTexture(nil, "ARTWORK")
+    btn.bar:SetSize(3, 16)
+    btn.bar:SetPoint("LEFT", 5, 0)
+    btn.bar:SetColorTexture(unpack(tabInfo.color))
+
+    btn.Text = btn:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    btn.Text:SetPoint("LEFT", 14, 0)
+    btn.Text:SetPoint("RIGHT", -4, 0)
+    btn.Text:SetJustifyH("LEFT")
+    btn.Text:SetWordWrap(false)
+    btn.Text:SetText(CM.L[tabInfo.tabL] or tabInfo.key)
+
+    btn:SetScript("OnEnter", function(self)
+        if self.selected then return end
+        StyleSideTabFill(self, "Options_List_Hover")
+        self.fill:Show()
+    end)
+    btn:SetScript("OnLeave", function(self)
+        if not self.selected then self.fill:Hide() end
+    end)
+    return btn
+end
+
+function CM.SetSideTabSelected(btn, selected)
+    btn.selected = selected
+    btn.Text:SetFontObject(selected and "GameFontHighlight" or "GameFontNormal")
+    if selected then
+        StyleSideTabFill(btn, "Options_List_Active")
+        btn.fill:Show()
+    else
+        btn.fill:Hide()
+    end
+end
+
 -- ── RefreshList ────────────────────────────────────────────────────────────────
 -- One list row: icon, name, in-bags status and the up / down / delete buttons.
 local function CreateRow(i)
@@ -138,7 +198,11 @@ local function CreateRow(i)
     row.text:SetPoint("LEFT", row.icon, "RIGHT", 8, 0)
 
     row.status = row:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-    row.status:SetPoint("RIGHT", -100, 0)
+    row.status:SetPoint("RIGHT", -80, 0)
+    row.status:SetJustifyH("RIGHT")
+    row.text:SetPoint("RIGHT", row.status, "LEFT", -6, 0)  -- long names clip instead of overlapping
+    row.text:SetJustifyH("LEFT")
+    row.text:SetWordWrap(false)
 
     local function rowButton(kind, anchor, relPoint, x)
         local b = CM.CreateIconButton(row, kind)
@@ -163,11 +227,10 @@ function CM.RefreshList()
     for _, row in ipairs(CM.rowPool) do row:Hide() end
 
     local currentTabInfo = nil
-    for i, t in ipairs(CM.TABS) do
-        if t.key == CM.activeTab then
-            currentTabInfo = t
-            PanelTemplates_SetTab(f, i)
-        end
+    for _, t in ipairs(CM.TABS) do
+        local selected = t.key == CM.activeTab
+        if selected then currentTabInfo = t end
+        CM.SetSideTabSelected(f.tabBtns[t.key], selected)
     end
 
     if currentTabInfo then
@@ -214,12 +277,12 @@ end
 
 function CM.BuildUI()
     if CM.mainFrame then return end
-    -- The tab buttons set the window width, so a new tab in CM.TABS can't overflow
-    -- the strip; the content and drop zone widths follow from it.
-    local TAB_MARGIN, TAB_WIDTH, TAB_GAP = 10, 116, 3  -- gap = PanelTemplates_AnchorTabs spacing
-    local windowWidth = TAB_MARGIN * 2 + (#CM.TABS - 1) * (TAB_WIDTH + TAB_GAP) + TAB_WIDTH
-    local CONTENT_WIDTH  = windowWidth - 50
-    local DROPZONE_WIDTH = windowWidth - 130
+    -- Category list on the left, the item list and inputs in the area to its right.
+    local MARGIN, SIDEBAR_WIDTH, AREA_WIDTH = 10, 140, 500
+    local AREA_LEFT = MARGIN + SIDEBAR_WIDTH + 8
+    local windowWidth    = AREA_LEFT + AREA_WIDTH + MARGIN
+    local CONTENT_WIDTH  = AREA_WIDTH - 30
+    local DROPZONE_WIDTH = AREA_WIDTH - 110
 
     local f = CM.CreateWindow("ConsumableMacroFrame")
     f:SetSize(windowWidth, 485)
@@ -227,22 +290,23 @@ function CM.BuildUI()
     f.TitleText:SetText(CM.TITLE)
     CM.mainFrame = f
 
-    -- Blizzard top tabs (like the macro window): PanelTemplates handles the selected
-    -- look; a fixed tab width keeps the window width calculation above exact.
-    f.minTabWidth, f.maxTabWidth = TAB_WIDTH, TAB_WIDTH
+    local sideBar = CreateFrame("Frame", nil, f, "InsetFrameTemplate")
+    sideBar:SetPoint("TOPLEFT",    MARGIN, -30)
+    sideBar:SetPoint("BOTTOMLEFT", MARGIN, 12)
+    sideBar:SetWidth(SIDEBAR_WIDTH)
+    f.sideBar = sideBar
+
     f.tabBtns = {}
     for i, t in ipairs(CM.TABS) do
-        local btn = CreateFrame("Button", nil, f, "PanelTopTabButtonTemplate")
-        btn:SetID(i)
-        btn:SetText(CM.L[t.tabL] or t.key)
-        if i == 1 then btn:SetPoint("TOPLEFT", TAB_MARGIN, -28) end
+        local btn = CM.CreateSideTab(sideBar, t)
+        btn:SetPoint("TOPLEFT",  sideBar, "TOPLEFT",  4, -6 - (i - 1) * (CM.SIDE_TAB_HEIGHT + 2))
+        btn:SetPoint("TOPRIGHT", sideBar, "TOPRIGHT", -4, -6 - (i - 1) * (CM.SIDE_TAB_HEIGHT + 2))
         btn:SetScript("OnClick", function() CM.activeTab = t.key; CM.RefreshList() end)
         f.tabBtns[t.key] = btn
     end
-    PanelTemplates_SetNumTabs(f, #CM.TABS)  -- anchors tab 2..n behind the previous one
 
     f.infoLabel  = f:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    f.infoLabel:SetPoint("TOPLEFT", 15, -70)
+    f.infoLabel:SetPoint("TOPLEFT", AREA_LEFT + 5, -36)
     f.countLabel = f:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
     f.countLabel:SetPoint("LEFT", f.infoLabel, "RIGHT", 5, 0)
     f.countLabel:SetTextColor(0.5, 0.5, 0.5)
@@ -251,9 +315,8 @@ function CM.BuildUI()
     f.subLabel:SetTextColor(0.6, 0.6, 0.6)
 
     local scrollBg = CreateFrame("Frame", nil, f, "InsetFrameTemplate")
-    scrollBg:SetPoint("TOPLEFT",  10, -110)
-    scrollBg:SetPoint("TOPRIGHT", -10, 0)
-    scrollBg:SetHeight(190)
+    scrollBg:SetPoint("TOPLEFT", AREA_LEFT, -76)
+    scrollBg:SetSize(AREA_WIDTH, 220)
     f.scrollBg = scrollBg
 
     local scroll = CM.CreateScrollFrame(scrollBg)
@@ -294,6 +357,7 @@ function CM.BuildUI()
 
     f.editTip = f:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
     f.editTip:SetPoint("LEFT", f.addBtn, "RIGHT", 10, 0)
+    f.editTip:SetJustifyH("LEFT")
     f.editTip:SetText(CM.L["LABEL_INPUT_TIP"])
 
     -- drop zone for items dragged from the bags
@@ -342,7 +406,7 @@ function CM.BuildUI()
 
     -- macro preview
     f.previewText = f:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-    f.previewText:SetPoint("BOTTOMLEFT",  15, 46)
+    f.previewText:SetPoint("BOTTOMLEFT",  AREA_LEFT + 5, 46)
     f.previewText:SetPoint("BOTTOMRIGHT", -15, 46)
     f.previewText:SetHeight(50)
     f.previewText:SetJustifyH("LEFT")
