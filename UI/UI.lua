@@ -279,7 +279,16 @@ end
 function CM.BuildUI()
     if CM.mainFrame then return end
     -- Category list on the left, the item list and inputs in the area to its right.
-    local MARGIN, SIDEBAR_WIDTH, AREA_WIDTH = 10, 140, 500
+    local MARGIN, AREA_WIDTH = 10, 500
+    -- Wide enough for the longest label in the current font (ElvUI's is wider than
+    -- Blizzard's): label offsets 14 + 4, button insets 2 x 4, a little air.
+    local SIDEBAR_WIDTH = 140
+    local measure = UIParent:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    for _, t in ipairs(CM.TABS) do
+        measure:SetText(CM.L[t.tabL] or t.key)
+        SIDEBAR_WIDTH = math.max(SIDEBAR_WIDTH, math.ceil(measure:GetStringWidth()) + 14 + 4 + 8 + 6)
+    end
+    measure:Hide()
     local AREA_LEFT = MARGIN + SIDEBAR_WIDTH + 8
     local windowWidth    = AREA_LEFT + AREA_WIDTH + MARGIN
     local DROPZONE_WIDTH = AREA_WIDTH - 110
