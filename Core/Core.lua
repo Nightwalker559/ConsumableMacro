@@ -173,9 +173,26 @@ function CM.HideSidePanels(...)
     end
 end
 
+-- Current Blizzard window frame (the one Settings and Click Bindings use): flat
+-- nine-slice border, no portrait, plus a close button. f.TitleText is the title.
+function CM.CreatePanel(name)
+    local f = CreateFrame("Frame", name, UIParent, "DefaultPanelTemplate")
+    f.CloseButton = CreateFrame("Button", nil, f, "UIPanelCloseButtonDefaultAnchors")
+    f.TitleText   = f.TitleContainer.TitleText
+    return f
+end
+
+-- Scroll frame with the current minimal scrollbar (hidden while nothing scrolls),
+-- reachable as scroll.ScrollBar. The caller sets anchors and the scroll child.
+function CM.CreateScrollFrame(parent)
+    local scroll = CreateFrame("ScrollFrame", nil, parent, "ScrollFrameTemplate")
+    scroll.ScrollBar:SetHideIfUnscrollable(true)
+    return scroll
+end
+
 -- Movable, hidden window that closes on Escape. The caller sets size, anchor and title.
 function CM.CreateWindow(name)
-    local f = CreateFrame("Frame", name, UIParent, "BasicFrameTemplateWithInset")
+    local f = CM.CreatePanel(name)
     f:SetMovable(true)
     f:EnableMouse(true)
     f:RegisterForDrag("LeftButton")

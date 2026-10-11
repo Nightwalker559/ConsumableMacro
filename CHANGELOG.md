@@ -4,6 +4,13 @@ All notable changes to this project are documented here.
 
 ---
 
+## [2.0.7] – October 2026
+
+### Changed
+- Windows now use the current Blizzard look (flat frame, top tabs, minimal scrollbar), also with ElvUI.
+
+---
+
 ## [2.0.6] – October 2026
 
 ### Changed

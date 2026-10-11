@@ -295,7 +295,7 @@ function CM.GetRestockFrame()
     if CM.restockFrame then return CM.restockFrame end
     local L = CM.L
 
-    local f = CreateFrame("Frame", "CMRestockFrame", UIParent, "BasicFrameTemplateWithInset")
+    local f = CM.CreatePanel("CMRestockFrame")
     f:SetSize(270, 100)
     AnchorPanel(f)
     f:SetFrameStrata(CM.FRAME_STRATA)
@@ -578,9 +578,10 @@ function CM.BuildRestockConfigFrame()
     f.scrollBg:SetPoint("TOPLEFT",     10, -128)
     f.scrollBg:SetPoint("BOTTOMRIGHT", -10, 44)
 
-    local scroll = CreateFrame("ScrollFrame", "CMRestockScroll", f.scrollBg, "UIPanelScrollFrameTemplate")
+    local scroll = CM.CreateScrollFrame(f.scrollBg)
     scroll:SetPoint("TOPLEFT",     4, -4)
     scroll:SetPoint("BOTTOMRIGHT", -26, 4)
+    f.scroll = scroll
     f.content = CreateFrame("Frame", nil, scroll)
     scroll:SetScrollChild(f.content)
     f.content:SetWidth(CFG_ROW_W)

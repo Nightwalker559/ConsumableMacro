@@ -16,9 +16,10 @@ function CM.ApplyElvUISkin()
     local function edit(e)   if e and S.HandleEditBox     then S:HandleEditBox(e)     end end
     local function close(b)  if b and S.HandleCloseButton then S:HandleCloseButton(b) end end
     local function check(c)  CM.SkinCheckbox(S, c) end
-    local function scrollbar(name)
-        local sb = _G[name]
-        if sb and S.HandleScrollBar then S:HandleScrollBar(sb) end
+    local function tab(b)    if b and S.HandleTab         then S:HandleTab(b)         end end
+    local function scrollbar(scroll)  -- the minimal scrollbar of CM.CreateScrollFrame
+        local sb = scroll and scroll.ScrollBar
+        if sb and S.HandleTrimScrollBar then S:HandleTrimScrollBar(sb) end
     end
     -- shared by the IE and Reset frames
     local function dialog(f)
@@ -32,9 +33,9 @@ function CM.ApplyElvUISkin()
     frame(mf); frame(mf.scrollBg)
     edit(mf.editBox); edit(mf.dropSkin)
     button(mf.addBtn); button(mf.updateBtn); button(mf.optionsBtn)
-    for _, b in pairs(mf.tabBtns) do button(b) end
+    for _, b in pairs(mf.tabBtns) do tab(b) end
     close(mf.CloseButton)
-    scrollbar("CMScrollScrollBar")
+    scrollbar(mf.scroll)
     -- the reminder frame skins itself when it is created
 
     -- Options
@@ -75,7 +76,7 @@ function CM.ApplyElvUISkin()
         frame(rc); frame(rc.scrollBg)
         check(rc.enableChk); check(rc.bankChk)
         edit(rc.addBox); button(rc.addBtn)
-        scrollbar("CMRestockScrollScrollBar")
+        scrollbar(rc.scroll)
     end
 
     -- IE selection + Reset frames
@@ -162,13 +163,10 @@ function CM.RefreshList()
     for _, row in ipairs(CM.rowPool) do row:Hide() end
 
     local currentTabInfo = nil
-    for _, t in ipairs(CM.TABS) do
-        local btn = f.tabBtns[t.key]
+    for i, t in ipairs(CM.TABS) do
         if t.key == CM.activeTab then
             currentTabInfo = t
-            if btn.Text then btn.Text:SetTextColor(1, 1, 1) end
-        else
-            if btn.Text then btn.Text:SetTextColor(0.5, 0.5, 0.5) end
+            PanelTemplates_SetTab(f, i)
         end
     end
 
@@ -218,7 +216,7 @@ function CM.BuildUI()
     if CM.mainFrame then return end
     -- The tab buttons set the window width, so a new tab in CM.TABS can't overflow
     -- the strip; the content and drop zone widths follow from it.
-    local TAB_MARGIN, TAB_WIDTH, TAB_GAP = 10, 116, 4
+    local TAB_MARGIN, TAB_WIDTH, TAB_GAP = 10, 116, 3  -- gap = PanelTemplates_AnchorTabs spacing
     local windowWidth = TAB_MARGIN * 2 + (#CM.TABS - 1) * (TAB_WIDTH + TAB_GAP) + TAB_WIDTH
     local CONTENT_WIDTH  = windowWidth - 50
     local DROPZONE_WIDTH = windowWidth - 130
@@ -229,16 +227,19 @@ function CM.BuildUI()
     f.TitleText:SetText(CM.TITLE)
     CM.mainFrame = f
 
+    -- Blizzard top tabs (like the macro window): PanelTemplates handles the selected
+    -- look; a fixed tab width keeps the window width calculation above exact.
+    f.minTabWidth, f.maxTabWidth = TAB_WIDTH, TAB_WIDTH
     f.tabBtns = {}
     for i, t in ipairs(CM.TABS) do
-        local btn = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
-        btn:SetSize(TAB_WIDTH, 26)
-        btn:SetPoint("TOPLEFT", TAB_MARGIN + (i-1)*(TAB_WIDTH + TAB_GAP), -30)
+        local btn = CreateFrame("Button", nil, f, "PanelTopTabButtonTemplate")
+        btn:SetID(i)
         btn:SetText(CM.L[t.tabL] or t.key)
-        btn.Text = btn:GetFontString()
+        if i == 1 then btn:SetPoint("TOPLEFT", TAB_MARGIN, -28) end
         btn:SetScript("OnClick", function() CM.activeTab = t.key; CM.RefreshList() end)
         f.tabBtns[t.key] = btn
     end
+    PanelTemplates_SetNumTabs(f, #CM.TABS)  -- anchors tab 2..n behind the previous one
 
     f.infoLabel  = f:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     f.infoLabel:SetPoint("TOPLEFT", 15, -70)
@@ -255,9 +256,10 @@ function CM.BuildUI()
     scrollBg:SetHeight(190)
     f.scrollBg = scrollBg
 
-    local scroll = CreateFrame("ScrollFrame", "CMScroll", scrollBg, "UIPanelScrollFrameTemplate")
+    local scroll = CM.CreateScrollFrame(scrollBg)
     scroll:SetPoint("TOPLEFT",     4, -4)
     scroll:SetPoint("BOTTOMRIGHT", -26, 4)
+    f.scroll = scroll
 
     f.content = CreateFrame("Frame", nil, scroll)
     scroll:SetScrollChild(f.content)
