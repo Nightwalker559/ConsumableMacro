@@ -321,6 +321,8 @@ function CM.BuildUI()
     f.countLabel:SetTextColor(0.5, 0.5, 0.5)
     f.subLabel   = f:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
     f.subLabel:SetPoint("TOPLEFT", f.infoLabel, "BOTTOMLEFT", 0, -2)
+    f.subLabel:SetWidth(AREA_WIDTH - 10)  -- long hints wrap to a second line
+    f.subLabel:SetJustifyH("LEFT")
     f.subLabel:SetTextColor(0.6, 0.6, 0.6)
 
     local scrollBg = CreateFrame("Frame", nil, f, "InsetFrameTemplate")
