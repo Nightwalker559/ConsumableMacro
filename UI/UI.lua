@@ -182,8 +182,9 @@ end
 local function CreateRow(i)
     local content = CM.mainFrame.content
     local row = CreateFrame("Frame", nil, content)
-    row:SetSize(content:GetWidth(), 32)
-    row:SetPoint("TOPLEFT", 5, -(i - 1) * 35)
+    row:SetHeight(32)
+    row:SetPoint("TOPLEFT",  0, -(i - 1) * 35)
+    row:SetPoint("TOPRIGHT", 0, -(i - 1) * 35)
 
     row.bg = row:CreateTexture(nil, "BACKGROUND")
     row.bg:SetAllPoints()
@@ -281,7 +282,6 @@ function CM.BuildUI()
     local MARGIN, SIDEBAR_WIDTH, AREA_WIDTH = 10, 140, 500
     local AREA_LEFT = MARGIN + SIDEBAR_WIDTH + 8
     local windowWidth    = AREA_LEFT + AREA_WIDTH + MARGIN
-    local CONTENT_WIDTH  = AREA_WIDTH - 30
     local DROPZONE_WIDTH = AREA_WIDTH - 110
 
     local f = CM.CreateWindow("ConsumableMacroFrame")
@@ -320,14 +320,11 @@ function CM.BuildUI()
     f.scrollBg = scrollBg
 
     local scroll = CM.CreateScrollFrame(scrollBg)
-    scroll:SetPoint("TOPLEFT",     4, -4)
-    scroll:SetPoint("BOTTOMRIGHT", -26, 4)
     f.scroll = scroll
 
     f.content = CreateFrame("Frame", nil, scroll)
-    scroll:SetScrollChild(f.content)
-    f.content:SetWidth(CONTENT_WIDTH)
     f.content:SetHeight(1)
+    CM.FitScrollFrame(scroll, scrollBg, f.content, 4)
 
     -- item ID input
     f.editLabel = f:CreateFontString(nil, "OVERLAY", "GameFontNormal")

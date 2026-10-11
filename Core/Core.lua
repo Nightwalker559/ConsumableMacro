@@ -190,6 +190,23 @@ function CM.CreateScrollFrame(parent)
     return scroll
 end
 
+-- Fills `parent` with the scroll frame (`inset` px from the edges) and makes
+-- `child` as wide as the scroll area. The scrollbar only takes its 26 px while it
+-- is shown, so the list reaches the edge when nothing scrolls.
+function CM.FitScrollFrame(scroll, parent, child, inset)
+    local bar = scroll.ScrollBar
+    local function fit()
+        scroll:ClearAllPoints()
+        scroll:SetPoint("TOPLEFT",     parent, "TOPLEFT",      inset,  -inset)
+        scroll:SetPoint("BOTTOMRIGHT", parent, "BOTTOMRIGHT", bar:IsShown() and -26 or -inset, inset)
+    end
+    bar:HookScript("OnShow", fit)
+    bar:HookScript("OnHide", fit)
+    scroll:HookScript("OnSizeChanged", function(_, width) child:SetWidth(width) end)
+    scroll:SetScrollChild(child)
+    fit()
+end
+
 -- Movable, hidden window that closes on Escape. The caller sets size, anchor and title.
 function CM.CreateWindow(name)
     local f = CM.CreatePanel(name)
