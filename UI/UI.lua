@@ -14,7 +14,6 @@ function CM.ApplyElvUISkin()
     local function frame(f)  if f and S.HandleFrame       then S:HandleFrame(f)       end end
     local function button(b) if b and S.HandleButton      then S:HandleButton(b)      end end
     local function edit(e)   if e and S.HandleEditBox     then S:HandleEditBox(e)     end end
-    local function close(b)  if b and S.HandleCloseButton then S:HandleCloseButton(b) end end
     local function check(c)  CM.SkinCheckbox(S, c) end
     local function scrollbar(scroll)  -- the minimal scrollbar of CM.CreateScrollFrame
         local sb = scroll and scroll.ScrollBar
@@ -28,7 +27,7 @@ function CM.ApplyElvUISkin()
         for _, chk in pairs(f.checkboxes or {}) do check(chk) end
     end
 
-    -- Main window
+    -- Main window (S:HandleFrame also skins the window's close button)
     frame(mf); frame(mf.scrollBg)
     edit(mf.editBox); edit(mf.dropSkin)
     button(mf.addBtn); button(mf.updateBtn); button(mf.optionsBtn)
@@ -37,7 +36,6 @@ function CM.ApplyElvUISkin()
     local E = _G.ElvUI[1]
     CM.flatTabColor = E.media and E.media.rgbvaluecolor or { 1, 0.82, 0 }
     for _, b in pairs(mf.tabBtns) do CM.SetSideTabSelected(b, b.selected) end
-    close(mf.CloseButton)
     scrollbar(mf.scroll)
     -- the reminder frame skins itself when it is created
 
