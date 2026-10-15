@@ -1,0 +1,15 @@
+package-as: ConsumableMacro
+
+move-folders:
+  ConsumableMacro/ConsumableMacro: ConsumableMacro
+
+ignore:
+  - .github/*
+  - .gitattributes
+  - .gitignore
+  - LICENSE.md
+  - README.md
+
+manual-changelog:
+  filename: CHANGELOG.md
+  markup-type: markdown
