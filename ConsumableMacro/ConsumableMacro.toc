@@ -3,6 +3,7 @@
 ## Notes: Automatically creates macros for the best available consumables in your bags.
 ## Author: Nightwalker559
 ## Version: 2.0.7
+## X-Curse-Project-ID: 1510966
 ## SavedVariables: ConsumableMacroDB
 ## SavedVariablesPerCharacter: ConsumableMacroCharDB
 ## IconTexture: Interface\AddOns\ConsumableMacro\Media\Icon.tga
