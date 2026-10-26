@@ -141,6 +141,10 @@ Categories with no items are omitted. Item order reflects priority (first = high
 
 See **CHANGELOG.md** for full version history.
 
+## Feedback
+
+Found a bug or have an idea? [Open an issue on GitHub](https://github.com/Nightwalker559/ConsumableMacro/issues).
+
 ## License
 
-[MIT with AI restriction](https://github.com/Nightwalker559/ConsumableMacro/blob/main/LICENSE.md) (no use for AI or machine learning), copyright Nightwalker559.
+MIT with AI restriction (no use for AI or machine learning), see [LICENSE.md](https://github.com/Nightwalker559/ConsumableMacro/blob/main/LICENSE.md).
