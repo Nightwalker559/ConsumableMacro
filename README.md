@@ -140,3 +140,7 @@ Categories with no items are omitted. Item order reflects priority (first = high
 ## Changelog
 
 See **CHANGELOG.md** for full version history.
+
+## License
+
+[MIT with AI restriction](https://github.com/Nightwalker559/ConsumableMacro/blob/main/LICENSE.md) (no use for AI or machine learning), copyright Nightwalker559.
