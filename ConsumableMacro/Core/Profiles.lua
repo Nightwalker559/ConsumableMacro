@@ -22,9 +22,13 @@ local function Trim(s)
     return (tostring(s or ""):match("^%s*(.-)%s*$"))
 end
 
--- "Name-Realm" - name of the profile a brand-new character starts with.
+-- "Name-Realm" - name of the profile a brand-new character starts with. WoW Forever
+-- has no realms: there UnitName's second value is the surname, which tells
+-- characters of the same first name apart.
 function CM.GetCharKey()
-    return (_G.UnitName("player") or "Unknown") .. "-" .. (_G.GetRealmName() or "Realm")
+    local name, second = _G.UnitName("player")
+    if not second or second == "" then second = _G.GetRealmName() end
+    return (name or "Unknown") .. "-" .. (second or "Realm")
 end
 
 -- Fills every missing field of a profile with its default.

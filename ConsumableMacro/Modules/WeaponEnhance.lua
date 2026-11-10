@@ -22,12 +22,25 @@ local function GetEquippedWeaponType(slot)
     return "other"
 end
 
--- First item in the list that's in the bags and usable on weaponType. Items not in
--- CM.WEAPONENHANCE_IDS count as usable on any weapon.
+-- "edged" | "blunt" | "any": the listed ID wins, then the name (Forever's Classic
+-- stones aren't in the ID list), else usable on any weapon (oils, poisons).
+local function GetEnhanceType(itemID)
+    local listed = CM.WEAPONENHANCE_IDS[itemID]
+    if listed then return listed end
+    local name = C_Item.GetItemNameByID(itemID)  -- nil until cached
+    name = name and name:lower()
+    if name then
+        if CM.MatchesAny(name, CM.L["PATTERN_BLUNT"]) then return "blunt" end
+        if CM.MatchesAny(name, CM.L["PATTERN_EDGED"]) then return "edged" end
+    end
+    return "any"
+end
+
+-- First item in the list that's in the bags and usable on weaponType.
 local function GetBestItemFor(items, weaponType)
     for _, item in ipairs(items) do
         if CM.IsInBags(item.id) then
-            local wtype = CM.WEAPONENHANCE_IDS[item.id] or "any"
+            local wtype = GetEnhanceType(item.id)
             if wtype == "any" or wtype == weaponType then return item.id end
         end
     end

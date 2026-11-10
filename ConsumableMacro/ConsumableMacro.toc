@@ -1,4 +1,4 @@
-## Interface: 120100, 120105
+## Interface: 120100, 120105, 16001
 ## Title: |cff00FF98Consumable|rMacro
 ## Notes: Automatically creates macros for the best available consumables in your bags.
 ## Author: Nightwalker559

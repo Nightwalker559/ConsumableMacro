@@ -45,6 +45,8 @@ L["PATTERN_FLASK"] = {"fläschchen", "phiole"}
 L["PATTERN_HEAL"] = {"heil", "belebend"}
 L["PATTERN_HEALTHSTONE"] = {"Gesundheitsstein"}
 L["PATTERN_EXCLUDE"] = {"tee", "wasser"}
+L["PATTERN_EDGED"] = {"schleifstein"}
+L["PATTERN_BLUNT"] = {"gewichtstein"}
 
 L["TAB_BUFFFOOD"] = "Bufffood"
 L["INFO_FOOD"] = "Stärkung"

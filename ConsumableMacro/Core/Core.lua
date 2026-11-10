@@ -1,5 +1,5 @@
 -- ConsumableMacro Core
--- Compatibility: WoW Midnight (12.0+) & ElvUI
+-- Compatibility: WoW Midnight (12.0+), WoW Forever (16xxx) & ElvUI
 
 -- Shared namespace — all files access state through this table
 ConsumableMacroAddon = {}

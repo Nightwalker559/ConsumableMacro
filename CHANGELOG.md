@@ -4,6 +4,17 @@ All notable changes to this project are documented here.
 
 ---
 
+## [Unreleased]
+
+### Added
+- WoW Forever support (TOC 16001).
+- Sharpening stones and weightstones outside the built-in ID list are matched to edged/blunt weapons by name.
+
+### Changed
+- Default profile name uses the surname where the client has no realms (Forever).
+
+---
+
 ## [2.0.7] – October 2026
 
 ### Changed
