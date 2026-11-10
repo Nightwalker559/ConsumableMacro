@@ -23,6 +23,7 @@ Modules\AutoPotion.lua
 Modules\Restock.lua
 Modules\WeaponEnhance.lua
 Modules\FoodDrink.lua
+Modules\MacroTooltip.lua
 
 # UI, options and ElvUI skin
 UI\ElvUISkin.lua

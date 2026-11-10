@@ -8,12 +8,13 @@ All notable changes to this project are documented here.
 
 ### Added
 - WoW Forever support (TOC 16001).
-- Forever: Food & Drink tab with two lists (Food, Drink); one macro, CM_FoodDrink, uses the first of each that is in your bags. Shift = drink only, Ctrl = food only. Its action bar tooltip lists the food and the drink with their counts (with Syndicator: the second item gets its own tooltip beside it, with Syndicator's inventory lines).
+- Forever: Food & Drink tab with two lists (Food, Drink); one macro, CM_FoodDrink, uses the first of each that is in your bags. Shift = drink only, Ctrl = food only.
 - Forever: food is sorted by its tooltip - health goes to Food, mana to Drink, both to both lists (used once in the macro).
 - Forever: Mana Pots tab (macro CM_ManaPotion); potions are sorted by their tooltip, ones that restore health and mana go to Heal Pots and Mana Pots. The login reminder includes Mana Pots for every class that has mana (hunters too), not for warrior or rogue.
 - Sharpening stones and weightstones outside the built-in ID list are matched to edged/blunt weapons by name.
 
 ### Changed
+- Forever: the action bar tooltip of every CM_ macro is an item tooltip of the item it shows (so Syndicator adds its inventory lines), followed by the other items the macro uses with their counts. /cm tipdebug shows how a button is recognised.
 - Forever: no AutoPotion (macro, options section and priority window are Retail only).
 - The login reminder is shown one frame after login instead of after one second.
 - Default profile name uses the surname where the client has no realms (Forever).
