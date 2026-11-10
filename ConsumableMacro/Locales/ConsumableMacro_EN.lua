@@ -28,6 +28,7 @@ L["DROP_ZONE_TEXT"] = "Drag item here"
 
 L["OPTIONS_TITLE"]      = "Options"
 L["OPTIONS_MIN_HEADER"] = "Minimum Count Warning"
+L["BTN_MINCOUNT_CONFIGURE"] = "Configure Minimum Counts"
 L["OPTIONS_MIN_DESC"]   = "Warn when your top-priority item is at or below this count.\nAll 0 = no post-instance reminder."
 L["OPTIONS_GENERAL"]    = "General"
 L["CHECKBOX_REMINDER"] = "Show missing reminder on login"

@@ -69,7 +69,7 @@ function CM.ApplyElvUISkin()
     if o then
         frame(o)
         check(o.autoUpdateChk); check(o.reminderChk)
-        for _, box in pairs(o.minBoxes or {}) do edit(box) end
+        button(o.minConfigBtn)
         button(o.exportBtn); button(o.importBtn); edit(o.ieBox)
         button(o.resetBtn)
         check(o.apEnableChk); check(o.apStopCastChk); edit(o.apResetBox)
@@ -80,6 +80,13 @@ function CM.ApplyElvUISkin()
             o.profileDD.cmSkinned = true
             pcall(S.HandleDropDownBox, S, o.profileDD, 288)
         end
+    end
+
+    -- Minimum count window
+    local mc = CM.minCountFrame
+    if mc then
+        frame(mc)
+        for _, box in pairs(mc.boxes) do edit(box) end
     end
 
     -- Profile name / delete dialog

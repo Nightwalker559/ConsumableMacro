@@ -60,41 +60,17 @@ function CM.BuildOptionsFrame()
     y = y - 38
 
     -- ── Min Count section ──
-    y = AddSection(c, y, L["OPTIONS_MIN_HEADER"], 8)
+    y = AddSection(c, y, L["OPTIONS_MIN_HEADER"], 10)
 
-    local desc = c:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-    desc:SetPoint("TOPLEFT", 14, y)
-    desc:SetPoint("TOPRIGHT", -14, y)
-    desc:SetText(L["OPTIONS_MIN_DESC"])
-    desc:SetTextColor(0.65, 0.65, 0.65)
-    desc:SetJustifyH("LEFT")
-    desc:SetWordWrap(true)
-    y = y - 36
-
-    o.minBoxes = {}
-    for _, t in ipairs(CM.TABS) do
-        if not CM.MINCOUNT_SKIP[t.key] then
-            local lbl = c:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-            lbl:SetPoint("TOPLEFT", 14, y)
-            lbl:SetText((L[t.tabL] or t.key) .. ":")
-            lbl:SetTextColor(unpack(t.color))
-
-            local box = CreateFrame("EditBox", nil, c, "InputBoxTemplate")
-            box:SetSize(52, 22)
-            box:SetPoint("LEFT", lbl, "LEFT", 130, 0)
-            box:SetMaxLetters(3)
-            box.tabKey = t.key
-            CM.BindNumberBox(box, function(self)
-                CM.db[self.tabKey].minCount = tonumber(self:GetText()) or 0
-            end)
-            o.minBoxes[t.key] = box
-            y = y - 30
-        end
-    end
+    o.minConfigBtn = CreateFrame("Button", nil, c, "UIPanelButtonTemplate")
+    o.minConfigBtn:SetSize(288, 24)
+    o.minConfigBtn:SetPoint("TOPLEFT", 14, y)
+    o.minConfigBtn:SetText(L["BTN_MINCOUNT_CONFIGURE"])
+    o.minConfigBtn:SetScript("OnClick", function() CM.ShowMinCountFrame() end)
+    y = y - 38
 
     -- ── AutoPotion section ──
     if CM.HAS_AUTOPOTION then
-        y = y - 10
 
         y = AddSection(c, y, L["AUTOPOTION_HEADER"], 10)
 
@@ -150,7 +126,7 @@ function CM.BuildOptionsFrame()
     end
 
     -- ── Restock section ──
-    y = y - (CM.HAS_AUTOPOTION and 38 or 10)
+    if CM.HAS_AUTOPOTION then y = y - 38 end
 
     y = AddSection(c, y, L["RESTOCK_HEADER"], 10)
 
@@ -252,13 +228,14 @@ end
 -- Saves all number boxes into the active profile. Skipped while the frame is
 -- hidden (stale boxes) unless forced (OnHide).
 function CM.CommitOptionsBoxes(force)
-    local o = CM.optionsFrame
-    if not o or not CM.db or not o.minBoxes then return end
-    if not force and not o:IsShown() then return end
-    for key, box in pairs(o.minBoxes) do
-        CM.db[key].minCount = tonumber(box:GetText()) or 0
+    if not CM.db then return end
+    local o, m = CM.optionsFrame, CM.minCountFrame
+    if m and (force or m:IsShown()) then
+        for key, box in pairs(m.boxes) do
+            CM.db[key].minCount = tonumber(box:GetText()) or 0
+        end
     end
-    if o.apResetBox then
+    if o and o.apResetBox and (force or o:IsShown()) then
         CM.db.autoPotionResetSeconds = tonumber(o.apResetBox:GetText()) or 0
     end
 end
@@ -269,9 +246,6 @@ function CM.RefreshOptionsFrame()
     if not o or not CM.db then return end
     o.autoUpdateChk:SetChecked(CM.db.autoUpdate)
     o.reminderChk:SetChecked(CM.db.showReminder)
-    for key, box in pairs(o.minBoxes) do
-        box:SetText(tostring(CM.db[key] and CM.db[key].minCount or 0))
-    end
     if CM.HAS_AUTOPOTION then
         o.apEnableChk:SetChecked(CM.db.autoPotion.enabled)
         o.apStopCastChk:SetChecked(CM.db.autoPotion.stopCasting)
@@ -296,6 +270,68 @@ local function AnchorDialog(f)
     local o = CM.optionsFrame
     f:ClearAllPoints()
     f:SetPoint("LEFT", (o and o:IsShown()) and o or CM.mainFrame, "RIGHT", 8, 0)
+end
+
+-- ── Min Count Frame ────────────────────────────────────────────────────────────
+-- One number box per tab (m.boxes[tabKey]); the reminder warns at or below the value.
+function CM.BuildMinCountFrame()
+    if CM.minCountFrame then return CM.minCountFrame end
+    local L = CM.L
+
+    local m = CM.CreateWindow("CMMinCountFrame")
+    m:SetWidth(300)
+    m.TitleText:SetText(L["OPTIONS_MIN_HEADER"])
+    m:SetScript("OnHide", function() CM.CommitOptionsBoxes(true) end)
+    AnchorDialog(m)
+
+    local desc = m:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+    desc:SetPoint("TOPLEFT", 14, -34)
+    desc:SetWidth(272)  -- wraps to up to four lines
+    desc:SetText(L["OPTIONS_MIN_DESC"])
+    desc:SetTextColor(0.65, 0.65, 0.65)
+    desc:SetJustifyH("LEFT")
+    desc:SetWordWrap(true)
+
+    local y = -34 - 56
+    m.boxes = {}
+    for _, t in ipairs(CM.TABS) do
+        if not CM.MINCOUNT_SKIP[t.key] then
+            local lbl = m:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+            lbl:SetPoint("TOPLEFT", 14, y)
+            lbl:SetText((L[t.tabL] or t.key) .. ":")
+            lbl:SetTextColor(unpack(t.color))
+
+            local box = CreateFrame("EditBox", nil, m, "InputBoxTemplate")
+            box:SetSize(52, 22)
+            box:SetPoint("LEFT", lbl, "LEFT", 130, 0)
+            box:SetMaxLetters(3)
+            box.tabKey = t.key
+            CM.BindNumberBox(box, function(self)
+                CM.db[self.tabKey].minCount = tonumber(self:GetText()) or 0
+            end)
+            m.boxes[t.key] = box
+            y = y - 30
+        end
+    end
+    m:SetHeight(-y + 12)
+
+    CM.minCountFrame = m
+    return m
+end
+
+function CM.ShowMinCountFrame()
+    local m = CM.BuildMinCountFrame()
+    if m:IsShown() then
+        m:Hide()
+        return
+    end
+    for key, box in pairs(m.boxes) do
+        box:SetText(tostring(CM.db[key] and CM.db[key].minCount or 0))
+    end
+    AnchorDialog(m)
+    CM.HideSidePanels("minCountFrame")
+    m:Show()
+    CM.ApplyElvUISkin()
 end
 
 -- ── Tab selection dialogs ─────────────────────────────────────────────────────

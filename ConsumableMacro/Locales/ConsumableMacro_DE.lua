@@ -29,6 +29,7 @@ L["DROP_ZONE_TEXT"] = "Gegenstand hierher ziehen"
 
 L["OPTIONS_TITLE"]      = "Optionen"
 L["OPTIONS_MIN_HEADER"] = "Mindestmenge Warnung"
+L["BTN_MINCOUNT_CONFIGURE"] = "Mindestmengen konfigurieren"
 L["OPTIONS_MIN_DESC"]   = "Warnen, wenn dein höchstpriorisiertes Item diese Menge erreicht oder darunter liegt.\nAlle 0 = kein Reminder nach Instanz."
 L["OPTIONS_GENERAL"]    = "Allgemein"
 L["CHECKBOX_REMINDER"] = "Fehlenden Reminder beim Login anzeigen"

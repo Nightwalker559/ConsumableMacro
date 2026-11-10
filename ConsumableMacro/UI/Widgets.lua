@@ -42,7 +42,7 @@ end
 
 -- Windows that open next to Options and would overlap: opening one closes the
 -- others, closing Options closes all of them.
-local SIDE_PANELS = { "ieFrame", "resetFrame", "autoPotionFrame", "restockConfigFrame", "profileFrame" }
+local SIDE_PANELS = { "minCountFrame", "ieFrame", "resetFrame", "autoPotionFrame", "restockConfigFrame", "profileFrame" }
 
 -- Hides all side panels except the given keys (e.g. the one about to open).
 function CM.HideSidePanels(...)
