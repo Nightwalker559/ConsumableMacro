@@ -1,11 +1,10 @@
--- ConsumableMacro Macro Tooltip (WoW Forever only for now)
+-- ConsumableMacro Macro Tooltip
 -- #showtooltip shows one item, and the action bar tooltip of a macro isn't an item
 -- tooltip, so inventory addons (Syndicator, Baganator) add nothing to it. For every
 -- CM_ macro the tooltip is set to the item the macro shows, as an item tooltip, so
 -- Syndicator decorates it like a bag item; the other items the macro uses follow as
 -- lines with their counts - only for Food & Drink, where the drink is the second item.
 local CM = ConsumableMacroAddon
-if not CM.IS_FOREVER then return end
 
 local KEY_BY_MACRO = {}
 for key, name in pairs(CM.MACRO_NAMES) do KEY_BY_MACRO[name] = key end
