@@ -29,8 +29,12 @@ end
 -- #showtooltip can only show one item, so the tooltip of the CM_FoodDrink button gets
 -- two extra lines: the food and the drink the macro uses, with their counts.
 
+-- GetActionText gives a macro's name straight from the slot; GetActionInfo + GetMacroInfo
+-- is the fallback (some clients answer the first with nothing for #showtooltip macros).
 local function MacroNameOfSlot(slot)
     if type(slot) ~= "number" then return nil end
+    local text = _G.GetActionText and _G.GetActionText(slot)
+    if type(text) == "string" and text ~= "" then return text end
     local kind, id = _G.GetActionInfo(slot)
     if kind == "macro" and id then return (_G.GetMacroInfo(id)) end
     return nil
@@ -88,9 +92,14 @@ local debugTip, lastDebug = false, nil
 local function DescribeTooltip(tooltip)
     local info, owner = tooltip.processingInfo, tooltip:GetOwner()
     local args = info and info.getterArgs
-    return ("owner=%s action=%s getter=%s arg1=%s macro=%s"):format(
+    local slot = args and args[1]
+    local kind, id = nil, nil
+    if type(slot) == "number" then kind, id = _G.GetActionInfo(slot) end
+    return ("owner=%s action=%s getter=%s arg1=%s text=%s info=%s/%s macro=%s"):format(
         tostring(owner and owner.GetName and owner:GetName()), tostring(owner and owner.action),
-        tostring(info and info.getterName), tostring(args and args[1]), tostring(GetTooltipMacroName(tooltip)))
+        tostring(info and info.getterName), tostring(slot),
+        tostring(type(slot) == "number" and _G.GetActionText and _G.GetActionText(slot)),
+        tostring(kind), tostring(id), tostring(GetTooltipMacroName(tooltip)))
 end
 
 function CM.ToggleTipDebug()
