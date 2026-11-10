@@ -3,16 +3,15 @@
 -- tooltip, so inventory addons (Syndicator, Baganator) add nothing to it. For every
 -- CM_ macro the tooltip is set to the item the macro shows, as an item tooltip, so
 -- Syndicator decorates it like a bag item; the other items the macro uses follow as
--- lines with their counts.
+-- lines with their counts - only for Food & Drink, where the drink is the second item.
 local CM = ConsumableMacroAddon
 if not CM.IS_FOREVER then return end
 
 local KEY_BY_MACRO = {}
 for key, name in pairs(CM.MACRO_NAMES) do KEY_BY_MACRO[name] = key end
 
-local CHAINED = { potion = true, healpotion = true, manapotion = true }  -- every item in the bags is a /use line
-
--- Item IDs the macro uses right now, in macro order; the first one is what #showtooltip shows.
+-- Item IDs the tooltip is about, in macro order; the first one is what #showtooltip shows.
+-- Food & Drink has two (food, drink), every other macro one.
 function CM.GetMacroItems(key)
     local db, out = CM.db, {}
     if not db then return out end
@@ -29,10 +28,6 @@ function CM.GetMacroItems(key)
     elseif key == "weaponenhance" then
         local _, id = CM.GetWeaponEnhanceTarget(db.weaponenhance.items)
         add(id)
-    elseif CHAINED[key] then
-        for _, item in ipairs(db[key].items) do
-            if CM.IsInBags(item.id) then add(item.id) end
-        end
     elseif db[key] then
         add(CM.GetFirstInBags(db[key].items))
     end

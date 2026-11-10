@@ -14,7 +14,7 @@ All notable changes to this project are documented here.
 - Sharpening stones and weightstones outside the built-in ID list are matched to edged/blunt weapons by name.
 
 ### Changed
-- Forever: the action bar tooltip of every CM_ macro is an item tooltip of the item it shows (so Syndicator adds its inventory lines), followed by the other items the macro uses with their counts. /cm tipdebug shows how a button is recognised.
+- Forever: the action bar tooltip of every CM_ macro is an item tooltip of the item it shows (so Syndicator adds its inventory lines), followed, for Food & Drink, by the drink with its count. /cm tipdebug shows how a button is recognised.
 - Forever: no AutoPotion (macro, options section and priority window are Retail only).
 - The login reminder is shown one frame after login instead of after one second.
 - Default profile name uses the surname where the client has no realms (Forever).
