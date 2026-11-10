@@ -60,40 +60,61 @@ local function GetTooltipMacroName(tooltip)
     return nil
 end
 
--- Everything Syndicator knows about the item: all characters, guild banks, warband bank
--- (the ones it shows in its own tooltips). nil without Syndicator.
-local function GetSyndicatorTotal(itemID)
-    local api = _G.Syndicator and _G.Syndicator.API
-    if not (api and api.GetInventoryInfoByItemID) then return nil end
-    if api.IsReady and not api.IsReady() then return nil end
-    local ok, info = pcall(api.GetInventoryInfoByItemID, itemID, false, false)
-    if not ok or type(info) ~= "table" then return nil end
-    local total = info.warband and info.warband[1] or 0
-    for _, c in ipairs(info.characters or {}) do
-        total = total + (c.bags or 0) + (c.bank or 0) + (c.mail or 0) + (c.equipped or 0) + (c.void or 0) + (c.auctions or 0)
-    end
-    for _, g in ipairs(info.guilds or {}) do total = total + (g.bank or 0) end
-    return total
-end
-
--- "12", or "12 (Total 18)" with Syndicator, or "12 (+5 Bank)": the bags of this character,
--- plus what Syndicator counts overall, else what only this character's bank holds.
+-- "12" or "12 (+5 Bank)": what is in the bags, plus what only the bank holds.
 local function CountText(itemID)
-    local bags  = C_Item.GetItemCount(itemID) or 0
-    local total = GetSyndicatorTotal(itemID)
-    if total then
-        if total > bags then return ("%d (%s %d)"):format(bags, CM.L["TOOLTIP_TOTAL"], total) end
-        return tostring(bags)
-    end
-    local all = C_Item.GetItemCount(itemID, true) or 0
+    local bags = C_Item.GetItemCount(itemID) or 0
+    local all  = C_Item.GetItemCount(itemID, true) or 0
     if all > bags then return ("%d (+%d %s)"):format(bags, all - bags, CM.L["TOOLTIP_BANK"]) end
     return tostring(bags)
 end
 
-function CM.AddFoodDrinkTooltipLines(tooltip)
+-- With Syndicator the second item gets a real item tooltip of its own next to the
+-- macro's one, so Syndicator adds its inventory lines to it like everywhere else.
+-- Syndicator only decorates tooltips named NotGameTooltip*.
+local companion
+function CM.ShowCompanionTooltip(itemID)
+    if not companion then
+        companion = CreateFrame("GameTooltip", "NotGameTooltipConsumableMacro", UIParent, "GameTooltipTemplate")
+        local E = _G.ElvUI and _G.ElvUI[1]
+        local TT = E and E:GetModule("Tooltip", true)
+        if TT and TT.SetStyle then pcall(TT.SetStyle, TT, companion) end
+        _G.GameTooltip:HookScript("OnHide", function() companion:Hide() end)
+    end
+    companion:SetOwner(_G.GameTooltip, "ANCHOR_NONE")
+    companion:SetItemByID(itemID)
+    companion:ClearAllPoints()
+    -- on the side of the macro tooltip that has room
+    local x, center = _G.GameTooltip:GetCenter(), UIParent:GetCenter()
+    if x and center and x > center then
+        companion:SetPoint("TOPRIGHT", _G.GameTooltip, "TOPLEFT", -2, 0)
+    else
+        companion:SetPoint("TOPLEFT", _G.GameTooltip, "TOPRIGHT", 2, 0)
+    end
+    companion:Show()
+end
+
+-- The item of the macro that the tooltip doesn't show itself, or nil. shownID is what
+-- the tooltip shows (#showtooltip: the first item in the bags, food before drink).
+function CM.GetCompanionItem(foodID, drinkID, shownID)
+    shownID = shownID or foodID or drinkID
+    local other = (shownID == foodID) and drinkID or foodID
+    if other == shownID then return nil end  -- an item that restores both: nothing else to show
+    return other
+end
+
+function CM.AddFoodDrinkTooltipLines(tooltip, shownID)
     if not CM.db or GetTooltipMacroName(tooltip) ~= CM.MACRO_NAMES.food then return end
     local foodID, drinkID = CM.GetFirstInBags(CM.db.food.items), CM.GetFirstInBags(CM.db.drink.items)
     if not (foodID or drinkID) then return end
+
+    if _G.Syndicator and _G.Syndicator.API then
+        local other = CM.GetCompanionItem(foodID, drinkID, shownID)
+        if other then CM.ShowCompanionTooltip(other) end
+        tooltip:AddLine(" ")
+        tooltip:AddLine(CM.L["TOOLTIP_FOODDRINK_HINT"], 0.6, 0.6, 0.6)
+        tooltip:Show()
+        return
+    end
 
     tooltip:AddLine(" ")
     tooltip:AddLine(CM.L["TAB_FOODDRINK"], 1, 0.82, 0)
@@ -130,13 +151,13 @@ function CM.ToggleTipDebug()
 end
 
 if _G.TooltipDataProcessor and _G.TooltipDataProcessor.AddTooltipPostCall then
-    _G.TooltipDataProcessor.AddTooltipPostCall(_G.TooltipDataProcessor.AllTypes, function(tooltip)
+    _G.TooltipDataProcessor.AddTooltipPostCall(_G.TooltipDataProcessor.AllTypes, function(tooltip, data)
         if tooltip ~= _G.GameTooltip or tooltip:IsForbidden() then return end
         if debugTip then
             local ok, text = pcall(DescribeTooltip, tooltip)
             if text ~= lastDebug then lastDebug = text; CM.Print((ok and "" or "ERR ") .. tostring(text)) end
         end
-        local ok, err = pcall(CM.AddFoodDrinkTooltipLines, tooltip)
+        local ok, err = pcall(CM.AddFoodDrinkTooltipLines, tooltip, data and data.id)
         if not ok and debugTip then CM.Print("ERR " .. tostring(err)) end
     end)
 end
