@@ -60,10 +60,32 @@ local function GetTooltipMacroName(tooltip)
     return nil
 end
 
--- "12" or "12 (+5 Bank)": what is in the bags, plus what only the bank holds.
+-- Everything Syndicator knows about the item: all characters, guild banks, warband bank
+-- (the ones it shows in its own tooltips). nil without Syndicator.
+local function GetSyndicatorTotal(itemID)
+    local api = _G.Syndicator and _G.Syndicator.API
+    if not (api and api.GetInventoryInfoByItemID) then return nil end
+    if api.IsReady and not api.IsReady() then return nil end
+    local ok, info = pcall(api.GetInventoryInfoByItemID, itemID, false, false)
+    if not ok or type(info) ~= "table" then return nil end
+    local total = info.warband and info.warband[1] or 0
+    for _, c in ipairs(info.characters or {}) do
+        total = total + (c.bags or 0) + (c.bank or 0) + (c.mail or 0) + (c.equipped or 0) + (c.void or 0) + (c.auctions or 0)
+    end
+    for _, g in ipairs(info.guilds or {}) do total = total + (g.bank or 0) end
+    return total
+end
+
+-- "12", or "12 (Total 18)" with Syndicator, or "12 (+5 Bank)": the bags of this character,
+-- plus what Syndicator counts overall, else what only this character's bank holds.
 local function CountText(itemID)
-    local bags = C_Item.GetItemCount(itemID) or 0
-    local all  = C_Item.GetItemCount(itemID, true) or 0
+    local bags  = C_Item.GetItemCount(itemID) or 0
+    local total = GetSyndicatorTotal(itemID)
+    if total then
+        if total > bags then return ("%d (%s %d)"):format(bags, CM.L["TOOLTIP_TOTAL"], total) end
+        return tostring(bags)
+    end
+    local all = C_Item.GetItemCount(itemID, true) or 0
     if all > bags then return ("%d (+%d %s)"):format(bags, all - bags, CM.L["TOOLTIP_BANK"]) end
     return tostring(bags)
 end
