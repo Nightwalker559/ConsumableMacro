@@ -68,10 +68,15 @@ if CM.IS_FOREVER then
     CM.MACRO_OWNER.drink = "food"
     CM.REMINDER_SKIP.food, CM.REMINDER_SKIP.drink = true, true
 
-    -- Mana potions: only casters want them, so no reminder.
     tinsert(CM.TABS, 4, { key = "manapotion", tabL = "TAB_MANAPOTION", info = "INFO_MANAPOTION", sub = "SUB_MANAPOTION", color = {0.3, 0.5, 1} })
     CM.MACRO_NAMES.manapotion = "CM_ManaPotion"
-    CM.REMINDER_SKIP.manapotion = true
+end
+
+-- Tabs the reminder leaves out: the fixed ones, plus Mana Pots for a class without mana
+-- (warrior, rogue). Hunters have mana on Forever, so they are reminded.
+function CM.SkipsReminder(key)
+    if CM.REMINDER_SKIP[key] then return true end
+    return key == "manapotion" and (_G.UnitPowerMax("player", Enum.PowerType.Mana) or 0) <= 0
 end
 
 -- ── Utilities ──────────────────────────────────────────────────────────────────

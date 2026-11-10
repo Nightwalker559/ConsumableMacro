@@ -191,7 +191,7 @@ local function BuildReminderContent()
     local anyIssue   = false
     local unconfigured = 0
     for _, t in ipairs(CM.TABS) do
-        if not CM.REMINDER_SKIP[t.key] then
+        if not CM.SkipsReminder(t.key) then
             local items    = CM.db[t.key] and CM.db[t.key].items or {}
             local tabName  = L[t.tabL] or t.key
             local minCount = (not CM.MINCOUNT_SKIP[t.key]) and (CM.db[t.key].minCount or 0) or 0
@@ -245,7 +245,7 @@ function CM.CheckMissingConsumablesPostInstance()
     local bodyParts = {}
     local anyIssue  = false
     for _, t in ipairs(CM.TABS) do
-        if not CM.REMINDER_SKIP[t.key] and not CM.MINCOUNT_SKIP[t.key] then
+        if not CM.SkipsReminder(t.key) and not CM.MINCOUNT_SKIP[t.key] then
             local items    = CM.db[t.key] and CM.db[t.key].items or {}
             local minCount = CM.db[t.key] and CM.db[t.key].minCount or 0
             if minCount > 0 then
