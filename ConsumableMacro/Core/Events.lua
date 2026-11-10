@@ -66,9 +66,10 @@ ev:SetScript("OnEvent", function(_, event, arg1, arg2)
         elseif wasInInstance then
             OnLeftInstance()
         elseif wasLoginPending and not arg2 then
-            -- Fresh login (not /reload). The bag data may not be cached yet, so wait
-            -- briefly to avoid a false "missing" flash.
-            _G.C_Timer.After(1.0, function()
+            -- Fresh login (not /reload). One frame later, so the bags and the player's
+            -- power data are read after the world has loaded; an open reminder is
+            -- refreshed on every bag update, so a late bag fixes itself.
+            _G.RunNextFrame(function()
                 if IsRealInstance() then return end
                 CM.CheckMissingConsumables()
             end)
