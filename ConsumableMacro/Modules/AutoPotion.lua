@@ -2,6 +2,7 @@
 -- Optional "panic button" macro (CM_AutoPotion): one /castsequence over a
 -- self-heal spell, the top Heal Potion and the Healthstone, in a user-defined order.
 local CM = ConsumableMacroAddon
+if not CM.HAS_AUTOPOTION then return end
 
 CM.AUTOPOTION_MACRO_NAME = "CM_AutoPotion"
 

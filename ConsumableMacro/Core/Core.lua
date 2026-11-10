@@ -50,6 +50,8 @@ CM.TABS = {
 -- one sidebar entry (sideL, the Drink list has sideOf) that feed one macro, CM_FoodDrink.
 local build = select(4, _G.GetBuildInfo())
 CM.IS_FOREVER = type(build) == "number" and build >= 16000 and build < 20000
+-- The AutoPotion panic macro is Retail only (it builds on class self-heals that Forever lacks).
+CM.HAS_AUTOPOTION = not CM.IS_FOREVER
 
 function CM.GetTabInfo(key)
     for _, t in ipairs(CM.TABS) do
@@ -348,5 +350,5 @@ function CM.UpdateAllMacros(createOnly)
     for key in pairs(CM.MACRO_NAMES) do
         CM.UpdateMacro(key, createOnly)
     end
-    CM.UpdateAutoPotionMacro(createOnly)
+    if CM.HAS_AUTOPOTION then CM.UpdateAutoPotionMacro(createOnly) end
 end

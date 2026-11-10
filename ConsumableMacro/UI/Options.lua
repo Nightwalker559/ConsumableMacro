@@ -93,62 +93,64 @@ function CM.BuildOptionsFrame()
     end
 
     -- ── AutoPotion section ──
-    y = y - 10
+    if CM.HAS_AUTOPOTION then
+        y = y - 10
 
-    y = AddSection(c, y, L["AUTOPOTION_HEADER"], 10)
+        y = AddSection(c, y, L["AUTOPOTION_HEADER"], 10)
 
-    o.apEnableChk = CM.CreateCheckbox(c, L["CHECKBOX_AUTOPOTION_ENABLE"], 14, y)
-    o.apEnableChk:SetScript("OnClick", function(self)
-        CM.db.autoPotion.enabled = self:GetChecked()
-        CM.UpdateAutoPotionMacro()
-    end)
-    y = y - 28
+        o.apEnableChk = CM.CreateCheckbox(c, L["CHECKBOX_AUTOPOTION_ENABLE"], 14, y)
+        o.apEnableChk:SetScript("OnClick", function(self)
+            CM.db.autoPotion.enabled = self:GetChecked()
+            CM.UpdateAutoPotionMacro()
+        end)
+        y = y - 28
 
-    o.apStopCastChk = CM.CreateCheckbox(c, L["CHECKBOX_AUTOPOTION_STOPCAST"], 14, y)
-    o.apStopCastChk:SetScript("OnClick", function(self)
-        CM.db.autoPotion.stopCasting = self:GetChecked()
-        CM.UpdateAutoPotionMacro()
-    end)
-    y = y - 28
+        o.apStopCastChk = CM.CreateCheckbox(c, L["CHECKBOX_AUTOPOTION_STOPCAST"], 14, y)
+        o.apStopCastChk:SetScript("OnClick", function(self)
+            CM.db.autoPotion.stopCasting = self:GetChecked()
+            CM.UpdateAutoPotionMacro()
+        end)
+        y = y - 28
 
-    o.apResetDesc = c:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-    o.apResetDesc:SetPoint("TOPLEFT", 14, y)
-    o.apResetDesc:SetPoint("TOPRIGHT", -14, y)
-    o.apResetDesc:SetJustifyH("LEFT")
-    o.apResetDesc:SetWordWrap(true)
-    o.apResetDesc:SetText(L["AUTOPOTION_RESET_DESC"])
-    o.apResetDesc:SetTextColor(0.65, 0.65, 0.65)
-    y = y - 40
+        o.apResetDesc = c:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+        o.apResetDesc:SetPoint("TOPLEFT", 14, y)
+        o.apResetDesc:SetPoint("TOPRIGHT", -14, y)
+        o.apResetDesc:SetJustifyH("LEFT")
+        o.apResetDesc:SetWordWrap(true)
+        o.apResetDesc:SetText(L["AUTOPOTION_RESET_DESC"])
+        o.apResetDesc:SetTextColor(0.65, 0.65, 0.65)
+        y = y - 40
 
-    o.apResetLbl = c:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    o.apResetLbl:SetPoint("TOPLEFT", 14, y)
-    o.apResetLbl:SetText(L["LABEL_AUTOPOTION_RESET_SECONDS"])
+        o.apResetLbl = c:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+        o.apResetLbl:SetPoint("TOPLEFT", 14, y)
+        o.apResetLbl:SetText(L["LABEL_AUTOPOTION_RESET_SECONDS"])
 
-    o.apResetBox = CreateFrame("EditBox", nil, c, "InputBoxTemplate")
-    o.apResetBox:SetSize(50, 22)
-    o.apResetBox:SetPoint("LEFT", o.apResetLbl, "LEFT", 150, 0)
-    o.apResetBox:SetMaxLetters(3)
-    CM.BindNumberBox(o.apResetBox, function(self)
-        CM.db.autoPotionResetSeconds = tonumber(self:GetText()) or 0
-        CM.UpdateAutoPotionMacro()
-    end)
+        o.apResetBox = CreateFrame("EditBox", nil, c, "InputBoxTemplate")
+        o.apResetBox:SetSize(50, 22)
+        o.apResetBox:SetPoint("LEFT", o.apResetLbl, "LEFT", 150, 0)
+        o.apResetBox:SetMaxLetters(3)
+        CM.BindNumberBox(o.apResetBox, function(self)
+            CM.db.autoPotionResetSeconds = tonumber(self:GetText()) or 0
+            CM.UpdateAutoPotionMacro()
+        end)
 
-    o.apSyncBtn = CreateFrame("Button", nil, c, "UIPanelButtonTemplate")
-    o.apSyncBtn:SetSize(50, 22)
-    o.apSyncBtn:SetPoint("LEFT", o.apResetBox, "RIGHT", 6, 0)
-    o.apSyncBtn:SetText(L["BTN_AUTOPOTION_SYNC"])
-    o.apSyncBtn:SetScript("OnClick", function() CM.SyncAutoPotionResetFromCooldown() end)
-    CM.AttachTooltip(o.apSyncBtn, L["AUTOPOTION_SYNC_TOOLTIP"])
-    y = y - 32
+        o.apSyncBtn = CreateFrame("Button", nil, c, "UIPanelButtonTemplate")
+        o.apSyncBtn:SetSize(50, 22)
+        o.apSyncBtn:SetPoint("LEFT", o.apResetBox, "RIGHT", 6, 0)
+        o.apSyncBtn:SetText(L["BTN_AUTOPOTION_SYNC"])
+        o.apSyncBtn:SetScript("OnClick", function() CM.SyncAutoPotionResetFromCooldown() end)
+        CM.AttachTooltip(o.apSyncBtn, L["AUTOPOTION_SYNC_TOOLTIP"])
+        y = y - 32
 
-    o.apConfigureBtn = CreateFrame("Button", nil, c, "UIPanelButtonTemplate")
-    o.apConfigureBtn:SetSize(288, 24)
-    o.apConfigureBtn:SetPoint("TOPLEFT", 14, y)
-    o.apConfigureBtn:SetText(L["BTN_AUTOPOTION_CONFIGURE"])
-    o.apConfigureBtn:SetScript("OnClick", function() CM.ShowAutoPotionFrame() end)
+        o.apConfigureBtn = CreateFrame("Button", nil, c, "UIPanelButtonTemplate")
+        o.apConfigureBtn:SetSize(288, 24)
+        o.apConfigureBtn:SetPoint("TOPLEFT", 14, y)
+        o.apConfigureBtn:SetText(L["BTN_AUTOPOTION_CONFIGURE"])
+        o.apConfigureBtn:SetScript("OnClick", function() CM.ShowAutoPotionFrame() end)
+    end
 
     -- ── Restock section ──
-    y = y - 38
+    y = y - (CM.HAS_AUTOPOTION and 38 or 10)
 
     y = AddSection(c, y, L["RESTOCK_HEADER"], 10)
 
@@ -270,9 +272,11 @@ function CM.RefreshOptionsFrame()
     for key, box in pairs(o.minBoxes) do
         box:SetText(tostring(CM.db[key] and CM.db[key].minCount or 0))
     end
-    o.apEnableChk:SetChecked(CM.db.autoPotion.enabled)
-    o.apStopCastChk:SetChecked(CM.db.autoPotion.stopCasting)
-    o.apResetBox:SetText(tostring(CM.db.autoPotionResetSeconds or 0))
+    if CM.HAS_AUTOPOTION then
+        o.apEnableChk:SetChecked(CM.db.autoPotion.enabled)
+        o.apStopCastChk:SetChecked(CM.db.autoPotion.stopCasting)
+        o.apResetBox:SetText(tostring(CM.db.autoPotionResetSeconds or 0))
+    end
 end
 
 function CM.ToggleOptionsFrame()

@@ -14,6 +14,7 @@ All notable changes to this project are documented here.
 - Sharpening stones and weightstones outside the built-in ID list are matched to edged/blunt weapons by name.
 
 ### Changed
+- Forever: no AutoPotion (macro, options section and priority window are Retail only).
 - The login reminder is shown one frame after login instead of after one second.
 - Default profile name uses the surname where the client has no realms (Forever).
 
