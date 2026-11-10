@@ -27,10 +27,35 @@ local CLASS_CONSUMABLE = Enum.ItemClass.Consumable
 local SUB = Enum.ItemConsumableSubclass
 
 -- Forever: tab a food/drink item goes to - the Food/Drink list being edited (Buff Food
--- while that tab is open), else Food.
+-- while that tab is open), else Food. CM.GetTargetTabsForItem refines Food/Drink by
+-- what the item restores.
 local FOOD_TABS = { bufffood = true, food = true, drink = true }
 local function GetForeverFoodTab()
     return FOOD_TABS[CM.activeTab] and CM.activeTab or "food"
+end
+
+-- "health" | "mana" | "both" | nil (no use line yet), read from the "Use:" line of the
+-- tooltip - the only place that says what an item restores. Other lines (the name,
+-- "Mana Biscuit") don't count.
+local function GetRestoreKind(itemID)
+    local api, trigger = _G.C_TooltipInfo, _G.ITEM_SPELL_TRIGGER_ONUSE
+    if not (api and api.GetItemByID and trigger) then return nil end
+    local ok, data = pcall(api.GetItemByID, itemID)
+    if not ok or not data or not data.lines then return nil end
+    local L = CM.L
+    for _, line in ipairs(data.lines) do
+        local text = line.leftText
+        if type(text) == "string" and not (_G.issecretvalue and _G.issecretvalue(text))
+           and text:find(trigger, 1, true) then
+            local lower = text:lower()
+            local health = CM.MatchesAny(lower, L["PATTERN_RESTORE_HEALTH"])
+            local mana   = CM.MatchesAny(lower, L["PATTERN_RESTORE_MANA"])
+            if health and mana then return "both" end
+            if health then return "health" end
+            if mana then return "mana" end
+        end
+    end
+    return nil
 end
 
 -- Tab key for an item ID, or nil if it fits none. ID lists win, then the name
@@ -73,6 +98,20 @@ function CM.GetTargetTabForItem(targetID)
     return nil
 end
 
+-- Tabs an item is added to: normally the one GetTargetTabForItem names. Forever: food
+-- that restores health goes to Food, mana to Drink, both to both lists (the macro uses
+-- such an item once); where the tooltip doesn't say, the open list is kept.
+function CM.GetTargetTabsForItem(itemID)
+    local tab = CM.GetTargetTabForItem(itemID)
+    if tab == "food" or tab == "drink" then
+        local kind = GetRestoreKind(itemID)
+        if kind == "health" then return { "food" } end
+        if kind == "mana"   then return { "drink" } end
+        if kind == "both"   then return { "food", "drink" } end
+    end
+    return tab and { tab } or nil
+end
+
 -- ── Data Mutation ──────────────────────────────────────────────────────────────
 function CM.AddItemToDatabase(itemID)
     if not itemID then return end
@@ -86,15 +125,23 @@ function CM.AddItemToDatabase(itemID)
         local id = itemObj:GetItemID()
         if not id or not CM.db then return end
 
-        local targetTab = CM.GetTargetTabForItem(id)
-        if targetTab then
-            for _, existing in ipairs(CM.db[targetTab].items) do
-                if existing.id == id then return end
+        local targetTabs = CM.GetTargetTabsForItem(id)
+        if targetTabs then
+            local added = {}
+            for _, tab in ipairs(targetTabs) do
+                local known = false
+                for _, existing in ipairs(CM.db[tab].items) do
+                    if existing.id == id then known = true end
+                end
+                if not known then
+                    tinsert(CM.db[tab].items, { id = id })
+                    tinsert(added, tab)
+                end
             end
-            tinsert(CM.db[targetTab].items, { id = id })
-            CM.activeTab = targetTab
+            if #added == 0 then return end
+            CM.activeTab = added[1]
             CM.RefreshList()
-            CM.UpdateMacro(targetTab)
+            CM.UpdateMacro(added[1])
         else
             CM.ShowError(CM.L["ERROR_INVALID_ITEM"])
         end

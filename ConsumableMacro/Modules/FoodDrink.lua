@@ -14,10 +14,14 @@ function CM.BuildFoodDrinkMacroBody()
         for _, item in ipairs(list) do tinsert(all, item) end
     end
 
-    local lines = { CM.GetShowtooltipLine(all) }
+    -- an item that restores both sits in both lists and is used only once
+    local lines, used = { CM.GetShowtooltipLine(all) }, {}
     for _, list in ipairs({ food, drink }) do
         local id = CM.GetFirstInBags(list)
-        if id then tinsert(lines, "/use item:" .. id) end
+        if id and not used[id] then
+            used[id] = true
+            tinsert(lines, "/use item:" .. id)
+        end
     end
     return CM.TrimMacroLines(lines)
 end

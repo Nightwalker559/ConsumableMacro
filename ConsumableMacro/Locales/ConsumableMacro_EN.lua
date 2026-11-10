@@ -44,7 +44,9 @@ L["PATTERN_FLASK"] = {"flask", "phial"}
 L["PATTERN_HEAL"] = {"heal", "vivacious"}
 L["PATTERN_HEALTHSTONE"] = {"healthstone"}
 L["PATTERN_EXCLUDE"] = {"tea", "water"}
-L["PATTERN_EDGED"] = {"whetstone", "sharpening stone"}
+L["PATTERN_RESTORE_HEALTH"] = {"health"}
+L["PATTERN_RESTORE_MANA"] = {"mana"}
+L["PATTERN_EDGED"] ={"whetstone", "sharpening stone"}
 L["PATTERN_BLUNT"] = {"weightstone"}
 
 L["TAB_FOODDRINK"] = "Food & Drink"
