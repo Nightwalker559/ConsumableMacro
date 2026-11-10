@@ -50,6 +50,9 @@ L["PATTERN_RESTORE_MANA"] = {"mana"}
 L["PATTERN_EDGED"] ={"schleifstein"}
 L["PATTERN_BLUNT"] = {"gewichtstein"}
 
+L["TAB_MANAPOTION"] = "Manatränke"
+L["INFO_MANAPOTION"] = "Mana-Nachschub"
+L["SUB_MANAPOTION"] = "Manatränke nach Priorität. Das Makro nutzt den ersten, der in deinen Taschen liegt."
 L["TAB_FOODDRINK"] = "Essen & Trinken"
 L["TAB_FOOD"] = "Essen"
 L["INFO_FOOD_LIST"] = "Essen"

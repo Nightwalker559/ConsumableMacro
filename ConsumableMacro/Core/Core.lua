@@ -67,6 +67,11 @@ if CM.IS_FOREVER then
     CM.MACRO_NAMES.food = "CM_FoodDrink"
     CM.MACRO_OWNER.drink = "food"
     CM.REMINDER_SKIP.food, CM.REMINDER_SKIP.drink = true, true
+
+    -- Mana potions: only casters want them, so no reminder.
+    tinsert(CM.TABS, 4, { key = "manapotion", tabL = "TAB_MANAPOTION", info = "INFO_MANAPOTION", sub = "SUB_MANAPOTION", color = {0.3, 0.5, 1} })
+    CM.MACRO_NAMES.manapotion = "CM_ManaPotion"
+    CM.REMINDER_SKIP.manapotion = true
 end
 
 -- ── Utilities ──────────────────────────────────────────────────────────────────
@@ -288,10 +293,10 @@ function CM.GetMacroBodyText(key)
 
     local lines = { CM.GetShowtooltipLine(items), "/cqs", "/stopcasting" }
 
-    -- Only potion and healpotion get the stacked fallback chain (every item in
-    -- the bags, in priority order). Flask, healthstone and bufffood use the
+    -- Only potion, healpotion and manapotion get the stacked fallback chain (every
+    -- item in the bags, in priority order). Flask, healthstone and bufffood use the
     -- single best item only.
-    if key == "potion" or key == "healpotion" then
+    if key == "potion" or key == "healpotion" or key == "manapotion" then
         for _, item in ipairs(items) do
             if CM.IsInBags(item.id) then tinsert(lines, "/use item:" .. item.id) end
         end

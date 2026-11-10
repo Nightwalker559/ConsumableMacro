@@ -49,6 +49,9 @@ L["PATTERN_RESTORE_MANA"] = {"mana"}
 L["PATTERN_EDGED"] ={"whetstone", "sharpening stone"}
 L["PATTERN_BLUNT"] = {"weightstone"}
 
+L["TAB_MANAPOTION"] = "Mana Pots"
+L["INFO_MANAPOTION"] = "Mana Refill"
+L["SUB_MANAPOTION"] = "Mana potions in priority order. The macro uses the first one in your bags."
 L["TAB_FOODDRINK"] = "Food & Drink"
 L["TAB_FOOD"] = "Food"
 L["INFO_FOOD_LIST"] = "Food"

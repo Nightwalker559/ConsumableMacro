@@ -10,6 +10,7 @@ All notable changes to this project are documented here.
 - WoW Forever support (TOC 16001).
 - Forever: Food & Drink tab with two lists (Food, Drink); one macro, CM_FoodDrink, uses the first of each that is in your bags.
 - Forever: food is sorted by its tooltip - health goes to Food, mana to Drink, both to both lists (used once in the macro).
+- Forever: Mana Pots tab (macro CM_ManaPotion); potions are sorted by their tooltip, ones that restore health and mana go to Heal Pots and Mana Pots.
 - Sharpening stones and weightstones outside the built-in ID list are matched to edged/blunt weapons by name.
 
 ### Changed

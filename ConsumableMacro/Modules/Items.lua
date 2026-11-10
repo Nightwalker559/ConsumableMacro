@@ -77,6 +77,13 @@ function CM.GetTargetTabForItem(targetID)
     -- Forever: drinks are mostly "... Water" / "... Tea", which the exclude list below
     -- would reject, so food and drink are decided by their subclass first.
     if CM.IS_FOREVER and isConsumable and subclassID == SUB.Fooddrink then return GetForeverFoodTab() end
+    -- Forever: mana potions have their own tab; ones that restore both count as heal
+    -- potions here and are added to Mana Pots as well (GetTargetTabsForItem).
+    if CM.IS_FOREVER and isConsumable and subclassID == SUB.Potion then
+        local kind = GetRestoreKind(targetID)
+        if kind == "mana" then return "manapotion" end
+        if kind == "both" then return "healpotion" end
+    end
 
     if name then
         -- word-end match: a plain "tea" would also hit "steak" / "steamed fish"
@@ -108,6 +115,8 @@ function CM.GetTargetTabsForItem(itemID)
         if kind == "health" then return { "food" } end
         if kind == "mana"   then return { "drink" } end
         if kind == "both"   then return { "food", "drink" } end
+    elseif CM.IS_FOREVER and tab == "healpotion" and GetRestoreKind(itemID) == "both" then
+        return { "healpotion", "manapotion" }
     end
     return tab and { tab } or nil
 end
