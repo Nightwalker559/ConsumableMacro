@@ -220,9 +220,10 @@ function CM.BuildUI()
         local t = CM.TABS[i]
         if t.sideOf or hasSubLists[t.key] then
             local b = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
-            b:SetSize(80, 22)
+            b:SetSize(80, 20)
             b:SetText(CM.L[t.tabL] or t.key)
-            if prev then b:SetPoint("RIGHT", prev, "LEFT", -4, 0) else b:SetPoint("TOPRIGHT", -MARGIN - 6, -33) end
+            -- ends above the hint line below the title, which runs the full list width
+            if prev then b:SetPoint("RIGHT", prev, "LEFT", -4, 0) else b:SetPoint("TOPRIGHT", -MARGIN - 6, -29) end
             b:SetScript("OnClick", function() CM.activeTab = t.key; CM.RefreshList() end)
             b:Hide()
             f.subBtns[t.key] = b
