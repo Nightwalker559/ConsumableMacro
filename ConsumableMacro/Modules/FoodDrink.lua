@@ -29,18 +29,30 @@ end
 -- #showtooltip can only show one item, so the tooltip of the CM_FoodDrink button gets
 -- two extra lines: the food and the drink the macro uses, with their counts.
 
--- Name of the macro on the action button that owns the tooltip, or nil.
-local function GetOwnerMacroName(owner)
-    if not owner then return nil end
-    local kind, id
-    if type(owner.action) == "number" then            -- Blizzard action buttons
-        kind, id = _G.GetActionInfo(owner.action)
-    elseif type(owner.GetAction) == "function" then   -- LibActionButton (ElvUI, Bartender)
-        local t, a = owner:GetAction()
-        if t == "action" then kind, id = _G.GetActionInfo(a)
-        elseif t == "macro" then kind, id = "macro", a end
-    end
+local function MacroNameOfSlot(slot)
+    if type(slot) ~= "number" then return nil end
+    local kind, id = _G.GetActionInfo(slot)
     if kind == "macro" and id then return (_G.GetMacroInfo(id)) end
+    return nil
+end
+
+-- Macro name of the action button that owns the tooltip, or nil. The tooltip knows its
+-- action slot (processingInfo); the owner button is the fallback.
+local function GetTooltipMacroName(tooltip)
+    local info = tooltip.processingInfo
+    if info and info.getterName == "GetAction" and info.getterArgs then
+        local name = MacroNameOfSlot(info.getterArgs[1])
+        if name then return name end
+    end
+    local owner = tooltip:GetOwner()
+    if not owner then return nil end
+    if type(owner.action) == "number" then            -- Blizzard action buttons
+        return MacroNameOfSlot(owner.action)
+    elseif type(owner.GetAction) == "function" then   -- LibActionButton (ElvUI, Bartender)
+        local kind, a = owner:GetAction()
+        if kind == "action" then return MacroNameOfSlot(a) end
+        if kind == "macro" and a then return (_G.GetMacroInfo(a)) end
+    end
     return nil
 end
 
@@ -53,7 +65,7 @@ local function CountText(itemID)
 end
 
 function CM.AddFoodDrinkTooltipLines(tooltip)
-    if not CM.db or GetOwnerMacroName(tooltip:GetOwner()) ~= CM.MACRO_NAMES.food then return end
+    if not CM.db or GetTooltipMacroName(tooltip) ~= CM.MACRO_NAMES.food then return end
     local foodID, drinkID = CM.GetFirstInBags(CM.db.food.items), CM.GetFirstInBags(CM.db.drink.items)
     if not (foodID or drinkID) then return end
 
@@ -69,10 +81,31 @@ function CM.AddFoodDrinkTooltipLines(tooltip)
     tooltip:Show()  -- resize to the added lines
 end
 
+-- /cm tipdebug: prints what the hook sees for every tooltip (one line per change), to
+-- find out why the lines don't show on a given action bar.
+local debugTip, lastDebug = false, nil
+
+local function DescribeTooltip(tooltip)
+    local info, owner = tooltip.processingInfo, tooltip:GetOwner()
+    local args = info and info.getterArgs
+    return ("owner=%s action=%s getter=%s arg1=%s macro=%s"):format(
+        tostring(owner and owner.GetName and owner:GetName()), tostring(owner and owner.action),
+        tostring(info and info.getterName), tostring(args and args[1]), tostring(GetTooltipMacroName(tooltip)))
+end
+
+function CM.ToggleTipDebug()
+    debugTip, lastDebug = not debugTip, nil
+    CM.Print("tooltip debug " .. (debugTip and "on - hover the macro button" or "off"))
+end
+
 if _G.TooltipDataProcessor and _G.TooltipDataProcessor.AddTooltipPostCall then
     _G.TooltipDataProcessor.AddTooltipPostCall(_G.TooltipDataProcessor.AllTypes, function(tooltip)
-        if tooltip == _G.GameTooltip and not tooltip:IsForbidden() then
-            pcall(CM.AddFoodDrinkTooltipLines, tooltip)
+        if tooltip ~= _G.GameTooltip or tooltip:IsForbidden() then return end
+        if debugTip then
+            local ok, text = pcall(DescribeTooltip, tooltip)
+            if text ~= lastDebug then lastDebug = text; CM.Print((ok and "" or "ERR ") .. tostring(text)) end
         end
+        local ok, err = pcall(CM.AddFoodDrinkTooltipLines, tooltip)
+        if not ok and debugTip then CM.Print("ERR " .. tostring(err)) end
     end)
 end

@@ -139,6 +139,8 @@ _G.SlashCmdList["CONSUMABLEMACRO"] = function(msg)
         elseif CM.SetProfile(name) then
             CM.Print(CM.L["PROFILE_SWITCHED"]:format(name))
         end
+    elseif msg == "tipdebug" and CM.ToggleTipDebug then
+        CM.ToggleTipDebug()
     elseif msg == "help" then
         _G.print(CM.L["HELP_TEXT"])
     elseif msg == "" then
