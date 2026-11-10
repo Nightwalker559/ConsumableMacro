@@ -26,6 +26,13 @@ CM.WEAPONENHANCE_IDS = {
 local CLASS_CONSUMABLE = Enum.ItemClass.Consumable
 local SUB = Enum.ItemConsumableSubclass
 
+-- Forever: tab a food/drink item goes to - the Food/Drink list being edited (Buff Food
+-- while that tab is open), else Food.
+local FOOD_TABS = { bufffood = true, food = true, drink = true }
+local function GetForeverFoodTab()
+    return FOOD_TABS[CM.activeTab] and CM.activeTab or "food"
+end
+
 -- Tab key for an item ID, or nil if it fits none. ID lists win, then the name
 -- patterns, then the class/subclass fallback.
 function CM.GetTargetTabForItem(targetID)
@@ -41,13 +48,16 @@ function CM.GetTargetTabForItem(targetID)
     local name = C_Item.GetItemNameByID(targetID)
     name = name and name:lower()
 
+    local isConsumable = classID == CLASS_CONSUMABLE
+    -- Forever: drinks are mostly "... Water" / "... Tea", which the exclude list below
+    -- would reject, so food and drink are decided by their subclass first.
+    if CM.IS_FOREVER and isConsumable and subclassID == SUB.Fooddrink then return GetForeverFoodTab() end
+
     if name then
         -- word-end match: a plain "tea" would also hit "steak" / "steamed fish"
         if CM.MatchesWordEnd(name, L["PATTERN_EXCLUDE"]) then return nil end
         if CM.MatchesAny(name, L["PATTERN_HEALTHSTONE"]) then return "healthstone" end
     end
-
-    local isConsumable = classID == CLASS_CONSUMABLE
 
     -- Food before the name patterns, so e.g. "Heilbutt" (halibut) doesn't match "heil".
     if isConsumable and subclassID == SUB.Fooddrink then return "bufffood" end

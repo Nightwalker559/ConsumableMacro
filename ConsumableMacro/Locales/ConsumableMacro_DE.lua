@@ -48,6 +48,13 @@ L["PATTERN_EXCLUDE"] = {"tee", "wasser"}
 L["PATTERN_EDGED"] = {"schleifstein"}
 L["PATTERN_BLUNT"] = {"gewichtstein"}
 
+L["TAB_FOODDRINK"] = "Essen & Trinken"
+L["TAB_FOOD"] = "Essen"
+L["INFO_FOOD_LIST"] = "Essen"
+L["SUB_FOOD_LIST"] = "Essen und Trinken mit einem Klick: das Makro nutzt das erste Essen dieser Liste und das erste Getränk der Trinken-Liste, das in den Taschen liegt."
+L["TAB_DRINK"] = "Trinken"
+L["INFO_DRINK"] = "Trinken"
+L["SUB_DRINK"] = "Essen und Trinken mit einem Klick: das Makro nutzt das erste Essen der Essen-Liste und das erste Getränk dieser Liste, das in den Taschen liegt."
 L["TAB_BUFFFOOD"] = "Bufffood"
 L["INFO_FOOD"] = "Stärkung"
 L["SUB_FOOD"] = "Vor jedem Pull kochen oder kaufen. Nie auf nüchternem Magen raiden."

@@ -45,6 +45,30 @@ CM.TABS = {
     { key = "weaponenhance", tabL = "TAB_WEAPONENHANCE", info = "INFO_WEAPONENHANCE", sub = "SUB_WEAPONENHANCE", color = {0.85, 0.6, 0.3} },
 }
 
+-- WoW Forever (TOC 16xxx) is Classic content on the Mainline client. Food and drink
+-- can be consumed at the same time there, so it gets two lists (Food, Drink) behind
+-- one sidebar entry (sideL, the Drink list has sideOf) that feed one macro, CM_FoodDrink.
+local build = select(4, _G.GetBuildInfo())
+CM.IS_FOREVER = type(build) == "number" and build >= 16000 and build < 20000
+
+function CM.GetTabInfo(key)
+    for _, t in ipairs(CM.TABS) do
+        if t.key == key then return t end
+    end
+    return nil
+end
+
+-- Lists without a macro of their own: [tab key] = key of the tab that owns the macro.
+CM.MACRO_OWNER = {}
+
+if CM.IS_FOREVER then
+    tinsert(CM.TABS, 6, { key = "food",  tabL = "TAB_FOOD",  sideL = "TAB_FOODDRINK", info = "INFO_FOOD_LIST", sub = "SUB_FOOD_LIST", color = {1, 0.85, 0.4} })
+    tinsert(CM.TABS, 7, { key = "drink", tabL = "TAB_DRINK", sideOf = "food",         info = "INFO_DRINK",     sub = "SUB_DRINK",     color = {0.4, 0.7, 1} })
+    CM.MACRO_NAMES.food = "CM_FoodDrink"
+    CM.MACRO_OWNER.drink = "food"
+    CM.REMINDER_SKIP.food, CM.REMINDER_SKIP.drink = true, true
+end
+
 -- ── Utilities ──────────────────────────────────────────────────────────────────
 function CM.IsInBags(itemID)
     return itemID and C_Item.GetItemCount(itemID) > 0
@@ -247,6 +271,7 @@ function CM.GetShowtooltipLine(items, itemID)
 end
 
 function CM.GetMacroBodyText(key)
+    key = CM.MACRO_OWNER[key] or key
     local db = CM.db
     if not db or not db[key] or not db[key].items then return "" end
     local items = db[key].items
@@ -255,6 +280,10 @@ function CM.GetMacroBodyText(key)
     -- weapon-type and enchant-state aware) - see WeaponEnhance.lua.
     if key == "weaponenhance" then
         return CM.BuildWeaponEnhanceMacroBody(items)
+    end
+    -- Food + Drink (Forever): one macro over two lists - see FoodDrink.lua.
+    if key == "food" then
+        return CM.BuildFoodDrinkMacroBody()
     end
 
     local lines = { CM.GetShowtooltipLine(items), "/cqs", "/stopcasting" }
@@ -298,6 +327,7 @@ function CM.UpdateMacro(key, createOnly)
         CM.needsUpdateAfterCombat = true
         return
     end
+    key = CM.MACRO_OWNER[key] or key
     if not CM.db or not CM.MACRO_NAMES[key] then return end
     CM.WriteMacro(CM.MACRO_NAMES[key], CM.GetMacroBodyText(key), createOnly)
 end

@@ -47,6 +47,13 @@ L["PATTERN_EXCLUDE"] = {"tea", "water"}
 L["PATTERN_EDGED"] = {"whetstone", "sharpening stone"}
 L["PATTERN_BLUNT"] = {"weightstone"}
 
+L["TAB_FOODDRINK"] = "Food & Drink"
+L["TAB_FOOD"] = "Food"
+L["INFO_FOOD_LIST"] = "Food"
+L["SUB_FOOD_LIST"] = "Eat and drink in one press: the macro uses the first food here and the first drink from the Drink list that are in your bags."
+L["TAB_DRINK"] = "Drink"
+L["INFO_DRINK"] = "Drink"
+L["SUB_DRINK"] = "Eat and drink in one press: the macro uses the first food from the Food list and the first drink here that are in your bags."
 L["TAB_BUFFFOOD"] = "Buff Food"
 L["INFO_FOOD"] = "Nourishment"
 L["SUB_FOOD"] = "Cook or buy before every pull. Never raid on an empty stomach."

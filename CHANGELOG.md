@@ -8,6 +8,7 @@ All notable changes to this project are documented here.
 
 ### Added
 - WoW Forever support (TOC 16001).
+- Forever: Food & Drink tab with two lists (Food, Drink); one macro, CM_FoodDrink, uses the first of each that is in your bags.
 - Sharpening stones and weightstones outside the built-in ID list are matched to edged/blunt weapons by name.
 
 ### Changed

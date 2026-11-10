@@ -56,6 +56,7 @@ function CM.ApplyElvUISkin()
     edit(mf.editBox); edit(mf.dropSkin)
     button(mf.addBtn); button(mf.updateBtn); button(mf.optionsBtn)
     frame(mf.sideBar)
+    for _, b in pairs(mf.subBtns) do button(b) end
     -- flat selection tint in ElvUI's accent colour instead of Blizzard's list atlases
     local E = _G.ElvUI[1]
     CM.flatTabColor = E.media and E.media.rgbvaluecolor or { 1, 0.82, 0 }

@@ -68,7 +68,7 @@ function CM.CreateSideTab(parent, tabInfo)
     btn.Text:SetPoint("RIGHT", -4, 0)
     btn.Text:SetJustifyH("LEFT")
     btn.Text:SetWordWrap(false)
-    btn.Text:SetText(CM.L[tabInfo.tabL] or tabInfo.key)
+    btn.Text:SetText(CM.L[tabInfo.sideL or tabInfo.tabL] or tabInfo.key)
 
     btn:SetScript("OnEnter", function(self)
         if self.selected then return end
@@ -142,11 +142,17 @@ function CM.RefreshList()
     local items = CM.db[CM.activeTab].items
     for _, row in ipairs(CM.rowPool) do row:Hide() end
 
-    local currentTabInfo = nil
+    local currentTabInfo = CM.GetTabInfo(CM.activeTab)
+    -- a list without a sidebar entry of its own highlights the entry it sits behind
+    local owner = currentTabInfo and currentTabInfo.sideOf or CM.activeTab
     for _, t in ipairs(CM.TABS) do
-        local selected = t.key == CM.activeTab
-        if selected then currentTabInfo = t end
-        CM.SetSideTabSelected(f.tabBtns[t.key], selected)
+        if f.tabBtns[t.key] then CM.SetSideTabSelected(f.tabBtns[t.key], t.key == owner) end
+    end
+    -- the switch between lists that share a sidebar entry (Food / Drink)
+    local inGroup = f.subBtns[CM.activeTab] ~= nil
+    for key, b in pairs(f.subBtns) do
+        b:SetShown(inGroup)
+        b:SetEnabled(key ~= CM.activeTab)
     end
 
     if currentTabInfo then
@@ -200,7 +206,7 @@ function CM.BuildUI()
     local SIDEBAR_WIDTH = 140
     local measure = UIParent:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     for _, t in ipairs(CM.TABS) do
-        measure:SetText(CM.L[t.tabL] or t.key)
+        measure:SetText(CM.L[t.sideL or t.tabL] or t.key)
         SIDEBAR_WIDTH = math.max(SIDEBAR_WIDTH, math.ceil(measure:GetStringWidth()) + 14 + 4 + 8 + 6)
     end
     measure:Hide()
@@ -221,12 +227,42 @@ function CM.BuildUI()
     f.sideBar = sideBar
 
     f.tabBtns = {}
-    for i, t in ipairs(CM.TABS) do
-        local btn = CM.CreateSideTab(sideBar, t)
-        btn:SetPoint("TOPLEFT",  sideBar, "TOPLEFT",  4, -6 - (i - 1) * (CM.SIDE_TAB_HEIGHT + 2))
-        btn:SetPoint("TOPRIGHT", sideBar, "TOPRIGHT", -4, -6 - (i - 1) * (CM.SIDE_TAB_HEIGHT + 2))
-        btn:SetScript("OnClick", function() CM.activeTab = t.key; CM.RefreshList() end)
-        f.tabBtns[t.key] = btn
+    f.subBtns = {}  -- [list key] = button, for the lists that sit behind another entry
+    local row = 0
+    for _, t in ipairs(CM.TABS) do
+        if not t.sideOf then
+            local btn = CM.CreateSideTab(sideBar, t)
+            btn:SetPoint("TOPLEFT",  sideBar, "TOPLEFT",  4, -6 - row * (CM.SIDE_TAB_HEIGHT + 2))
+            btn:SetPoint("TOPRIGHT", sideBar, "TOPRIGHT", -4, -6 - row * (CM.SIDE_TAB_HEIGHT + 2))
+            -- clicking the entry of the list being edited keeps the shown list
+            btn:SetScript("OnClick", function()
+                local cur = CM.GetTabInfo(CM.activeTab)
+                if not cur or (cur.sideOf or cur.key) ~= t.key then CM.activeTab = t.key end
+                CM.RefreshList()
+            end)
+            f.tabBtns[t.key] = btn
+            row = row + 1
+        end
+    end
+
+    -- switch buttons, top right of the list area: one per list of a shared entry
+    local hasSubLists = {}
+    for _, t in ipairs(CM.TABS) do
+        if t.sideOf then hasSubLists[t.sideOf] = true end
+    end
+    local prev
+    for i = #CM.TABS, 1, -1 do
+        local t = CM.TABS[i]
+        if t.sideOf or hasSubLists[t.key] then
+            local b = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
+            b:SetSize(80, 22)
+            b:SetText(CM.L[t.tabL] or t.key)
+            if prev then b:SetPoint("RIGHT", prev, "LEFT", -4, 0) else b:SetPoint("TOPRIGHT", -MARGIN - 6, -33) end
+            b:SetScript("OnClick", function() CM.activeTab = t.key; CM.RefreshList() end)
+            b:Hide()
+            f.subBtns[t.key] = b
+            prev = b
+        end
     end
 
     f.infoLabel  = f:CreateFontString(nil, "OVERLAY", "GameFontNormal")
