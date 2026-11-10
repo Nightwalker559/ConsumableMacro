@@ -181,9 +181,7 @@ function CM.BuildAutoPotionFrame()
         row:SetSize(232, rowH - 4)
         row:SetPoint("TOPLEFT", 14, y)
 
-        row.bg = row:CreateTexture(nil, "BACKGROUND")
-        row.bg:SetAllPoints()
-        row.bg:SetColorTexture(0.2, 0.2, 0.2, 0.4)
+        CM.AddRowBackground(row)
 
         row.label = row:CreateFontString(nil, "OVERLAY", "GameFontNormal")
         row.label:SetPoint("LEFT", 6, 0)

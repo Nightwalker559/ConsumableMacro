@@ -91,6 +91,14 @@ function CM.Print(msg)
     _G.print("|cff00FF98Consumable|rMacro: " .. msg)
 end
 
+-- True (with the "not in combat" error shown) while in combat lockdown: the guard for
+-- everything that writes macros or profile data.
+function CM.BlockedByCombat()
+    if not InCombatLockdown() then return false end
+    CM.ShowError(CM.L["ERR_COMBAT"])
+    return true
+end
+
 -- Red on-screen error message.
 function CM.ShowError(msg)
     _G.UIErrorsFrame:AddMessage("|cffFF0000" .. msg .. "|r", 1.0, 0.1, 0.1, 1.0)
@@ -136,17 +144,6 @@ function CM.MatchesWordEnd(lowerName, patterns)
     return false
 end
 
--- Checkbox with a text label to its right, anchored at (x, y) from the top left.
-function CM.CreateCheckbox(parent, label, x, y)
-    local chk = CreateFrame("CheckButton", nil, parent, "UICheckButtonTemplate")
-    chk:SetSize(24, 24)
-    chk:SetPoint("TOPLEFT", x, y)
-    chk.text = chk:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    chk.text:SetPoint("LEFT", chk, "RIGHT", 4, 0)
-    chk.text:SetText(label)
-    return chk
-end
-
 -- Item icon texture (question mark while the item data isn't loaded yet).
 function CM.GetItemIcon(itemID)
     return C_Item.GetItemIconByID(itemID) or CM.ICON_UNKNOWN
@@ -160,195 +157,8 @@ function CM.GetFirstInBags(items)
     return nil
 end
 
-function CM.ShowItemTooltip(owner, itemID, anchor)
-    if not itemID then return end
-    GameTooltip:SetOwner(owner, anchor or "ANCHOR_RIGHT")
-    GameTooltip:SetItemByID(itemID)
-    GameTooltip:Show()
-end
-
--- Plain-text tooltip while the mouse is over `frame`.
-function CM.AttachTooltip(frame, text, anchor)
-    frame:SetScript("OnEnter", function(self)
-        GameTooltip:SetOwner(self, anchor or "ANCHOR_RIGHT")
-        GameTooltip:SetText(text, nil, nil, nil, nil, true)
-        GameTooltip:Show()
-    end)
-    frame:SetScript("OnLeave", function() GameTooltip:Hide() end)
-end
-
--- Hides every shown frame named by a CM.<key>, e.g. { "optionsFrame", "ieFrame" }.
-function CM.HideFrames(keys)
-    for _, key in ipairs(keys) do
-        local f = CM[key]
-        if f and f:IsShown() then f:Hide() end
-    end
-end
-
--- Windows that open next to Options and would overlap: opening one closes the
--- others, closing Options closes all of them.
-local SIDE_PANELS = { "ieFrame", "resetFrame", "autoPotionFrame", "restockConfigFrame", "profileFrame" }
-
--- Hides all side panels except the given keys (e.g. the one about to open).
-function CM.HideSidePanels(...)
-    local keep = {}
-    for _, key in ipairs({ ... }) do keep[key] = true end
-    for _, key in ipairs(SIDE_PANELS) do
-        local f = CM[key]
-        if not keep[key] and f and f:IsShown() then f:Hide() end
-    end
-end
-
--- Current Blizzard window frame (the one Settings and Click Bindings use): flat
--- nine-slice border, no portrait, plus a close button. f.TitleText is the title.
-function CM.CreatePanel(name)
-    local f = CreateFrame("Frame", name, UIParent, "DefaultPanelTemplate")
-    f.CloseButton = CreateFrame("Button", nil, f, "UIPanelCloseButtonDefaultAnchors")
-    f.TitleText   = f.TitleContainer.TitleText
-    return f
-end
-
--- Scroll frame with the current minimal scrollbar (hidden while nothing scrolls),
--- reachable as scroll.ScrollBar. The caller sets anchors and the scroll child.
-function CM.CreateScrollFrame(parent)
-    local scroll = CreateFrame("ScrollFrame", nil, parent, "ScrollFrameTemplate")
-    scroll.ScrollBar:SetHideIfUnscrollable(true)
-    return scroll
-end
-
--- Fills `parent` with the scroll frame (`inset` px from the edges) and makes
--- `child` as wide as the scroll area. The scrollbar only takes its 26 px while it
--- is shown, so the list reaches the edge when nothing scrolls.
-function CM.FitScrollFrame(scroll, parent, child, inset)
-    local bar = scroll.ScrollBar
-    local function fit()
-        scroll:ClearAllPoints()
-        scroll:SetPoint("TOPLEFT",     parent, "TOPLEFT",      inset,  -inset)
-        scroll:SetPoint("BOTTOMRIGHT", parent, "BOTTOMRIGHT", bar:IsShown() and -26 or -inset, inset)
-    end
-    bar:HookScript("OnShow", fit)
-    bar:HookScript("OnHide", fit)
-    scroll:HookScript("OnSizeChanged", function(_, width) child:SetWidth(width) end)
-    scroll:SetScrollChild(child)
-    fit()
-end
-
--- Movable, hidden window that closes on Escape. The caller sets size, anchor and title.
-function CM.CreateWindow(name)
-    local f = CM.CreatePanel(name)
-    f:SetMovable(true)
-    f:EnableMouse(true)
-    f:RegisterForDrag("LeftButton")
-    f:SetScript("OnDragStart", f.StartMoving)
-    f:SetScript("OnDragStop",  f.StopMovingOrSizing)
-    f:SetFrameStrata(CM.FRAME_STRATA)
-    f:Hide()
-    tinsert(_G.UISpecialFrames, name)
-    return f
-end
-
--- Numeric edit box that calls onSave(box) when it loses focus (Enter/Escape drop the focus).
-function CM.BindNumberBox(box, onSave)
-    box:SetAutoFocus(false)
-    box:SetNumeric(true)
-    box:SetScript("OnEnterPressed",  box.ClearFocus)
-    box:SetScript("OnEscapePressed", box.ClearFocus)
-    box:SetScript("OnEditFocusLost", onSave)
-end
-
 -- The reminder only bothers max-level characters.
 function CM.IsMaxLevel()
     local maxLevel = _G.GetMaxPlayerLevel and _G.GetMaxPlayerLevel() or 80
     return _G.UnitLevel("player") >= maxLevel
-end
-
--- ── Macro Generation ───────────────────────────────────────────────────────────
--- Joins macro lines, dropping the ones that no longer fit the 254-char body limit.
-function CM.TrimMacroLines(lines)
-    local finalLines, currentLength = {}, 0
-    for _, line in ipairs(lines) do
-        local lineLen = #line + (currentLength == 0 and 0 or 1)
-        if currentLength + lineLen > 254 then break end
-        tinsert(finalLines, line)
-        currentLength = currentLength + lineLen
-    end
-    return table.concat(finalLines, "\n")
-end
-
--- "#showtooltip" line for an item list: `itemID` if given, else the first item in
--- the bags, else the top-priority configured item - so a button never looks empty.
-function CM.GetShowtooltipLine(items, itemID)
-    local id = itemID or CM.GetFirstInBags(items) or (items[1] and items[1].id)
-    return id and ("#showtooltip item:" .. id) or "#showtooltip"
-end
-
-function CM.GetMacroBodyText(key)
-    key = CM.MACRO_OWNER[key] or key
-    local db = CM.db
-    if not db or not db[key] or not db[key].items then return "" end
-    local items = db[key].items
-
-    -- Weapon Enhancements build their body very differently (per-hand,
-    -- weapon-type and enchant-state aware) - see WeaponEnhance.lua.
-    if key == "weaponenhance" then
-        return CM.BuildWeaponEnhanceMacroBody(items)
-    end
-    -- Food + Drink (Forever): one macro over two lists - see FoodDrink.lua.
-    if key == "food" then
-        return CM.BuildFoodDrinkMacroBody()
-    end
-
-    local lines = { CM.GetShowtooltipLine(items), "/cqs", "/stopcasting" }
-
-    -- Only potion, healpotion and manapotion get the stacked fallback chain (every
-    -- item in the bags, in priority order). Flask, healthstone and bufffood use the
-    -- single best item only.
-    if key == "potion" or key == "healpotion" or key == "manapotion" then
-        for _, item in ipairs(items) do
-            if CM.IsInBags(item.id) then tinsert(lines, "/use item:" .. item.id) end
-        end
-    else
-        local firstMatch = CM.GetFirstInBags(items)
-        if firstMatch then tinsert(lines, "/use item:" .. firstMatch) end
-    end
-
-    return CM.TrimMacroLines(lines)
-end
-
--- Creates or updates an account macro. The write is skipped when the body is
--- unchanged (macros are rebuilt on every bag update). createOnly: never touch
--- an existing macro (used at login, when bag data may not be cached yet).
-function CM.WriteMacro(name, body, createOnly)
-    createOnly = createOnly == true
-    local idx = _G.GetMacroIndexByName(name)
-    if idx == 0 then
-        local accountMacros = _G.GetNumMacros()
-        if accountMacros < 120 then
-            _G.CreateMacro(name, CM.ICON_UNKNOWN, body, false)
-        end
-        return
-    end
-    if createOnly then return end
-    local getBody = _G.GetMacroBody or (_G.C_Macro and _G.C_Macro.GetMacroBody)
-    if getBody and getBody(idx) == body then return end
-    _G.EditMacro(idx, name, nil, body)
-end
-
-function CM.UpdateMacro(key, createOnly)
-    if InCombatLockdown() then
-        CM.needsUpdateAfterCombat = true
-        return
-    end
-    key = CM.MACRO_OWNER[key] or key
-    if not CM.db or not CM.MACRO_NAMES[key] then return end
-    CM.WriteMacro(CM.MACRO_NAMES[key], CM.GetMacroBodyText(key), createOnly)
-end
-
--- createOnly == true: only create missing macros, leave existing ones alone.
-function CM.UpdateAllMacros(createOnly)
-    if not CM.db then return end
-    for key in pairs(CM.MACRO_NAMES) do
-        CM.UpdateMacro(key, createOnly)
-    end
-    if CM.HAS_AUTOPOTION then CM.UpdateAutoPotionMacro(createOnly) end
 end

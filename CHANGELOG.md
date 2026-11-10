@@ -18,6 +18,7 @@ All notable changes to this project are documented here.
 - Forever: no AutoPotion (macro, options section and priority window are Retail only).
 - The login reminder is shown one frame after login instead of after one second.
 - Default profile name uses the surname where the client has no realms (Forever).
+- Internal: Core.lua split into Core.lua, Macros.lua and UI/Widgets.lua; shared helpers for list row backgrounds and the combat check.
 
 ---
 

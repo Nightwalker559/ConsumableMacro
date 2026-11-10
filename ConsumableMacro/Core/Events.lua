@@ -116,10 +116,7 @@ end)
 _G.SLASH_CONSUMABLEMACRO1 = "/cm"
 _G.SLASH_CONSUMABLEMACRO2 = "/consumablemacro"
 _G.SlashCmdList["CONSUMABLEMACRO"] = function(msg)
-    if InCombatLockdown() then
-        CM.ShowError(CM.L["ERR_COMBAT"])
-        return
-    end
+    if CM.BlockedByCombat() then return end
     local raw = msg:trim()
     msg = raw:lower()
     if msg == "reset" then

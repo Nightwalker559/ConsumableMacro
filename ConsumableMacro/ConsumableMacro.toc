@@ -12,9 +12,10 @@
 Locales\ConsumableMacro_EN.lua
 Locales\ConsumableMacro_DE.lua
 
-# Core (namespace, state, macro logic, shared helpers, profiles)
+# Core (namespace, state, shared helpers, profiles, macro bodies)
 Core\Core.lua
 Core\Profiles.lua
+Core\Macros.lua
 
 # Modules (features)
 Modules\Reminder.lua
@@ -25,8 +26,9 @@ Modules\WeaponEnhance.lua
 Modules\FoodDrink.lua
 Modules\MacroTooltip.lua
 
-# UI, options and ElvUI skin
+# UI (ElvUI skin, shared widgets, main window, options)
 UI\ElvUISkin.lua
+UI\Widgets.lua
 UI\UI.lua
 UI\Options.lua
 

@@ -242,9 +242,7 @@ local function GetPanelRow(f, i)
     row:SetPoint("TOPLEFT",  f, "TOPLEFT",  10, -30 - (i - 1) * ROW_H)
     row:SetPoint("TOPRIGHT", f, "TOPRIGHT", -10, -30 - (i - 1) * ROW_H)
 
-    row.bg = row:CreateTexture(nil, "BACKGROUND")
-    row.bg:SetAllPoints()
-    row.bg:SetColorTexture(0.2, 0.2, 0.2, 0.4)
+    CM.AddRowBackground(row)
 
     row.hl = row:CreateTexture(nil, "HIGHLIGHT")
     row.hl:SetAllPoints()

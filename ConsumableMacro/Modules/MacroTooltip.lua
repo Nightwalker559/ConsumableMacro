@@ -22,8 +22,9 @@ function CM.GetMacroItems(key)
         tinsert(out, id)
     end
     if key == "food" then
-        add(CM.GetFirstInBags(db.food.items))
-        add(CM.GetFirstInBags(db.drink.items))
+        local foodID, drinkID = CM.GetFoodDrinkIDs()
+        add(foodID)
+        add(drinkID)
     elseif key == "weaponenhance" then
         local _, id = CM.GetWeaponEnhanceTarget(db.weaponenhance.items)
         add(id)

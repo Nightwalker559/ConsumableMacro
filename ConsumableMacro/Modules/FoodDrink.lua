@@ -6,6 +6,11 @@
 local CM = ConsumableMacroAddon
 if not CM.IS_FOREVER then return end
 
+-- The food and the drink the macro uses right now: the first of each list that is in the bags.
+function CM.GetFoodDrinkIDs()
+    return CM.GetFirstInBags(CM.db.food.items), CM.GetFirstInBags(CM.db.drink.items)
+end
+
 function CM.BuildFoodDrinkMacroBody()
     local food, drink = CM.db.food.items, CM.db.drink.items
 
@@ -16,7 +21,7 @@ function CM.BuildFoodDrinkMacroBody()
     end
 
     local lines = { CM.GetShowtooltipLine(all) }
-    local foodID, drinkID = CM.GetFirstInBags(food), CM.GetFirstInBags(drink)
+    local foodID, drinkID = CM.GetFoodDrinkIDs()
     if drinkID then tinsert(lines, "/use [mod:shift,nomod:ctrl] item:" .. drinkID) end
     if foodID  then tinsert(lines, "/use [mod:ctrl,nomod:shift] item:" .. foodID) end
     -- no modifier: both; an item that restores both sits in both lists and is used once

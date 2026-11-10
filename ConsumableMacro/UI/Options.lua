@@ -446,7 +446,7 @@ function CM.BuildResetFrame()
     f.okBtn:SetText(OKAY)
     f.okBtn:SetScript("OnClick", function()
         if not CM.db then f:Hide(); return end
-        if InCombatLockdown() then CM.ShowError(L["ERR_COMBAT"]); return end
+        if CM.BlockedByCombat() then return end
         local filter = GetCheckedTabs(f)
         if not filter then
             CM.ShowError(L["RESET_NONE_SELECTED"])

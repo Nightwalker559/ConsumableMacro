@@ -124,10 +124,7 @@ end
 -- ── Data Mutation ──────────────────────────────────────────────────────────────
 function CM.AddItemToDatabase(itemID)
     if not itemID then return end
-    if InCombatLockdown() then
-        CM.ShowError(CM.L["ERR_COMBAT"])
-        return
-    end
+    if CM.BlockedByCombat() then return end
 
     local itemObj = Item:CreateFromItemID(itemID)
     itemObj:ContinueOnItemLoad(function()
@@ -150,7 +147,7 @@ function CM.AddItemToDatabase(itemID)
             if #added == 0 then return end
             CM.activeTab = added[1]
             CM.RefreshList()
-            CM.UpdateMacro(added[1])
+            for _, tab in ipairs(added) do CM.UpdateMacro(tab) end  -- an item for two tabs changes two macros
         else
             CM.ShowError(CM.L["ERROR_INVALID_ITEM"])
         end

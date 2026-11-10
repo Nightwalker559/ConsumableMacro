@@ -173,10 +173,7 @@ function CM.SetProfile(name)
     local p = ConsumableMacroDB and ConsumableMacroDB.profiles[name]
     if not p or not CM.charDb then return false end
     if p == CM.db then return true end
-    if InCombatLockdown() then
-        CM.ShowError(CM.L["ERR_COMBAT"])
-        return false
-    end
+    if CM.BlockedByCombat() then return false end
 
     -- Store pending edits in the old profile, close windows bound to it.
     CM.CommitOptionsBoxes()

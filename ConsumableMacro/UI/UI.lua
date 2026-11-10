@@ -2,39 +2,6 @@
 -- Main window and list rendering (ElvUI skinning: ElvUISkin.lua).
 local CM = ConsumableMacroAddon
 
--- ── Icon Buttons ───────────────────────────────────────────────────────────────
--- Icon-only buttons (no ElvUI skin needed). The white icon files are tinted;
--- `size` is the drawn size of the 64x64 file and may exceed the 20x20 button.
--- A disabled button greys out. The caller sets position and OnClick.
-local ICON_PATH = "Interface\\AddOns\\ConsumableMacro\\Media\\"
-local GOLD, RED = { 1, 0.82, 0 }, { 0.9, 0.15, 0.15 }
-local ICON_KINDS = {
-    up     = { file = "up.png",     tint = GOLD, size = 32 },
-    down   = { file = "down.png",   tint = GOLD, size = 32 },
-    delete = { file = "remove.png", tint = RED,  size = 20 },
-}
-
-function CM.CreateIconButton(parent, kind)
-    local k = ICON_KINDS[kind]
-    local b = CreateFrame("Button", nil, parent)
-    b:SetSize(20, 20)
-    b:SetNormalTexture(ICON_PATH .. k.file)
-    b:SetHighlightTexture(ICON_PATH .. k.file, "ADD")
-    local normal, glow = b:GetNormalTexture(), b:GetHighlightTexture()
-    for _, t in ipairs({ normal, glow }) do
-        t:ClearAllPoints()
-        t:SetPoint("CENTER")
-        t:SetSize(k.size, k.size)
-        t:SetVertexColor(k.tint[1], k.tint[2], k.tint[3])
-    end
-    glow:SetAlpha(0.35)
-    b:SetScript("OnMouseDown", function() normal:SetAlpha(0.6) end)
-    b:SetScript("OnMouseUp",   function() normal:SetAlpha(1) end)
-    b:SetScript("OnDisable", function() normal:SetDesaturated(true); normal:SetAlpha(0.3); glow:SetAlpha(0) end)
-    b:SetScript("OnEnable",  function() normal:SetDesaturated(false); normal:SetAlpha(1); glow:SetAlpha(0.35) end)
-    return b
-end
-
 -- ── Side Tabs ──────────────────────────────────────────────────────────────────
 -- Category list entry in the style of the Blizzard settings list: a bar in the
 -- category colour, the label, and a highlight on the selected / hovered entry.
@@ -101,9 +68,7 @@ local function CreateRow(i)
     row:SetPoint("TOPLEFT",  0, -(i - 1) * 35)
     row:SetPoint("TOPRIGHT", 0, -(i - 1) * 35)
 
-    row.bg = row:CreateTexture(nil, "BACKGROUND")
-    row.bg:SetAllPoints()
-    row.bg:SetColorTexture(0.2, 0.2, 0.2, 0.4)
+    CM.AddRowBackground(row)
 
     row.icon = row:CreateTexture(nil, "ARTWORK")
     row.icon:SetSize(24, 24)
