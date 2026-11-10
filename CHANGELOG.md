@@ -6,7 +6,7 @@ All notable changes to this project are documented here.
 
 ## [2.0.8] – November 2026
 
-### Added
+### New
 - WoW Forever support (TOC 16001).
 - Forever: Food & Drink tab with two lists (Food, Drink); one macro, CM_FoodDrink, uses the first of each that is in your bags. Shift = drink only, Ctrl = food only.
 - Forever: food is sorted by its tooltip - health goes to Food, mana to Drink, both to both lists (used once in the macro).
