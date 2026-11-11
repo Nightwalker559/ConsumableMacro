@@ -4,7 +4,7 @@ All notable changes to this project are documented here.
 
 ---
 
-## [2.0.8] – November 2026
+## 2.0.8
 
 ### New
 - WoW Forever support (TOC 16001).
