@@ -15,6 +15,7 @@ All notable changes to this project are documented here.
 - Food / Drink and Poison 1 / Poison 2: the open list's button lights up in its colour, the other one is grey.
 
 ### Fixed
+- German: "Item" is now "Gegenstand" ("Gegenstände") throughout.
 - Forever: poisons, oils and sharpening stones/weightstones (e.g. Instant Poison II, Rough Sharpening Stone) are now accepted by the Weapon Enhancements tab. Items outside the catalog are still recognised by name, including the German Classic names (Wetzstein, Gewichtsstein, ...-gift, ...-öl).
 
 ## 2.0.9
