@@ -4,6 +4,11 @@ All notable changes to this project are documented here.
 
 ---
 
+## 2.0.9
+
+### Changed
+- TOC: added Interface 12.1.7 (120107).
+
 ## 2.0.8
 
 ### New
