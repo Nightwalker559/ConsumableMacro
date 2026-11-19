@@ -48,10 +48,15 @@ local function CreateRow(f, i)
     row.icon:SetPoint("LEFT", 4, 0)
     row.icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
 
-    row.arrow = row:CreateTexture(nil, "ARTWORK")  -- fold marker of a heading
+    -- fold marker of a heading: a real button (without mouse, the row takes the click) so
+    -- that ElvUI's collapse skin can restyle its +/- texture
+    row.arrow = CreateFrame("Button", nil, row)
     row.arrow:SetSize(16, 16)
     row.arrow:SetPoint("LEFT", 6, 0)
+    row.arrow:EnableMouse(false)
+    row.arrow:SetNormalTexture("Interface\\Buttons\\UI-MinusButton-Up")
     row.arrow:Hide()
+    CM.SkinCollapseButton(row.arrow)
 
     row.status = row:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
     row.status:SetPoint("RIGHT", -6, 0)
@@ -85,7 +90,7 @@ local function ShowHeading(row, name, groupKey, folded)
     row.itemID, row.inList, row.groupKey = nil, false, groupKey
     row:EnableMouse(true)
     row.icon:Hide()
-    row.arrow:SetTexture(folded and "Interface\\Buttons\\UI-PlusButton-Up" or "Interface\\Buttons\\UI-MinusButton-Up")
+    row.arrow:SetNormalTexture(folded and "Interface\\Buttons\\UI-PlusButton-Up" or "Interface\\Buttons\\UI-MinusButton-Up")
     row.arrow:Show()
     row.text:ClearAllPoints()
     row.text:SetPoint("LEFT", 26, 0)

@@ -13,6 +13,13 @@ function CM.SkinCheckbox(S, cb)
     if S and cb and S.HandleCheckBox then S:HandleCheckBox(cb) end
 end
 
+-- ElvUI's +/- style for a fold button (needs a normal texture set); the frame is skinned
+-- once when it is created, later SetNormalTexture calls keep the style.
+function CM.SkinCollapseButton(button)
+    local S = CM.GetElvSkins()
+    if S and S.HandleCollapseTexture then pcall(S.HandleCollapseTexture, S, button) end
+end
+
 -- Widgets of one Restock setup row: checkbox, boxes, remove "X", fold icon.
 function CM.SkinRestockRow(row)
     local S = CM.GetElvSkins()
