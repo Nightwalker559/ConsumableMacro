@@ -9,8 +9,24 @@ local requested = {}  -- item IDs whose data was asked for (the name arrives lat
 -- reused by every refresh: [id] = name; the rows to show (an item ID, or the locale key of
 -- a group heading); [heading] = how many items follow it; the IDs of the group being filled
 local names, list, counts, bucket = {}, {}, {}, {}
+local headings  -- [heading name] = group key
+
+-- Folded groups, by group key: kept account-wide, so a group folded in one tab stays folded
+-- in the others.
+local function Collapsed()
+    local root = _G.ConsumableMacroDB
+    if not root then return {} end
+    root.catalogCollapsed = root.catalogCollapsed or {}
+    return root.catalogCollapsed
+end
 
 local function OnRowClick(self)
+    if type(self.groupKey) == "string" then  -- a heading folds or unfolds its group
+        local folded = Collapsed()
+        folded[self.groupKey] = not folded[self.groupKey] or nil
+        CM.RefreshCatalog()
+        return
+    end
     if type(self.itemID) ~= "number" or self.inList or CM.BlockedByCombat() then return end
     local tab = CM.activeTab
     if CM.AddItemToTab(self.itemID, tab) then
@@ -31,6 +47,11 @@ local function CreateRow(f, i)
     row.icon:SetSize(22, 22)
     row.icon:SetPoint("LEFT", 4, 0)
     row.icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
+
+    row.arrow = row:CreateTexture(nil, "ARTWORK")  -- fold marker of a heading
+    row.arrow:SetSize(16, 16)
+    row.arrow:SetPoint("LEFT", 6, 0)
+    row.arrow:Hide()
 
     row.status = row:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
     row.status:SetPoint("RIGHT", -6, 0)
@@ -59,23 +80,26 @@ local function ByName(a, b)
     return a < b
 end
 
--- Group heading: gold label and the number of items, no icon, not clickable.
-local function ShowHeading(row, key)
-    row.itemID, row.inList = nil, false
-    row:EnableMouse(false)
+-- Group heading: fold marker, gold label and the number of items; a click folds the group.
+local function ShowHeading(row, name, groupKey, folded)
+    row.itemID, row.inList, row.groupKey = nil, false, groupKey
+    row:EnableMouse(true)
     row.icon:Hide()
+    row.arrow:SetTexture(folded and "Interface\\Buttons\\UI-PlusButton-Up" or "Interface\\Buttons\\UI-MinusButton-Up")
+    row.arrow:Show()
     row.text:ClearAllPoints()
-    row.text:SetPoint("LEFT", 8, 0)
+    row.text:SetPoint("LEFT", 26, 0)
     row.text:SetPoint("RIGHT", row.status, "LEFT", -6, 0)
-    row.text:SetText(("%s |cff888888(%d)|r"):format(CM.L[key], counts[key]))
+    row.text:SetText(("%s |cff888888(%d)|r"):format(CM.L[name], counts[name]))
     row.text:SetTextColor(1, 0.82, 0)
     row.status:SetText("")
 end
 
 local function ShowItem(row, id, listed)
     local inBags = CM.IsInBags(id)
-    row.itemID, row.inList = id, listed
+    row.itemID, row.inList, row.groupKey = id, listed, nil
     row:EnableMouse(true)
+    row.arrow:Hide()
     row.icon:Show()
     row.icon:SetTexture(CM.GetItemIcon(id))
     row.icon:SetDesaturated(listed)
@@ -111,6 +135,8 @@ function CM.RefreshCatalog()
     local onlyBags = f.bagsChk:GetChecked()
     wipe(names); wipe(list); wipe(counts)
     local shown = 0
+    local folded = Collapsed()
+    headings = headings or {}
     for _, group in ipairs(CM.GetCatalogGroups(tab)) do
         wipe(bucket)
         for _, id in ipairs(group.items) do
@@ -127,11 +153,15 @@ function CM.RefreshCatalog()
         end
         if #bucket > 0 then
             table.sort(bucket, ByName)
+            local fold = group.name and folded[group.key] and query == ""  -- a search unfolds, to show every hit
             if group.name then
                 counts[group.name] = #bucket
+                headings[group.name] = group.key
                 list[#list + 1] = group.name
             end
-            for _, id in ipairs(bucket) do list[#list + 1] = id end
+            if not fold then
+                for _, id in ipairs(bucket) do list[#list + 1] = id end
+            end
             shown = shown + #bucket
         end
     end
@@ -144,7 +174,10 @@ function CM.RefreshCatalog()
             row = CreateRow(f, i)
             f.rows[i] = row
         end
-        if type(entry) == "string" then ShowHeading(row, entry) else ShowItem(row, entry, inList[entry] == true) end
+        if type(entry) == "string" then
+            ShowHeading(row, entry, headings[entry], folded[headings[entry]] and query == "")
+        else ShowItem(row, entry, inList[entry] == true)
+        end
         row:Show()
     end
     for i = #list + 1, #f.rows do
