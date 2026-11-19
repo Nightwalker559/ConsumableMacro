@@ -8,6 +8,7 @@ All notable changes to this project are documented here.
 
 ### New
 - Item catalog: every tab has a built-in list of known item IDs (Retail: The War Within and Midnight; Forever: the Classic items). The new Catalog button opens a searchable list of the open tab; a click adds the item. Works in every client language, and the tabs stay empty until you pick.
+- Retail: the catalog window separates Midnight and The War Within under their own headings (Midnight first).
 - Items you drag in or type are sorted by the catalog first, so the tab no longer depends on item names.
 - Forever: Buff Food lists only food with a buff ("Well Fed"); Food & Drink lists only food and drinks without one.
 - Forever, rogues: Poisons tab with two lists, Poison 1 (main hand) and Poison 2 (off hand), and one macro, CM_Poison. One press poisons one weapon, a bare one first, then the one with the least time left; a poison with more than 5 minutes left is not replaced. The catalog lists every Classic poison.

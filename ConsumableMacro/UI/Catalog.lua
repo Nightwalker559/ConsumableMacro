@@ -6,10 +6,12 @@ local CM = ConsumableMacroAddon
 local ROW_H, WIDTH = 28, 400
 
 local requested = {}  -- item IDs whose data was asked for (the name arrives later)
-local names, list = {}, {}  -- reused by every refresh: [id] = name, and the filtered IDs
+-- reused by every refresh: [id] = name; the rows to show (an item ID, or the locale key of
+-- a group heading); [heading] = how many items follow it; the IDs of the group being filled
+local names, list, counts, bucket = {}, {}, {}, {}
 
 local function OnRowClick(self)
-    if not self.itemID or self.inList or CM.BlockedByCombat() then return end
+    if type(self.itemID) ~= "number" or self.inList or CM.BlockedByCombat() then return end
     local tab = CM.activeTab
     if CM.AddItemToTab(self.itemID, tab) then
         CM.RefreshList()  -- also refreshes this window
@@ -57,6 +59,41 @@ local function ByName(a, b)
     return a < b
 end
 
+-- Group heading: gold label and the number of items, no icon, not clickable.
+local function ShowHeading(row, key)
+    row.itemID, row.inList = nil, false
+    row:EnableMouse(false)
+    row.icon:Hide()
+    row.text:ClearAllPoints()
+    row.text:SetPoint("LEFT", 8, 0)
+    row.text:SetPoint("RIGHT", row.status, "LEFT", -6, 0)
+    row.text:SetText(("%s |cff888888(%d)|r"):format(CM.L[key], counts[key]))
+    row.text:SetTextColor(1, 0.82, 0)
+    row.status:SetText("")
+end
+
+local function ShowItem(row, id, listed)
+    local inBags = CM.IsInBags(id)
+    row.itemID, row.inList = id, listed
+    row:EnableMouse(true)
+    row.icon:Show()
+    row.icon:SetTexture(CM.GetItemIcon(id))
+    row.icon:SetDesaturated(listed)
+    row.text:ClearAllPoints()
+    row.text:SetPoint("LEFT", row.icon, "RIGHT", 6, 0)
+    row.text:SetPoint("RIGHT", row.status, "LEFT", -6, 0)
+    row.text:SetText(CM.RankMarkup(id) .. (CM.L["ITEM_LABEL"]):format(names[id] or (CM.L["ITEM_LOADING"]):format(id), id))
+    local shade = listed and 0.45 or (inBags and 1 or 0.75)
+    row.text:SetTextColor(shade, shade, shade)
+    if listed then
+        row.status:SetText(CM.L["CATALOG_IN_LIST"]); row.status:SetTextColor(0.5, 0.5, 0.5)
+    elseif inBags then
+        row.status:SetText(CM.L["IN_BAGS"]); row.status:SetTextColor(0, 1, 0)
+    else
+        row.status:SetText("")
+    end
+end
+
 function CM.RefreshCatalog()
     local f = CM.catalogFrame
     if not f or not f:IsShown() or not CM.db then return end
@@ -72,43 +109,42 @@ function CM.RefreshCatalog()
 
     local query = strtrim(f.search:GetText()):lower()
     local onlyBags = f.bagsChk:GetChecked()
-    wipe(names); wipe(list)
-    local catalog = CM.GetCatalogItems(tab)
-    for _, id in ipairs(catalog) do
-        local name = C_Item.GetItemNameByID(id)
-        if not name and not requested[id] then
-            requested[id] = true
-            C_Item.RequestLoadItemDataByID(id)
+    wipe(names); wipe(list); wipe(counts)
+    local shown = 0
+    for _, group in ipairs(CM.GetCatalogGroups(tab)) do
+        wipe(bucket)
+        for _, id in ipairs(group.items) do
+            local name = C_Item.GetItemNameByID(id)
+            if not name and not requested[id] then
+                requested[id] = true
+                C_Item.RequestLoadItemDataByID(id)
+            end
+            if (not onlyBags or CM.IsInBags(id))
+               and (query == "" or (name and name:lower():find(query, 1, true)) or tostring(id):find(query, 1, true)) then
+                names[id] = name
+                bucket[#bucket + 1] = id
+            end
         end
-        if (not onlyBags or CM.IsInBags(id))
-           and (query == "" or (name and name:lower():find(query, 1, true)) or tostring(id):find(query, 1, true)) then
-            names[id] = name
-            list[#list + 1] = id
+        if #bucket > 0 then
+            table.sort(bucket, ByName)
+            if group.name then
+                counts[group.name] = #bucket
+                list[#list + 1] = group.name
+            end
+            for _, id in ipairs(bucket) do list[#list + 1] = id end
+            shown = shown + #bucket
         end
     end
-    table.sort(list, ByName)
-    f.countLabel:SetText(("(%d / %d)"):format(#list, #catalog))
+    local total = #CM.GetCatalogItems(tab)
+    f.countLabel:SetText(("(%d / %d)"):format(shown, total))
 
-    for i, id in ipairs(list) do
+    for i, entry in ipairs(list) do
         local row = f.rows[i]
         if not row then
             row = CreateRow(f, i)
             f.rows[i] = row
         end
-        local listed, inBags = inList[id] == true, CM.IsInBags(id)
-        row.itemID, row.inList = id, listed
-        row.icon:SetTexture(CM.GetItemIcon(id))
-        row.text:SetText(CM.RankMarkup(id) .. (CM.L["ITEM_LABEL"]):format(names[id] or (CM.L["ITEM_LOADING"]):format(id), id))
-        local shade = listed and 0.45 or (inBags and 1 or 0.75)
-        row.text:SetTextColor(shade, shade, shade)
-        row.icon:SetDesaturated(listed and true or false)
-        if listed then
-            row.status:SetText(CM.L["CATALOG_IN_LIST"]); row.status:SetTextColor(0.5, 0.5, 0.5)
-        elseif inBags then
-            row.status:SetText(CM.L["IN_BAGS"]); row.status:SetTextColor(0, 1, 0)
-        else
-            row.status:SetText("")
-        end
+        if type(entry) == "string" then ShowHeading(row, entry) else ShowItem(row, entry, inList[entry] == true) end
         row:Show()
     end
     for i = #list + 1, #f.rows do
@@ -116,7 +152,7 @@ function CM.RefreshCatalog()
         f.rows[i].itemID = nil
     end
     f.content:SetHeight(math.max(1, #list * ROW_H))
-    f.emptyLabel:SetShown(#catalog == 0)
+    f.emptyLabel:SetShown(total == 0)
 end
 
 local function BuildCatalogFrame()

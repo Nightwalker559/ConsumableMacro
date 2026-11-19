@@ -30,6 +30,8 @@ L["CATALOG_SEARCH"] = "Search:"
 L["CATALOG_ONLY_BAGS"] = "Only items in my bags"
 L["CATALOG_IN_LIST"] = "In list"
 L["CATALOG_EMPTY"] = "No catalog for this list."
+L["CATALOG_GROUP_MIDNIGHT"] = "Midnight"
+L["CATALOG_GROUP_TWW"] = "The War Within"
 L["DROP_ZONE_TITLE"] = "Item-Drop >"
 L["DROP_ZONE_TEXT"] = "Drag item here"
 
