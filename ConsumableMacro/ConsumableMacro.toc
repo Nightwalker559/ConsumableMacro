@@ -17,8 +17,13 @@ Core\Core.lua
 Core\Profiles.lua
 Core\Macros.lua
 
+# Data (item catalog of the running client; each file only loads for its own)
+Data\CatalogRetail.lua
+Data\CatalogForever.lua
+
 # Modules (features)
 Modules\Reminder.lua
+Modules\Catalog.lua
 Modules\Items.lua
 Modules\AutoPotion.lua
 Modules\Restock.lua
@@ -30,6 +35,7 @@ Modules\MacroTooltip.lua
 UI\ElvUISkin.lua
 UI\Widgets.lua
 UI\UI.lua
+UI\Catalog.lua
 UI\Options.lua
 
 # Events + slash commands (last - uses everything above)

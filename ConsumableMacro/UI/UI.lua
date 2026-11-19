@@ -152,7 +152,9 @@ function CM.RefreshList()
     local body = CM.GetMacroBodyText(CM.activeTab)
     f.previewText:SetText(body ~= "" and body or "...")
     f.content:SetHeight(math.max(1, #items * 35))
+    f.catalogBtn:SetEnabled(#CM.GetCatalogItems(CM.activeTab) > 0)
     if CM.restockConfigFrame and CM.restockConfigFrame:IsShown() then CM.RefreshRestockConfig() end
+    CM.RefreshCatalog()
 end
 
 -- ── BuildUI ────────────────────────────────────────────────────────────────────
@@ -177,7 +179,7 @@ function CM.BuildUI()
     measure:Hide()
     local AREA_LEFT = MARGIN + SIDEBAR_WIDTH + 8
     local windowWidth    = AREA_LEFT + AREA_WIDTH + MARGIN
-    local DROPZONE_WIDTH = AREA_WIDTH - 110
+    local DROPZONE_WIDTH = AREA_WIDTH - 110 - 106  -- the Catalog button sits right of it
 
     local f = CM.CreateWindow("ConsumableMacroFrame")
     f:SetSize(windowWidth, 485)
@@ -295,6 +297,12 @@ function CM.BuildUI()
     f.dropSkin:SetPoint("LEFT", f.dropLabel, "LEFT", 85, 0)
     f.dropSkin:SetEnabled(false)
     f.dropSkin:SetText("")
+
+    f.catalogBtn = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
+    f.catalogBtn:SetSize(100, 24)
+    f.catalogBtn:SetText(CM.L["BTN_CATALOG"])
+    f.catalogBtn:SetPoint("LEFT", f.dropSkin, "RIGHT", 6, 0)
+    f.catalogBtn:SetScript("OnClick", CM.ToggleCatalogFrame)
 
     f.dropZone = CreateFrame("Frame", nil, f)
     f.dropZone:SetAllPoints(f.dropSkin)

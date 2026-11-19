@@ -2,27 +2,8 @@
 local CM = ConsumableMacroAddon
 
 -- ── Item Classification ────────────────────────────────────────────────────────
-CM.HEALTHSTONE_IDS = {
-    [5512]   = true,  -- Healthstone
-    [224464] = true,  -- Demonic Healthstone (Pact of Gluttony)
-}
-
--- Whetstones ("edged"), Weightstones ("blunt") and oils ("any"), one entry per
--- quality tier. Name matching was unreliable for these, so the IDs are listed
--- explicitly; add new tiers here as they turn up.
-CM.WEAPONENHANCE_IDS = {
-    [237367] = "blunt",  -- Glänzender Gewichtstein / Refulgent Weightstone (rank 1)
-    [237369] = "blunt",  -- Glänzender Gewichtstein / Refulgent Weightstone (rank 2)
-    [237370] = "edged",  -- Glänzender Schleifstein / Refulgent Whetstone (rank 1)
-    [237371] = "edged",  -- Glänzender Schleifstein / Refulgent Whetstone (rank 2)
-    [243733] = "any",    -- Thalassisches Phönixöl / Thalassian Phoenix Oil (rank 1)
-    [243734] = "any",    -- Thalassisches Phönixöl / Thalassian Phoenix Oil (rank 2)
-    [243735] = "any",    -- Oil of Dawn (rank 1)
-    [243736] = "any",    -- Oil of Dawn (rank 2)
-    [243737] = "any",    -- Smuggler's Enchanted Edge (rank 1)
-    [243738] = "any",    -- Smuggler's Enchanted Edge (rank 2)
-}
-
+-- The item catalog (Data\Catalog*.lua, lookup in Catalog.lua) decides first; items it
+-- doesn't list are sorted by class and name.
 local CLASS_CONSUMABLE = Enum.ItemClass.Consumable
 local SUB = Enum.ItemConsumableSubclass
 
@@ -58,14 +39,20 @@ local function GetRestoreKind(itemID)
     return nil
 end
 
--- Tab key for an item ID, or nil if it fits none. ID lists win, then the name
--- patterns, then the class/subclass fallback.
+-- Tab key for an item ID, or nil if it fits none. The catalog wins (the open tab if it
+-- lists the item, else the first one that does), then the name patterns, then the
+-- class/subclass fallback.
 function CM.GetTargetTabForItem(targetID)
     if not targetID then return nil end
     local L = CM.L
 
-    if CM.HEALTHSTONE_IDS[targetID] then return "healthstone" end
-    if CM.WEAPONENHANCE_IDS[targetID] then return "weaponenhance" end
+    local listed = CM.GetCatalogTabs(targetID)
+    if listed then
+        for _, key in ipairs(listed) do
+            if key == CM.activeTab then return key end
+        end
+        return listed[1]
+    end
 
     -- Class IDs come without an item data load; the name may still be missing for
     -- very recent items, in which case only the class checks apply.
@@ -115,10 +102,23 @@ function CM.GetTargetTabForItem(targetID)
     return nil
 end
 
--- Tabs an item is added to: normally the one GetTargetTabForItem names. Forever: food
--- that restores health goes to Food, mana to Drink, both to both lists (the macro uses
--- such an item once); where the tooltip doesn't say, the open list is kept.
+-- Tabs an item is added to. A catalog item goes to every tab that lists it (a potion that
+-- restores health and mana: Heal Pots and Mana Pots; the macro uses it once), except
+-- Buff Food, which is only the target while that tab is open or the item has no other.
+-- Other items go to the tab GetTargetTabForItem names; Forever food that restores health
+-- goes to Food, mana to Drink, both to both lists, and where the tooltip doesn't say,
+-- the open list is kept.
 function CM.GetTargetTabsForItem(itemID)
+    local listed = CM.GetCatalogTabs(itemID)
+    if listed then
+        local tabs = {}
+        for _, key in ipairs(listed) do
+            if key == CM.activeTab and key == "bufffood" then return { key } end
+            if key ~= "bufffood" then tabs[#tabs + 1] = key end
+        end
+        return #tabs > 0 and tabs or { "bufffood" }
+    end
+
     local tab = CM.GetTargetTabForItem(itemID)
     if tab == "food" or tab == "drink" then
         local kind = GetRestoreKind(itemID)
@@ -132,6 +132,16 @@ function CM.GetTargetTabsForItem(itemID)
 end
 
 -- ── Data Mutation ──────────────────────────────────────────────────────────────
+-- Appends the item to the list of `tab`; false if it is already in it.
+function CM.AddItemToTab(itemID, tab)
+    local items = CM.db[tab].items
+    for _, existing in ipairs(items) do
+        if existing.id == itemID then return false end
+    end
+    tinsert(items, { id = itemID })
+    return true
+end
+
 function CM.AddItemToDatabase(itemID)
     if not itemID then return end
     if CM.BlockedByCombat() then return end
@@ -145,14 +155,7 @@ function CM.AddItemToDatabase(itemID)
         if targetTabs then
             local added = {}
             for _, tab in ipairs(targetTabs) do
-                local known = false
-                for _, existing in ipairs(CM.db[tab].items) do
-                    if existing.id == id then known = true end
-                end
-                if not known then
-                    tinsert(CM.db[tab].items, { id = id })
-                    tinsert(added, tab)
-                end
+                if CM.AddItemToTab(id, tab) then tinsert(added, tab) end
             end
             if #added == 0 then return end
             CM.activeTab = added[1]

@@ -54,7 +54,7 @@ function CM.ApplyElvUISkin()
     -- Main window (S:HandleFrame also skins the window's close button)
     frame(mf); frame(mf.scrollBg)
     edit(mf.editBox); edit(mf.dropSkin)
-    button(mf.addBtn); button(mf.updateBtn); button(mf.optionsBtn)
+    button(mf.addBtn); button(mf.catalogBtn); button(mf.updateBtn); button(mf.optionsBtn)
     frame(mf.sideBar)
     for _, b in pairs(mf.subBtns) do button(b) end
     -- flat selection tint in ElvUI's accent colour instead of Blizzard's list atlases
@@ -110,6 +110,14 @@ function CM.ApplyElvUISkin()
         check(rc.enableChk); check(rc.bankChk)
         edit(rc.addBox); button(rc.addBtn)
         scrollbar(rc.scroll)
+    end
+
+    -- Catalog window
+    local cf = CM.catalogFrame
+    if cf then
+        frame(cf); frame(cf.scrollBg)
+        edit(cf.search); check(cf.bagsChk)
+        scrollbar(cf.scroll)
     end
 
     -- IE selection + Reset frames
