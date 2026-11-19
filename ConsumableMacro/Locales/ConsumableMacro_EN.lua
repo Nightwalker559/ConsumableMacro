@@ -49,7 +49,7 @@ L["PATTERN_RESTORE_HEALTH"] = {"health"}
 L["PATTERN_RESTORE_MANA"] = {"mana"}
 L["PATTERN_EDGED"] ={"whetstone", "sharpening stone"}
 L["PATTERN_BLUNT"] = {"weightstone"}
-L["PATTERN_ENHANCE"] = {"poison", " oil"}
+L["PATTERN_ENHANCE"] = {" poison", " oil"}  -- poisons and oils (whole words)
 
 L["TAB_MANAPOTION"] = "Mana Pots"
 L["INFO_MANAPOTION"] = "Mana Refill"

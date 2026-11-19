@@ -48,9 +48,9 @@ L["PATTERN_HEALTHSTONE"] = {"Gesundheitsstein"}
 L["PATTERN_EXCLUDE"] = {"tee", "wasser"}
 L["PATTERN_RESTORE_HEALTH"] = {"gesundheit"}
 L["PATTERN_RESTORE_MANA"] = {"mana"}
-L["PATTERN_EDGED"] ={"schleifstein"}
-L["PATTERN_BLUNT"] = {"gewichtstein"}
-L["PATTERN_ENHANCE"] = {"gift", "öl"}
+L["PATTERN_EDGED"] ={"schleifstein", "wetzstein"}  -- Retail: Schleifstein, Classic: Wetzstein
+L["PATTERN_BLUNT"] = {"gewichtstein", "gewichtsstein"}  -- Retail: Gewichtstein, Classic: Gewichtsstein
+L["PATTERN_ENHANCE"] = {" gift", "öl", "Öl"}  -- poisons and oils; "Öl" because lower() leaves umlauts alone
 
 L["TAB_MANAPOTION"] = "Manatränke"
 L["INFO_MANAPOTION"] = "Mana-Nachschub"
