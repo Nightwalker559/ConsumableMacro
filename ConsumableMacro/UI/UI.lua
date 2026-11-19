@@ -113,10 +113,14 @@ function CM.RefreshList()
     for _, t in ipairs(CM.TABS) do
         if f.tabBtns[t.key] then CM.SetSideTabSelected(f.tabBtns[t.key], t.key == owner) end
     end
-    -- the switch between the lists of the open sidebar entry (Food / Drink, Poison 1 / 2)
+    -- the switch between the lists of the open sidebar entry (Food / Drink, Poison 1 / 2):
+    -- the open list lights up in its colour, the other one is grey
     for key, b in pairs(f.subBtns) do
+        local active = key == CM.activeTab
         b:SetShown(b.group == owner)
-        b:SetEnabled(key ~= CM.activeTab)
+        b.glow:SetShown(active)
+        b:SetNormalFontObject(active and "GameFontHighlight" or "GameFontDisable")
+        b:SetHighlightFontObject("GameFontHighlight")
     end
 
     if currentTabInfo then
@@ -225,6 +229,10 @@ function CM.BuildUI()
             b:SetSize(80, 20)
             b:SetText(CM.L[t.tabL] or t.key)
             b.group = group
+            b.glow = b:CreateTexture(nil, "ARTWORK", nil, 1)  -- under the label
+            b.glow:SetAllPoints()
+            b.glow:SetColorTexture(t.color[1], t.color[2], t.color[3], 0.35)
+            b.glow:Hide()
             -- ends above the hint line below the title, which runs the full list width
             if prev[group] then b:SetPoint("RIGHT", prev[group], "LEFT", -4, 0) else b:SetPoint("TOPRIGHT", -MARGIN - 6, -29) end
             b:SetScript("OnClick", function() CM.activeTab = t.key; CM.RefreshList() end)

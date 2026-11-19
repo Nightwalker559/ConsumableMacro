@@ -11,6 +11,7 @@ All notable changes to this project are documented here.
 - Items you drag in or type are sorted by the catalog first, so the tab no longer depends on item names.
 - Forever: Buff Food lists only food with a buff ("Well Fed"); Food & Drink lists only food and drinks without one.
 - Forever, rogues: Poisons tab with two lists, Poison 1 (main hand) and Poison 2 (off hand), and one macro, CM_Poison. One press poisons one weapon, a bare one first, then the one with the least time left; a poison with more than 5 minutes left is not replaced. The catalog lists every Classic poison.
+- Food / Drink and Poison 1 / Poison 2: the open list's button lights up in its colour, the other one is grey.
 
 ### Fixed
 - Forever: poisons, oils and sharpening stones/weightstones (e.g. Instant Poison II, Rough Sharpening Stone) are now accepted by the Weapon Enhancements tab. Items outside the catalog are still recognised by name, including the German Classic names (Wetzstein, Gewichtsstein, ...-gift, ...-öl).
