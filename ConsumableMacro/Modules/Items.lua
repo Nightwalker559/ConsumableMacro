@@ -98,6 +98,14 @@ function CM.GetTargetTabForItem(targetID)
         if CM.MatchesAny(name, L["PATTERN_HEAL"])  then return "healpotion" end
     end
 
+    -- Forever: stones, poisons and oils don't carry the Item Enhancement subclass, so
+    -- they are recognised by name (leading space: " oil" must not hit "boil").
+    if isConsumable and name
+       and (CM.MatchesAny(name, L["PATTERN_EDGED"]) or CM.MatchesAny(name, L["PATTERN_BLUNT"])
+            or CM.MatchesAny(" " .. name, L["PATTERN_ENHANCE"])) then
+        return "weaponenhance"
+    end
+
     if not isConsumable then return nil end
     if subclassID == SUB.Potion then return "potion" end
     if subclassID == SUB.Elixir or subclassID == SUB.Flasksphials then return "flask" end

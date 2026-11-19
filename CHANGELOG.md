@@ -4,6 +4,11 @@ All notable changes to this project are documented here.
 
 ---
 
+## Unreleased
+
+### Fixed
+- Forever: poisons, oils and sharpening stones/weightstones without the Item Enhancement subclass (e.g. Instant Poison II, Rough Sharpening Stone) are now accepted by the Weapon Enhancements tab (recognised by name).
+
 ## 2.0.9
 
 ### Changed

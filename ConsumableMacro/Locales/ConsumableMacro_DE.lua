@@ -50,6 +50,7 @@ L["PATTERN_RESTORE_HEALTH"] = {"gesundheit"}
 L["PATTERN_RESTORE_MANA"] = {"mana"}
 L["PATTERN_EDGED"] ={"schleifstein"}
 L["PATTERN_BLUNT"] = {"gewichtstein"}
+L["PATTERN_ENHANCE"] = {"gift", "öl"}
 
 L["TAB_MANAPOTION"] = "Manatränke"
 L["INFO_MANAPOTION"] = "Mana-Nachschub"
