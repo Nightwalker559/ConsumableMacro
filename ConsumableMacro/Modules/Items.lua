@@ -103,21 +103,14 @@ function CM.GetTargetTabForItem(targetID)
 end
 
 -- Tabs an item is added to. A catalog item goes to every tab that lists it (a potion that
--- restores health and mana: Heal Pots and Mana Pots; the macro uses it once), except
--- Buff Food, which is only the target while that tab is open or the item has no other.
+-- restores health and mana: Heal Pots and Mana Pots; the macro uses it once). Buff Food
+-- and Food/Drink never share an item: food with a buff is only Buff Food.
 -- Other items go to the tab GetTargetTabForItem names; Forever food that restores health
 -- goes to Food, mana to Drink, both to both lists, and where the tooltip doesn't say,
 -- the open list is kept.
 function CM.GetTargetTabsForItem(itemID)
     local listed = CM.GetCatalogTabs(itemID)
-    if listed then
-        local tabs = {}
-        for _, key in ipairs(listed) do
-            if key == CM.activeTab and key == "bufffood" then return { key } end
-            if key ~= "bufffood" then tabs[#tabs + 1] = key end
-        end
-        return #tabs > 0 and tabs or { "bufffood" }
-    end
+    if listed then return listed end
 
     local tab = CM.GetTargetTabForItem(itemID)
     if tab == "food" or tab == "drink" then

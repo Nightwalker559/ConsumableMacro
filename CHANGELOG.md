@@ -9,6 +9,7 @@ All notable changes to this project are documented here.
 ### New
 - Item catalog: every tab has a built-in list of known item IDs (Retail: The War Within and Midnight; Forever: the Classic items). The new Catalog button opens a searchable list of the open tab; a click adds the item. Works in every client language, and the tabs stay empty until you pick.
 - Items you drag in or type are sorted by the catalog first, so the tab no longer depends on item names.
+- Forever: Buff Food lists only food with a buff ("Well Fed"); Food & Drink lists only food and drinks without one.
 
 ### Fixed
 - Forever: poisons, oils and sharpening stones/weightstones (e.g. Instant Poison II, Rough Sharpening Stone) are now accepted by the Weapon Enhancements tab. Items outside the catalog are still recognised by name, including the German Classic names (Wetzstein, Gewichtsstein, ...-gift, ...-öl).
