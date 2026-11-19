@@ -28,6 +28,9 @@ function CM.GetMacroItems(key)
     elseif key == "weaponenhance" then
         local _, id = CM.GetWeaponEnhanceTarget(db.weaponenhance.items)
         add(id)
+    elseif key == "poison" then
+        local _, id = CM.GetPoisonTarget()
+        add(id)
     elseif db[key] then
         add(CM.GetFirstInBags(db[key].items))
     end

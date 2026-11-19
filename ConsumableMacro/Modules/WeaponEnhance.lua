@@ -2,7 +2,8 @@
 -- Whetstones, Weightstones and oils share one priority list. The macro matches an
 -- item's weapon-type restriction (edged/blunt/any) against the equipped weapon and
 -- targets ONE hand per press (both hands in one press doesn't work reliably): a
--- bare hand first, then the hand with the least time left.
+-- bare hand first, then the hand with the least time left. The poison macro of the
+-- rogue (Poison.lua) picks its hand the same way (CM.PickWeaponHand).
 local CM = ConsumableMacroAddon
 
 local MAINHAND, OFFHAND = 16, 17
@@ -48,9 +49,9 @@ local function GetBestItemFor(items, weaponType)
 end
 
 -- Hand the next press should target and the item for it: slot, itemID (nil, nil if
--- no hand has a weapon an item fits). Bare hands first (mainhand, then offhand),
--- then by least time left.
-function CM.GetWeaponEnhanceTarget(items)
+-- no hand has a weapon an item fits). Bare hands first (mainhand, then offhand), then by
+-- least time left. itemFor(slot, weaponType) names the item for a hand holding a weapon.
+function CM.PickWeaponHand(itemFor)
     -- returns: hasMain, mainExpiration (ms), mainCharges, mainEnchantID, hasOff, offExpiration, ...
     local hasMain, mainExp, _, _, hasOff, offExp = _G.GetWeaponEnchantInfo()
 
@@ -67,10 +68,14 @@ function CM.GetWeaponEnhanceTarget(items)
 
     for _, slot in ipairs(order) do
         local weaponType = GetEquippedWeaponType(slot)
-        local itemID = weaponType and GetBestItemFor(items, weaponType)
+        local itemID = weaponType and itemFor(slot, weaponType)
         if itemID then return slot, itemID end
     end
     return nil, nil
+end
+
+function CM.GetWeaponEnhanceTarget(items)
+    return CM.PickWeaponHand(function(_, weaponType) return GetBestItemFor(items, weaponType) end)
 end
 
 function CM.BuildWeaponEnhanceMacroBody(items)
@@ -87,22 +92,42 @@ function CM.BuildWeaponEnhanceMacroBody(items)
     return CM.TrimMacroLines(lines)
 end
 
--- ── Keep the macro in sync ─────────────────────────────────────────────────────
--- An expiring buff or a weapon swap fires no bag event, so this tab also rebuilds
--- on a timer and on equipment changes.
-local lastMain, lastOff, lastSlot
+-- ── Keep the macros in sync ────────────────────────────────────────────────────
+-- An expiring buff or a weapon swap fires no bag event, so the macros that pick a hand
+-- also rebuild on a timer and on equipment changes. CM.HAND_MACROS[macro key] =
+-- { lists = tab keys whose items feed it, target = function returning the next hand }.
+CM.HAND_MACROS = {
+    weaponenhance = {
+        lists  = { "weaponenhance" },
+        target = function() return (CM.GetWeaponEnhanceTarget(CM.db.weaponenhance.items)) end,
+    },
+}
+
+local last = {}  -- [macro key] = { main, off, slot } as of the last rebuild
+
+local function HasItems(lists)
+    for _, tab in ipairs(lists) do
+        local items = CM.db[tab] and CM.db[tab].items
+        if items and #items > 0 then return true end
+    end
+    return false
+end
 
 local function CheckEnchantState()
     local db = CM.db
     if not db or not db.autoUpdate then return end
-    local items = db.weaponenhance and db.weaponenhance.items
-    if not items or #items == 0 then return end
 
     local hasMain, _, _, _, hasOff = _G.GetWeaponEnchantInfo()
-    local slot = CM.GetWeaponEnhanceTarget(items)
-    if hasMain ~= lastMain or hasOff ~= lastOff or slot ~= lastSlot then
-        lastMain, lastOff, lastSlot = hasMain, hasOff, slot
-        CM.UpdateMacro("weaponenhance")
+    for key, macro in pairs(CM.HAND_MACROS) do
+        if HasItems(macro.lists) then
+            local slot = macro.target()
+            local state = last[key]
+            if not state then state = {}; last[key] = state end
+            if hasMain ~= state.main or hasOff ~= state.off or slot ~= state.slot then
+                state.main, state.off, state.slot = hasMain, hasOff, slot
+                CM.UpdateMacro(key)
+            end
+        end
     end
 end
 

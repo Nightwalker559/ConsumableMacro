@@ -113,10 +113,9 @@ function CM.RefreshList()
     for _, t in ipairs(CM.TABS) do
         if f.tabBtns[t.key] then CM.SetSideTabSelected(f.tabBtns[t.key], t.key == owner) end
     end
-    -- the switch between lists that share a sidebar entry (Food / Drink)
-    local inGroup = f.subBtns[CM.activeTab] ~= nil
+    -- the switch between the lists of the open sidebar entry (Food / Drink, Poison 1 / 2)
     for key, b in pairs(f.subBtns) do
-        b:SetShown(inGroup)
+        b:SetShown(b.group == owner)
         b:SetEnabled(key ~= CM.activeTab)
     end
 
@@ -217,19 +216,21 @@ function CM.BuildUI()
     for _, t in ipairs(CM.TABS) do
         if t.sideOf then hasSubLists[t.sideOf] = true end
     end
-    local prev
+    local prev = {}  -- [group] = the button last placed for that group (groups never show together)
     for i = #CM.TABS, 1, -1 do
         local t = CM.TABS[i]
         if t.sideOf or hasSubLists[t.key] then
+            local group = t.sideOf or t.key
             local b = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
             b:SetSize(80, 20)
             b:SetText(CM.L[t.tabL] or t.key)
+            b.group = group
             -- ends above the hint line below the title, which runs the full list width
-            if prev then b:SetPoint("RIGHT", prev, "LEFT", -4, 0) else b:SetPoint("TOPRIGHT", -MARGIN - 6, -29) end
+            if prev[group] then b:SetPoint("RIGHT", prev[group], "LEFT", -4, 0) else b:SetPoint("TOPRIGHT", -MARGIN - 6, -29) end
             b:SetScript("OnClick", function() CM.activeTab = t.key; CM.RefreshList() end)
             b:Hide()
             f.subBtns[t.key] = b
-            prev = b
+            prev[group] = b
         end
     end
 

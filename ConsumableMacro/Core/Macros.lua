@@ -32,6 +32,10 @@ function CM.GetMacroBodyText(key)
     if key == "weaponenhance" then
         return CM.BuildWeaponEnhanceMacroBody(items)
     end
+    -- Poisons (Forever, rogue): one macro over two lists, one hand per press - see Poison.lua.
+    if key == "poison" then
+        return CM.BuildPoisonMacroBody()
+    end
     -- Food + Drink (Forever): one macro over two lists - see FoodDrink.lua.
     if key == "food" then
         return CM.BuildFoodDrinkMacroBody()

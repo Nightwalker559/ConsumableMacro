@@ -72,6 +72,16 @@ if CM.IS_FOREVER then
 
     tinsert(CM.TABS, 4, { key = "manapotion", tabL = "TAB_MANAPOTION", info = "INFO_MANAPOTION", sub = "SUB_MANAPOTION", color = {0.3, 0.5, 1} })
     CM.MACRO_NAMES.manapotion = "CM_ManaPotion"
+
+    -- Rogues: poisons, two lists (poison 1 for the main hand, poison 2 for the off hand)
+    -- behind one sidebar entry, one macro, CM_Poison (Modules\Poison.lua). Before Weapon Enhancements.
+    if select(2, _G.UnitClass("player")) == "ROGUE" then
+        local at = #CM.TABS
+        tinsert(CM.TABS, at, { key = "poison",    tabL = "TAB_POISON1", sideL = "TAB_POISONS", info = "INFO_POISON1", sub = "SUB_POISON", color = {0.45, 0.9, 0.3} })
+        tinsert(CM.TABS, at + 1, { key = "poisonoff", tabL = "TAB_POISON2", sideOf = "poison", info = "INFO_POISON2", sub = "SUB_POISON", color = {0.3, 0.75, 0.55} })
+        CM.MACRO_NAMES.poison = "CM_Poison"
+        CM.MACRO_OWNER.poisonoff = "poison"
+    end
 end
 
 -- Tabs the reminder leaves out: the fixed ones, plus Mana Pots for a class without mana

@@ -28,6 +28,7 @@ Modules\Items.lua
 Modules\AutoPotion.lua
 Modules\Restock.lua
 Modules\WeaponEnhance.lua
+Modules\Poison.lua
 Modules\FoodDrink.lua
 Modules\MacroTooltip.lua
 

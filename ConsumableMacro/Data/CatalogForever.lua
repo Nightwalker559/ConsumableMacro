@@ -7,7 +7,7 @@
 local CM = ConsumableMacroAddon
 if not CM.IS_FOREVER then return end
 
--- Weapon enhancements: id = which weapon it fits ("edged" | "blunt" | "any").
+-- Weapon enhancements (stones and oils): id = which weapon it fits ("edged" | "blunt" | "any").
 CM.WEAPONENHANCE_IDS = {
     [2862] = "edged", [2863] = "edged", [2871] = "edged", [7964] = "edged", [12404] = "edged",  -- Sharpening Stones
     [287978] = "edged",                                                                         -- Rough Sharpening Stone
@@ -16,14 +16,20 @@ CM.WEAPONENHANCE_IDS = {
     [3824] = "any", [3829] = "any",                      -- Shadow Oil, Frost Oil
     [20744] = "any", [20746] = "any", [20749] = "any", [20750] = "any", [23123] = "any", [287979] = "any",  -- Wizard Oils
     [20745] = "any", [20747] = "any", [20748] = "any",   -- Mana Oils
-    [2892] = "any", [2893] = "any", [8984] = "any", [8985] = "any", [20844] = "any",  -- Deadly Poison
-    [3775] = "any", [3776] = "any",                                                   -- Crippling Poison
-    [5237] = "any", [6951] = "any", [9186] = "any",                                   -- Mind-numbing Poison
-    [6947] = "any", [6949] = "any", [6950] = "any", [8926] = "any", [8927] = "any", [8928] = "any",  -- Instant Poison
-    [10918] = "any", [10920] = "any", [10921] = "any", [10922] = "any",               -- Wound Poison
+}
+
+-- Poisons (rogue tabs Poison 1 / Poison 2: the same list for both hands).
+local POISONS = {
+    2892, 2893, 8984, 8985, 20844,                  -- Deadly Poison
+    3775, 3776,                                     -- Crippling Poison
+    5237, 6951, 9186,                               -- Mind-numbing Poison
+    6947, 6949, 6950, 8926, 8927, 8928,             -- Instant Poison
+    10918, 10920, 10921, 10922,                     -- Wound Poison
 }
 
 CM.CATALOG = {
+  poison = POISONS,
+  poisonoff = POISONS,
   flask = {
     2454, 2457, 2458, 2593, 3382, 3383, 3388, 3389, 3390, 3391,
     3825, 3826, 3828, 5996, 5997, 6373, 6662, 8410, 8411, 8412,

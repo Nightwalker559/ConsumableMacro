@@ -104,13 +104,20 @@ end
 
 -- Tabs an item is added to. A catalog item goes to every tab that lists it (a potion that
 -- restores health and mana: Heal Pots and Mana Pots; the macro uses it once). Buff Food
--- and Food/Drink never share an item: food with a buff is only Buff Food.
+-- and Food/Drink never share an item: food with a buff is only Buff Food. A poison goes to
+-- one list only, see below.
 -- Other items go to the tab GetTargetTabForItem names; Forever food that restores health
 -- goes to Food, mana to Drink, both to both lists, and where the tooltip doesn't say,
 -- the open list is kept.
 function CM.GetTargetTabsForItem(itemID)
     local listed = CM.GetCatalogTabs(itemID)
-    if listed then return listed end
+    if listed then
+        -- a poison fits either hand: the list being edited, else Poison 1
+        if listed[1] == "poison" and listed[2] == "poisonoff" then
+            return { CM.activeTab == "poisonoff" and "poisonoff" or "poison" }
+        end
+        return listed
+    end
 
     local tab = CM.GetTargetTabForItem(itemID)
     if tab == "food" or tab == "drink" then

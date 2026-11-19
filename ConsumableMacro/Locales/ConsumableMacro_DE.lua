@@ -76,6 +76,12 @@ L["SUB_DRINK"] = "Ein Klick isst und trinkt: das erste Essen und das erste Getr�
 L["TAB_BUFFFOOD"] = "Bufffood"
 L["INFO_FOOD"] = "Stärkung"
 L["SUB_FOOD"] = "Vor jedem Pull kochen oder kaufen. Nie auf nüchternem Magen raiden."
+L["TAB_POISONS"] = "Gifte"
+L["TAB_POISON1"] = "Gift 1"
+L["TAB_POISON2"] = "Gift 2"
+L["INFO_POISON1"] = "Gift 1 (Hauptwaffe)"
+L["INFO_POISON2"] = "Gift 2 (Nebenhandwaffe)"
+L["SUB_POISON"] = "Gift 1 kommt auf die Hauptwaffe, Gift 2 auf die Nebenhandwaffe: jeweils das erste der Liste, das in deinen Taschen liegt. Ein Klick vergiftet eine Waffe - zuerst eine unvergiftete, sonst die mit der kürzesten Restzeit."
 
 L["IE_HEADER"]         = "Import / Export"
 L["BTN_EXPORT"]        = "Exportieren"

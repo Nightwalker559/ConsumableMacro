@@ -75,6 +75,12 @@ L["SUB_DRINK"] = "One press eats and drinks: the first food and the first drink 
 L["TAB_BUFFFOOD"] = "Buff Food"
 L["INFO_FOOD"] = "Nourishment"
 L["SUB_FOOD"] = "Cook or buy before every pull. Never raid on an empty stomach."
+L["TAB_POISONS"] = "Poisons"
+L["TAB_POISON1"] = "Poison 1"
+L["TAB_POISON2"] = "Poison 2"
+L["INFO_POISON1"] = "Poison 1 (main hand)"
+L["INFO_POISON2"] = "Poison 2 (off hand)"
+L["SUB_POISON"] = "Poison 1 goes on the main hand, poison 2 on the off hand: the first of each list that is in your bags. One press poisons one weapon - a bare one first, then the one with the least time left."
 
 L["IE_HEADER"]         = "Import / Export"
 L["BTN_EXPORT"]        = "Export"
