@@ -26,7 +26,8 @@ function CM.BuildOptionsFrame()
     o.TitleText:SetText(CM.TITLE .. " – " .. L["OPTIONS_TITLE"])
     o:SetScript("OnHide", function()
         CM.CommitOptionsBoxes(true)
-        CM.HideSidePanels()
+        CM.HideSidePanels("catalogFrame")  -- the catalog belongs to the main window: it stays and moves back
+        CM.AnchorCatalogFrame()
     end)
 
     CM.optionsFrame = o
@@ -262,6 +263,7 @@ function CM.ToggleOptionsFrame()
     CM.RefreshOptionsFrame()
     o.scroll:SetVerticalScroll(0)
     o:Show()
+    CM.AnchorCatalogFrame()  -- an open catalog window moves right of Options
     CM.ApplyElvUISkin()
 end
 

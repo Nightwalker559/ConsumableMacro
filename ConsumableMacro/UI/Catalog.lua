@@ -254,16 +254,24 @@ local function BuildCatalogFrame()
     return f
 end
 
--- Opens the window right of Options (or of the main window), closes it again if shown.
+-- The window sits right of Options while that is open, else right of the main window.
+-- Options calls this when it opens and closes, so the two never overlap.
+function CM.AnchorCatalogFrame()
+    local f = CM.catalogFrame
+    if not f then return end
+    local o = CM.optionsFrame
+    f:ClearAllPoints()
+    f:SetPoint("LEFT", (o and o:IsShown()) and o or CM.mainFrame, "RIGHT", 8, 0)
+end
+
+-- Opens the window, closes it again if shown.
 function CM.ToggleCatalogFrame()
     local f = BuildCatalogFrame()
     if f:IsShown() then
         f:Hide()
         return
     end
-    local o = CM.optionsFrame
-    f:ClearAllPoints()
-    f:SetPoint("LEFT", (o and o:IsShown()) and o or CM.mainFrame, "RIGHT", 8, 0)
+    CM.AnchorCatalogFrame()
     f.search:SetText("")
     CM.HideSidePanels("catalogFrame")
     f:Show()
