@@ -254,14 +254,9 @@ local function BuildCatalogFrame()
     return f
 end
 
--- The window sits right of Options while that is open, else right of the main window.
--- Options calls this when it opens and closes, so the two never overlap.
+-- Options calls this when it opens and closes, so an open catalog window never overlaps it.
 function CM.AnchorCatalogFrame()
-    local f = CM.catalogFrame
-    if not f then return end
-    local o = CM.optionsFrame
-    f:ClearAllPoints()
-    f:SetPoint("LEFT", (o and o:IsShown()) and o or CM.mainFrame, "RIGHT", 8, 0)
+    if CM.catalogFrame then CM.AnchorSidePanel(CM.catalogFrame) end
 end
 
 -- Opens the window, closes it again if shown.

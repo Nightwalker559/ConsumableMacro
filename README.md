@@ -3,13 +3,14 @@
 Automatically creates and maintains macros for the best available consumables in your bags — no manual macro editing needed.
 
 **Author:** Nightwalker559
-**Interface:** 120100 (Patch 12.1, WoW Midnight)
+**Interface:** 120100 / 120105 / 120107 (Patch 12.1, WoW Midnight), 16001 (WoW Forever)
 
 ---
 
 ## Features
 
-- **Auto-managed macros** for six categories: Flask, Potion, Heal Potion, Healthstone, Buff Food, Weapon Enhancements.
+- **Auto-managed macros** for six categories: Flask, Potion, Heal Potion, Healthstone, Buff Food, Weapon Enhancements. WoW Forever adds Mana Pots, Food & Drink and, for rogues, Poisons.
+- **Item catalog** — a searchable list of known items per category; one click adds an item. See below.
 - **Priority lists** per category — add items by Item-ID or drag & drop, reorder with the arrow buttons.
 - **Auto-update on bag change** (toggleable) — macros always use the best item currently in your bags.
 - **Reminder** — shows missing/low consumables on login and after leaving a dungeon, raid, delve, or scenario. Configurable minimum-count thresholds per category (checked against your top-priority item in the bags). Fleeting/conjured items (e.g. cauldron flasks) are skipped when picking that item.
@@ -21,6 +22,7 @@ Automatically creates and maintains macros for the best available consumables in
 - **Reset** — clear selected categories back to empty.
 - **ElvUI skin support** — auto-detected and applied to all frames.
 - **Combat-safe** — all mutating actions are blocked while in combat.
+- **WoW Forever** support (Classic content on the Mainline client), with the same features where they apply.
 - Full **English / German** localization.
 
 ---
@@ -34,7 +36,7 @@ Automatically creates and maintains macros for the best available consumables in
 - `/cm help` — show command list in chat.
 
 ### Adding items
-Type an Item-ID into the input box and press Enter/click **Add**, or drag an item from your bags onto the drop zone. The addon detects the correct category automatically (by item subclass, or by name pattern as a fallback).
+Open the **Catalog** (button next to the drop zone) and click an item, type an Item-ID into the input box and press Enter/click **Add**, or drag an item from your bags onto the drop zone. The addon detects the correct category automatically: first by the item catalog, then by item subclass and name pattern for items the catalog doesn't list.
 
 ### Options
 Click the **Options** button in the main window for:
@@ -75,6 +77,25 @@ Each button press advances one step in the sequence (`/castsequence`). It resets
 If a category has nothing available (unknown spell, empty list, no matching item in bags), it's simply skipped — the macro never errors out.
 
 Disabling AutoPotion deletes the macro rather than leaving an empty one on your bars.
+
+---
+
+## Item Catalog
+
+Every category has a built-in list of known item IDs, so nothing depends on item names and it works in every client language. The categories start empty; you choose what goes in.
+
+- **Catalog** button (main window, next to the drop zone): lists the items of the open category with icon, name and ID, sorted by name. Search by name or ID; optionally show only items in your bags. A click adds the item at the end of the list (items already in the list are greyed out).
+- Retail: The War Within and Midnight, under separate headings. Click a heading to fold or unfold it; a search shows every hit.
+- Forever: the Classic items, split by what they restore and whether they give a buff (Buff Food: only food with the "Well Fed" buff; Food & Drink: only without one).
+- Items outside the catalog (older Retail items, new items) can still be added by ID or drag & drop.
+
+---
+
+## Poisons (WoW Forever, rogues)
+
+Two lists, **Poison 1** (main hand) and **Poison 2** (off hand), switched with the buttons above the list; the catalog offers every Classic poison. One macro, `CM_Poison`, uses the first poison of each list that is in your bags.
+
+Each click poisons one weapon: a bare one first (main hand, then off hand), otherwise the one with the least time left. A poison with more than 5 minutes left is not replaced. The macro rebuilds on bag changes, weapon swaps and periodically.
 
 ---
 
@@ -131,7 +152,7 @@ Categories with no items are omitted. Item order reflects priority (first = high
 
 ## Requirements
 
-- WoW Midnight, Interface 120100 (Patch 12.1)
+- WoW Midnight, Interface 120100-120107 (Patch 12.1), or WoW Forever (16001)
 - ElvUI (optional) — auto-detected, skinning applied if present
 - Auctionator (optional) — used for Restock searches if installed
 

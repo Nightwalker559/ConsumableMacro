@@ -54,6 +54,13 @@ function CM.HideSidePanels(...)
     end
 end
 
+-- Position of a side window: right of Options while that is open, else right of the main window.
+function CM.AnchorSidePanel(f)
+    local o = CM.optionsFrame
+    f:ClearAllPoints()
+    f:SetPoint("LEFT", (o and o:IsShown()) and o or CM.mainFrame, "RIGHT", 8, 0)
+end
+
 -- Current Blizzard window frame (the one Settings and Click Bindings use): flat
 -- nine-slice border, no portrait, plus a close button. f.TitleText is the title.
 function CM.CreatePanel(name)

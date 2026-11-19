@@ -267,13 +267,6 @@ function CM.ToggleOptionsFrame()
     CM.ApplyElvUISkin()
 end
 
--- Dialogs open right of Options, or of the main window if Options is closed.
-local function AnchorDialog(f)
-    local o = CM.optionsFrame
-    f:ClearAllPoints()
-    f:SetPoint("LEFT", (o and o:IsShown()) and o or CM.mainFrame, "RIGHT", 8, 0)
-end
-
 -- ── Min Count Frame ────────────────────────────────────────────────────────────
 -- One number box per tab (m.boxes[tabKey]); the reminder warns at or below the value.
 function CM.BuildMinCountFrame()
@@ -284,7 +277,7 @@ function CM.BuildMinCountFrame()
     m:SetWidth(300)
     m.TitleText:SetText(L["OPTIONS_MIN_HEADER"])
     m:SetScript("OnHide", function() CM.CommitOptionsBoxes(true) end)
-    AnchorDialog(m)
+    CM.AnchorSidePanel(m)
 
     local desc = m:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
     desc:SetPoint("TOPLEFT", 14, -34)
@@ -330,7 +323,7 @@ function CM.ShowMinCountFrame()
     for key, box in pairs(m.boxes) do
         box:SetText(tostring(CM.db[key] and CM.db[key].minCount or 0))
     end
-    AnchorDialog(m)
+    CM.AnchorSidePanel(m)
     CM.HideSidePanels("minCountFrame")
     m:Show()
     CM.ApplyElvUISkin()
@@ -345,7 +338,7 @@ local function BuildTabDialog(frameName, width, btnWidth)
 
     local f = CM.CreateWindow(frameName)
     f:SetSize(width, frameH)
-    AnchorDialog(f)
+    CM.AnchorSidePanel(f)
 
     local y = -30
 
@@ -461,7 +454,7 @@ function CM.ShowIEFrame(mode, parsed)
         end)
     end
 
-    AnchorDialog(f)
+    CM.AnchorSidePanel(f)
     CM.HideSidePanels("ieFrame")
     f:Show()
     CM.ApplyElvUISkin()
@@ -503,7 +496,7 @@ function CM.ShowResetFrame()
     for _, chk in pairs(f.checkboxes) do
         chk:SetChecked(true)
     end
-    AnchorDialog(f)
+    CM.AnchorSidePanel(f)
     CM.HideSidePanels("resetFrame")
     f:Show()
     CM.ApplyElvUISkin()
@@ -516,7 +509,7 @@ function CM.BuildProfileFrame()
 
     local f = CM.CreateWindow("CMProfileFrame")
     f:SetSize(280, 140)
-    AnchorDialog(f)
+    CM.AnchorSidePanel(f)
 
     f.descLbl = f:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
     f.descLbl:SetPoint("TOPLEFT", 14, -34)
@@ -594,7 +587,7 @@ function CM.ShowProfileDialog(mode, target)
     if isImp and CM.ieFrame then
         f:SetPoint("TOPLEFT", CM.ieFrame, "BOTTOMLEFT", 0, -6)
     else
-        AnchorDialog(f)
+        CM.AnchorSidePanel(f)
     end
 
     if isImp then

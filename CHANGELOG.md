@@ -4,19 +4,22 @@ All notable changes to this project are documented here.
 
 ---
 
-## Unreleased
+## 2.1.0
 
 ### New
 - Item catalog: every tab has a built-in list of known item IDs (Retail: The War Within and Midnight; Forever: the Classic items). The new Catalog button opens a searchable list of the open tab; a click adds the item. Works in every client language, and the tabs stay empty until you pick.
 - Retail: the catalog window separates Midnight and The War Within under their own headings (Midnight first). Click a heading to fold or unfold its group; a search shows every hit.
-- Items you drag in or type are sorted by the catalog first, so the tab no longer depends on item names.
-- Forever: Buff Food lists only food with a buff ("Well Fed"); Food & Drink lists only food and drinks without one.
 - Forever, rogues: Poisons tab with two lists, Poison 1 (main hand) and Poison 2 (off hand), and one macro, CM_Poison. One press poisons one weapon, a bare one first, then the one with the least time left; a poison with more than 5 minutes left is not replaced. The catalog lists every Classic poison.
-- Food / Drink and Poison 1 / Poison 2: the open list's button lights up in its colour, the other one is grey.
+
+### Changed
+- Items you drag in or type are sorted by the catalog first, so the tab no longer depends on item names. Items outside the catalog are still sorted by class and name.
+- Forever: Buff Food lists only food with a buff ("Well Fed"); Food & Drink lists only food and drinks without one.
+- Food / Drink and Poison 1 / Poison 2: the button of the open list lights up in its colour, the other one is grey.
+- Catalog window: moves right of Options while Options is open, so the two never overlap.
+- German: "Item" is now "Gegenstand" ("Gegenstände") throughout.
 
 ### Fixed
-- German: "Item" is now "Gegenstand" ("Gegenstände") throughout.
-- Forever: poisons, oils and sharpening stones/weightstones (e.g. Instant Poison II, Rough Sharpening Stone) are now accepted by the Weapon Enhancements tab. Items outside the catalog are still recognised by name, including the German Classic names (Wetzstein, Gewichtsstein, ...-gift, ...-öl).
+- Forever: Classic sharpening stones, weightstones and oils (e.g. Rough Sharpening Stone) were rejected by the Weapon Enhancements tab. Poisons (e.g. Instant Poison II) were rejected as well; they now have their own tab for rogues. Items outside the catalog are recognised by name, including the German Classic names (Wetzstein, Gewichtsstein, ...-gift, ...-öl).
 
 ## 2.0.9
 

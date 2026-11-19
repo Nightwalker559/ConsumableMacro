@@ -2,8 +2,7 @@
 -- Every item the tabs know about, by item ID: what the "Catalog" picker offers and what
 -- decides the tab of an item that is dragged in or typed. IDs instead of names, so it
 -- works in every client language. Covers The War Within and Midnight (older items can
--- still be added by ID or drag & drop). Generated from Wowhead and wago.tools in 2026-11; tools:
--- D:\Dokumente\Claude Tools\ConsumableMacro\catalog\.
+-- still be added by ID or drag & drop). Source: wago.tools (DB2 tables), Wowhead as backup, 2026-11.
 local CM = ConsumableMacroAddon
 if CM.IS_FOREVER then return end
 
