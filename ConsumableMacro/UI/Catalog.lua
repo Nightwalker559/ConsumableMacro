@@ -234,7 +234,7 @@ local function BuildCatalogFrame()
 
     f.scrollBg = CreateFrame("Frame", nil, f, "InsetFrameTemplate")
     f.scrollBg:SetPoint("TOPLEFT",     10, -142)
-    f.scrollBg:SetPoint("BOTTOMRIGHT", -10, 12)
+    f.scrollBg:SetPoint("BOTTOMRIGHT", -10, 70)
     f.scroll = CM.CreateScrollFrame(f.scrollBg)
     f.content = CreateFrame("Frame", nil, f.scroll)
     f.content:SetHeight(1)
@@ -244,6 +244,36 @@ local function BuildCatalogFrame()
     f.emptyLabel:SetPoint("CENTER")
     f.emptyLabel:SetText(L["CATALOG_EMPTY"])
     f.emptyLabel:Hide()
+
+    -- items the catalog doesn't know yet (new patch, other client): add them by item ID
+    local idTip = f:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
+    idTip:SetPoint("BOTTOMLEFT", 14, 42)
+    idTip:SetPoint("BOTTOMRIGHT", -14, 42)
+    idTip:SetJustifyH("LEFT")
+    idTip:SetText(L["CATALOG_ID_TIP"])
+
+    local idLabel = f:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    idLabel:SetPoint("BOTTOMLEFT", 14, 17)
+    idLabel:SetText(L["CATALOG_ID_LABEL"])
+
+    f.idBox = CreateFrame("EditBox", nil, f, "InputBoxTemplate")
+    f.idBox:SetSize(120, 22)
+    f.idBox:SetPoint("LEFT", idLabel, "RIGHT", 12, 0)
+    f.idBox:SetAutoFocus(false)
+    f.idBox:SetNumeric(true)
+    local function AddByID()
+        local id = tonumber(f.idBox:GetText())
+        if id then CM.AddItemToDatabase(id); f.idBox:SetText("") end
+        f.idBox:ClearFocus()
+    end
+    f.idBox:SetScript("OnEnterPressed", AddByID)
+    f.idBox:SetScript("OnEscapePressed", f.idBox.ClearFocus)
+
+    f.idAddBtn = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
+    f.idAddBtn:SetSize(100, 22)
+    f.idAddBtn:SetText(L["BTN_ADD"])
+    f.idAddBtn:SetPoint("LEFT", f.idBox, "RIGHT", 5, 0)
+    f.idAddBtn:SetScript("OnClick", AddByID)
 
     -- names arrive after the item data loads; coalesce the burst into one refresh
     f:SetScript("OnEvent", function() CM.Defer("catalogRefresh", CM.RefreshCatalog, 0.2) end)
