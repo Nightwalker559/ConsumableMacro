@@ -1,166 +1,71 @@
 # ConsumableMacro
 
-Automatically creates and maintains macros for the best available consumables in your bags — no manual macro editing needed.
+Automatically creates and maintains macros for the best available consumables in your bags. No manual macro editing.
 
-**Author:** Nightwalker559
-**Interface:** 120100 / 120105 / 120107 (Patch 12.1, WoW Midnight), 16001 (WoW Forever)
+For World of Warcraft: Midnight (12.1, 12.1.5) and WoW Forever. English and German. Optional: ElvUI (auto-detected skin), Auctionator (Restock search).
+
+**Author:** Nightwalker559 · **License:** MIT with AI restriction
 
 ---
 
 ## Features
 
-- **Auto-managed macros** for six categories: Flask, Potion, Heal Potion, Healthstone, Buff Food, Weapon Enhancements. WoW Forever adds Mana Pots, Food & Drink and, for rogues, Poisons.
-- **Item catalog** — a searchable list of known items per category; one click adds an item. See below.
-- **Priority lists** per category — add items by Item-ID or drag & drop, reorder with the arrow buttons.
-- **Auto-update on bag change** (toggleable) — macros always use the best item currently in your bags.
-- **Reminder** — shows missing/low consumables on login and after leaving a dungeon, raid, delve, or scenario. Configurable minimum-count thresholds per category (checked against your top-priority item in the bags). Fleeting/conjured items (e.g. cauldron flasks) are skipped when picking that item.
-- **AutoPotion** — optional panic-button macro combining a known class/racial self-heal spell, your top Heal Potion, and your Healthstone in one `/castsequence`. See below.
-- **Weapon Enhancements** — Whetstones, Weightstones and Weapon Oils in one list, auto-applied to whichever hand needs it based on your equipped weapon type. See below.
-- **Restock** — tick items and set a target amount per item; a panel at the Auction House lists what's short, with rank icons and one-click search (Auctionator or default AH). See below.
-- **Profiles** — item lists and settings are stored per profile; every character picks its own. See below.
-- **Import/Export** — share your lists as a single string, per category.
-- **Reset** — clear selected categories back to empty.
-- **ElvUI skin support** — auto-detected and applied to all frames.
-- **Combat-safe** — all mutating actions are blocked while in combat.
-- **WoW Forever** support (Classic content on the Mainline client), with the same features where they apply.
-- Full **English / German** localization.
-
----
+- **Auto-managed macros** for Flask, Potion, Heal Potion, Healthstone, Buff Food and Weapon Enhancements. WoW Forever adds Mana Pots, Food & Drink and, for rogues, Poisons.
+- **Priority lists** per category: add items by ID or drag & drop, reorder with the arrows. Macros always use the best item currently in your bags and update on bag changes (toggleable).
+- **Item catalog:** a searchable list of known items per category, one click adds an item. Works in every client language; the lists start empty.
+- **Reminder** for missing or low consumables on login and after leaving a dungeon, raid, delve or scenario, with a minimum count per category.
+- **AutoPotion:** an optional panic-button macro (`CM_AutoPotion`) that steps through a class/racial self-heal, your top Heal Potion and your Healthstone in one `/castsequence`.
+- **Weapon Enhancements:** Whetstones, Weightstones and Oils in one list, applied to whichever hand needs it.
+- **Restock:** tick items and set a target amount; a panel at the Auction House lists what is short with one-click search.
+- **Profiles** and **Import/Export** per category. All actions that change macros are blocked in combat.
 
 ## Usage
 
-- `/cm` — toggle the main window (categories as a list on the left, the item list on the right).
-- `/cm update` — force-update all macros immediately.
-- `/cm profile <name>` — switch profile (without a name: show the current one).
-- `/cm reset` — open the reset dialog (pick categories, confirm with OK).
-- `/cm help` — show command list in chat.
+| Command | What it does |
+| --- | --- |
+| `/cm` | Open or close the main window |
+| `/cm update` | Update all macros now |
+| `/cm profile <name>` | Switch profile (no name: show the current one) |
+| `/cm reset` | Reset selected categories |
+| `/cm help` | List the commands |
 
-### Adding items
-Open the **Catalog** (button next to the drop zone) and click an item, type an Item-ID into the input box and press Enter/click **Add**, or drag an item from your bags onto the drop zone. The addon detects the correct category automatically: first by the item catalog, then by item subclass and name pattern for items the catalog doesn't list.
-
-### Options
-Click the **Options** button in the main window for:
-- Auto-Update toggle, Reminder toggle
-- Per-category minimum count (post-instance/login warning threshold)
-- Import/Export
-- Profile selection
-- Reset Lists
-- AutoPotion settings
-- Restock setup
-
----
+**Adding items:** open the **Catalog** next to the drop zone and click an item, type an item ID and press Enter, or drag an item from your bags. The category is detected automatically. **Options** holds the toggles, minimum counts, Import/Export, profiles, reset, AutoPotion and Restock.
 
 ## Profiles
 
-Item lists, minimum counts, Reminder, AutoPotion and Restock settings live in a profile.
-
-- Options → **Profile** dropdown: switch, **New**, **Copy current**, **Rename**, **Delete**.
-- Each character remembers its profile. New characters start with their own profile (`Name-Realm`); pick a shared one in the dropdown to reuse a setup.
-- Importing asks whether to put the lists into a new profile or the current one.
-- Switching rebuilds all macros. Not possible in combat.
-- The active profile can't be deleted. Characters whose profile was deleted get a new one.
-- Existing data from older versions is migrated once into the profile **Default**.
-- Only the Reminder window position stays per character.
-
----
+Item lists, minimum counts, Reminder, AutoPotion and Restock settings live in a profile. Pick, create, copy, rename or delete profiles in Options; each character remembers its own. New characters start with a `Name-Realm` profile, or pick a shared one to reuse a setup. Switching rebuilds all macros (not in combat).
 
 ## AutoPotion
 
-An optional extra macro (`CM_AutoPotion`) for emergency self-healing, separate from the main categories.
-
-1. Enable it in Options.
-2. Click **Configure Priority** to set the order the macro tries each category in: **Class/Racial Spell**, **Heal Potion**, **Healthstone**.
-3. Drag the macro onto your action bar.
-
-Each button press advances one step in the sequence (`/castsequence`). It resets back to the first step on combat start, or after your configured **Reset (sec.)** delay — useful for talent-shortened cooldowns. Use the **Sync** button to read the exact cooldown from a spell that's currently on cooldown (or an approximate base value if it isn't).
-
-If a category has nothing available (unknown spell, empty list, no matching item in bags), it's simply skipped — the macro never errors out.
-
-Disabling AutoPotion deletes the macro rather than leaving an empty one on your bars.
-
----
-
-## Item Catalog
-
-Every category has a built-in list of known item IDs, so nothing depends on item names and it works in every client language. The categories start empty; you choose what goes in.
-
-- **Catalog** button (main window, next to the drop zone): lists the items of the open category with icon, name and ID, sorted by name. Search by name or ID; optionally show only items in your bags. A click adds the item at the end of the list (items already in the list are greyed out).
-- Retail: The War Within and Midnight, under separate headings. Click a heading to fold or unfold it; a search shows every hit.
-- Forever: the Classic items, split by what they restore and whether they give a buff (Buff Food: only food with the "Well Fed" buff; Food & Drink: only without one).
-- Items outside the catalog (older Retail items, new items) can still be added by ID or drag & drop.
-
----
-
-## Poisons (WoW Forever, rogues)
-
-Two lists, **Poison 1** (main hand) and **Poison 2** (off hand), switched with the buttons above the list; the catalog offers every Classic poison. One macro, `CM_Poison`, uses the first poison of each list that is in your bags.
-
-Each click poisons one weapon: a bare one first (main hand, then off hand), otherwise the one with the least time left. A poison with more than 5 minutes left is not replaced. The macro rebuilds on bag changes, weapon swaps and periodically.
-
----
+Enable it in Options, set the order under **Configure Priority** (Class/Racial Spell, Heal Potion, Healthstone) and drag the macro to your bar. Each press advances one step; the sequence resets on combat start or after your **Reset (sec.)** delay (**Sync** reads the exact cooldown from a spell on cooldown). Steps with nothing available are skipped. Disabling AutoPotion deletes the macro.
 
 ## Weapon Enhancements
 
-One priority list for Whetstones, Weightstones and Weapon Oils — no need for separate lists per item type.
-
-- **Whetstone** → edged weapons (swords, daggers, axes, polearms, fist weapons)
-- **Weightstone** → blunt weapons (maces, staves)
-- **Weapon Oils** (and anything else in the list) → any weapon
-
-Each click targets one hand: a hand with **no active temporary enchant** comes first (mainhand, then offhand). Once every weapon is covered, the hand with the **least time left** is refreshed - so you can re-apply at any time, even with a few minutes left (the replace popup is confirmed for you). A hand no item in your list fits is skipped. The macro rebuilds on bag changes, on weapon swaps, and periodically (with Auto-Update on), so an expired buff gets picked up even without a bag change.
-
----
+One list for all types: Whetstones go on edged weapons, Weightstones on blunt weapons, Oils on any weapon. Each click targets one hand: one without a temporary enchant first, then the one with the least time left (you can re-apply any time). Hands no item fits are skipped.
 
 ## Restock
 
-Keeps your consumables topped up via the Auction House.
+1. Options → **Configure Restock**, enable **Show restock list at the AH**.
+2. Tick the items you use and set a target amount each. Add items without a category under **Other Items**. An optional per-item minimum shows an item only once you are at or below it.
+3. At the Auction House a panel lists every ticked item below target (`have/target`) with its rank icon. A click searches that rank and pre-fills the missing amount as buy quantity.
 
-**Setup**
-1. Options → **Configure Restock**.
-2. Enable **Show restock list at the AH**.
-3. Tick the items you actively use and enter a target amount for each item.
-4. Items without a category (e.g. something you buy regularly): add them under **Other Items** via the field at the bottom (item ID, item link, or drag from your bags). The X removes them again.
-5. Click a section header to fold/unfold it.
-6. Optional: set a per-item minimum (left box). The item then only shows up once you're at or below it, instead of as soon as you're below target. Empty/0 falls back to the category's minimum count (Options → Minimum Count Warning).
+Searches use Auctionator if installed, otherwise the default AH. Bank and warband bank can be counted. Healthstones, conjured and bound items are hidden. Purchases count once collected from the mail. Restock settings are not part of the export string.
 
-**At the Auction House**
-- A panel next to the AH lists every ticked item below its target (`have/target`), with its rank icon.
-- Click a row to search for that exact rank. The missing amount is pre-filled as buy quantity (e.g. 12/20 → 8).
-- The panel updates on bag changes and can be closed with its X for the current AH visit.
+## WoW Forever poisons (rogues)
 
-**Search backends**
-- **Auctionator** (if installed): exact name, rank and quantity via its API.
-- **Default AH**: searches by name, opens the matching rank and fills the buy quantity.
+Two lists, **Poison 1** (main hand) and **Poison 2** (off hand). The macro `CM_Poison` uses the first poison of each list that is in your bags. Each click poisons one weapon: a bare one first, otherwise the one with the least time left; a poison with more than 5 minutes left is not replaced.
 
-**Notes**
-- Optional: count bank / warband bank in the stock.
-- Hidden from the setup (not sold at the AH): Healthstones, conjured/fleeting items and bound items (e.g. Warband-bound Hearty dishes).
-- Restock settings are stored per item and are not part of the export string.
-- Purchases arrive by mail and are not counted until collected.
-
----
-
-## Import/Export format
+## Import/Export
 
 ```
 CM:1:flask=191534,191533:potion=191338:healpotion=191380:bufffood=197784
 ```
 
-Categories with no items are omitted. Item order reflects priority (first = highest). Both Export and Import let you pick which categories to include/apply via a selection frame. Restock settings are not exported; on import they are kept for item IDs that already exist in the category.
+Item order is priority (first = highest). Empty categories are omitted. Both Export and Import let you pick the categories. On import, Restock settings are kept for item IDs that already exist.
 
 ---
 
-## Requirements
-
-- WoW Midnight, Interface 120100-120107 (Patch 12.1), or WoW Forever (16001)
-- ElvUI (optional) — auto-detected, skinning applied if present
-- Auctionator (optional) — used for Restock searches if installed
-
----
-
-## Changelog
-
-See **CHANGELOG.md** for full version history.
+See the [changelog](https://github.com/Nightwalker559/ConsumableMacro/blob/main/CHANGELOG.md) for the version history.
 
 ## Feedback
 
