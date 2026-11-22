@@ -7,8 +7,12 @@ All notable changes to this project are documented here.
 ## 2.1.2
 
 ### New
+- Forever: Elixirs tab, separate from Flasks. Flasks last through death and only one runs at a time, elixirs and buffs (Blasted Lands, Zanza) run together. The elixir list is not part of the login reminder.
 - `/cm auradebug` and `/cm auradebug watch`: show what the game lets the addon read about your buffs, also in combat (read-only; for the planned Elixirs list).
 - Forever catalog: Superior Healing Potion, Superior Mana Potion, Swiftness Potion, Lesser Arcane Elixir and the Elixirs of Endless Intellect, Power, Healing, Rapidity, Opportunity and Mana. Checked against the Forever build 1.60.1.71037.
+
+### Changed
+- Forever: elixirs in your Flask lists move to the new Elixirs tab once, on the first login (all profiles). Flask of Stormwind Tawny (an alcoholic drink) is no longer in the Flask catalog.
 
 ## 2.1.1
 

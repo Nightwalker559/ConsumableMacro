@@ -99,7 +99,8 @@ function CM.GetTargetTabForItem(targetID)
 
     if not isConsumable then return nil end
     if subclassID == SUB.Potion then return "potion" end
-    if subclassID == SUB.Elixir or subclassID == SUB.Flasksphials then return "flask" end
+    if subclassID == SUB.Elixir then return CM.GetTabInfo("elixir") and "elixir" or "flask" end
+    if subclassID == SUB.Flasksphials then return "flask" end
     if subclassID == SUB.Itemenhancement then return "weaponenhance" end
     return nil
 end
