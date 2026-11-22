@@ -4,6 +4,14 @@ All notable changes to this project are documented here.
 
 ---
 
+## 2.1.1
+
+### Changed
+- The item ID input moved from the main window into the Catalog window, for items the catalog doesn't know yet. The Catalog button is always enabled, so the input stays reachable on every tab.
+
+### Fixed
+- Configuration windows could appear behind other addons' frames (e.g. Chat+ buttons, RestedXP Active Targets). They now sit on a higher layer; the AH restock panel stays above the auction house but below them.
+
 ## 2.1.0
 
 ### New
