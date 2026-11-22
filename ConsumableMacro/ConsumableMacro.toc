@@ -33,6 +33,7 @@ Modules\WeaponEnhance.lua
 Modules\Poison.lua
 Modules\FoodDrink.lua
 Modules\MacroTooltip.lua
+Modules\AuraDebug.lua
 
 # UI (ElvUI skin, shared widgets, main window, options)
 UI\ElvUISkin.lua

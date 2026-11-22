@@ -116,6 +116,12 @@ end)
 _G.SLASH_CONSUMABLEMACRO1 = "/cm"
 _G.SLASH_CONSUMABLEMACRO2 = "/consumablemacro"
 _G.SlashCmdList["CONSUMABLEMACRO"] = function(msg)
+    -- read-only diagnostics that are most useful in combat and instances: no combat guard
+    local cmd = msg:trim():lower()
+    if cmd == "auradebug" or cmd == "auradebug watch" then
+        CM.RunAuraDebug(cmd == "auradebug watch")
+        return
+    end
     if CM.BlockedByCombat() then return end
     local raw = msg:trim()
     msg = raw:lower()
