@@ -10,7 +10,7 @@ For World of Warcraft: Midnight (12.1, 12.1.5) and WoW Forever. English and Germ
 
 ## Features
 
-- **Auto-managed macros** for Flask, Potion, Heal Potion, Mana Pots, Healthstone, Buff Food and Weapon Enhancements. WoW Forever adds Bandages, Food & Drink and, for rogues, Poisons.
+- **Auto-managed macros** for Flask, Potion, Heal Potion, Mana Pots, Healthstone, Buff Food and Weapon Enhancements. WoW Forever adds Elixirs (apart from Flasks), Bandages, Food & Drink and, for rogues, Poisons.
 - **Priority lists** per category: add items by ID or drag & drop, reorder with the arrows. Macros always use the best item currently in your bags and update on bag changes (toggleable).
 - **Item catalog:** a searchable list of known items per category, one click adds an item. Works in every client language; the lists start empty.
 - **Reminder** for missing or low consumables on login and after leaving a dungeon, raid, delve or scenario, with a minimum count per category.
@@ -50,6 +50,10 @@ One list for all types: Whetstones go on edged weapons, Weightstones on blunt we
 3. At the Auction House a panel lists every ticked item below target (`have/target`) with its rank icon. A click searches that rank and pre-fills the missing amount as buy quantity.
 
 Searches use Auctionator if installed, otherwise the default AH. Bank and warband bank can be counted. Healthstones, conjured and bound items are hidden. Purchases count once collected from the mail. Restock settings are not part of the export string.
+
+## WoW Forever elixirs
+
+Several elixirs run at once, so the macro `CM_Elixir` uses the first elixir of your list that is in your bags and whose buff is missing; repeated clicks walk down the list. Buffs can only be read out of combat: the macro updates when your buffs change and after a fight, and keeps its last state during combat. Keep one elixir per effect in the list, as elixirs with the same effect replace each other.
 
 ## WoW Forever poisons (rogues)
 

@@ -22,12 +22,20 @@ local function Trim(s)
     return (tostring(s or ""):match("^%s*(.-)%s*$"))
 end
 
+-- The realm name, or nil where the client has none: GetRealmName is unusable on WoW Forever.
+local function GetRealm()
+    if type(_G.GetRealmName) ~= "function" then return nil end
+    local ok, realm = pcall(_G.GetRealmName)
+    if ok and type(realm) == "string" and realm ~= "" then return realm end
+    return nil
+end
+
 -- "Name-Realm" - name of the profile a brand-new character starts with. WoW Forever
 -- has no realms: there UnitName's second value is the surname, which tells
 -- characters of the same first name apart.
 function CM.GetCharKey()
     local name, second = _G.UnitName("player")
-    if not second or second == "" then second = _G.GetRealmName() end
+    if not second or second == "" then second = GetRealm() end
     return (name or "Unknown") .. "-" .. (second or "Realm")
 end
 
@@ -59,21 +67,21 @@ local function ResolveName(root, name)
     return nil
 end
 
--- One-time, for every profile of the account: the Potion catalog lists combat potions
--- only, so potions in a Potion list that the catalog files under other tabs (heal / mana
--- potions) move there. Items outside the catalog stay where the user put them.
-function CM.MigratePotionSplit(root)
-    if root.potionSplitDone then return end
-    root.potionSplitDone = true
+-- One-time splits of an item list, for every profile of the account: items in list `from`
+-- that the catalog now files under other tabs move there (once per `flag`). Items the
+-- catalog doesn't know stay where the user put them.
+local function SplitTab(root, flag, from)
+    if root[flag] then return end
+    root[flag] = true
     for _, p in pairs(root.profiles) do
-        local list = type(p.potion) == "table" and p.potion.items
+        local list = type(p[from]) == "table" and p[from].items
         if type(list) == "table" then
             local keep = {}
             for _, item in ipairs(list) do
                 local tabs = type(item) == "table" and CM.GetCatalogTabs(item.id)
                 local stays = not tabs
                 for _, key in ipairs(tabs or {}) do
-                    if key == "potion" then stays = true end
+                    if key == from then stays = true end
                 end
                 if stays then
                     tinsert(keep, item)
@@ -90,9 +98,16 @@ function CM.MigratePotionSplit(root)
                     end
                 end
             end
-            p.potion.items = keep
+            p[from].items = keep
         end
     end
+end
+
+-- The Potion catalog lists combat potions only (heal / mana potions have their own tabs);
+-- on Forever the Flask catalog lists flasks only (elixirs have their own tab).
+function CM.MigrateTabSplits(root)
+    SplitTab(root, "potionSplitDone", "potion")
+    SplitTab(root, "elixirSplitDone", "flask")
 end
 
 -- ── Init (ADDON_LOADED) ────────────────────────────────────────────────────────
@@ -110,7 +125,7 @@ function CM.InitProfiles()
     end
     root.dbVersion = DB_VERSION
     root.aliases   = root.aliases or {}
-    CM.MigratePotionSplit(root)
+    CM.MigrateTabSplits(root)
 
     local isNewChar = ConsumableMacroCharDB == nil
     ConsumableMacroCharDB = ConsumableMacroCharDB or {}

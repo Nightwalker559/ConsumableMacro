@@ -2,7 +2,7 @@
 ## Title: |cff00FF98Consumable|rMacro
 ## Notes: Automatically creates macros for the best available consumables in your bags.
 ## Author: Nightwalker559
-## Version: 2.1.1
+## Version: 2.1.2
 ## X-Curse-Project-ID: 1510966
 ## SavedVariables: ConsumableMacroDB
 ## SavedVariablesPerCharacter: ConsumableMacroCharDB
@@ -32,6 +32,7 @@ Modules\Restock.lua
 Modules\WeaponEnhance.lua
 Modules\Poison.lua
 Modules\FoodDrink.lua
+Modules\Elixir.lua
 Modules\MacroTooltip.lua
 
 # UI (ElvUI skin, shared widgets, main window, options)

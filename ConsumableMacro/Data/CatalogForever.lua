@@ -1,7 +1,7 @@
 -- ConsumableMacro Catalog (WoW Forever)
 -- Every item the tabs know about, by item ID: what the "Catalog" picker offers and what
 -- decides the tab of an item that is dragged in or typed. IDs instead of names, so it
--- works in every client language. Source: Wowhead Forever, 2026-11. An item may sit in
+-- works in every client language. Source: wago.tools (Forever build 1.60.1.71037), 2026-11. An item may sit in
 -- several tabs (a potion that restores health and mana is in Heal Pots and Mana Pots).
 local CM = ConsumableMacroAddon
 if not CM.IS_FOREVER then return end
@@ -26,19 +26,68 @@ local POISONS = {
     10918, 10920, 10921, 10922,                     -- Wound Poison
 }
 
+-- Groups of the Elixirs catalog, shown as headings in the catalog window (name = locale key).
+CM.CATALOG_GROUPS = {
+  { key = "strength", name = "CATALOG_GROUP_STRENGTH" },
+  { key = "agility", name = "CATALOG_GROUP_AGILITY" },
+  { key = "intellect", name = "CATALOG_GROUP_INTELLECT" },
+  { key = "spirit", name = "CATALOG_GROUP_SPIRIT" },
+  { key = "health", name = "CATALOG_GROUP_HEALTH" },
+  { key = "spellpower", name = "CATALOG_GROUP_SPELLPOWER" },
+  { key = "healing", name = "CATALOG_GROUP_HEALING" },
+  { key = "regen", name = "CATALOG_GROUP_REGEN" },
+  { key = "mixed", name = "CATALOG_GROUP_MIXED" },
+  { key = "world", name = "CATALOG_GROUP_WORLD" },
+  { key = "endless", name = "CATALOG_GROUP_ENDLESS" },
+  { key = "utility", name = "CATALOG_GROUP_UTILITY" },
+}
+
 CM.CATALOG = {
   poison = POISONS,
   poisonoff = POISONS,
+  -- flasks: one at a time, they last through death
   flask = {
-    2454, 2457, 2458, 2593, 3382, 3383, 3388, 3389, 3390, 3391,
-    3825, 3826, 3828, 5996, 5997, 6373, 6662, 8410, 8411, 8412,
-    8423, 8424, 8529, 8827, 8949, 8951, 9088, 9154, 9155, 9179,
-    9187, 9197, 9206, 9224, 9233, 9264, 10592, 12820, 13445, 13447,
-    13452, 13453, 13454, 13510, 13511, 13512, 13513, 17708, 18294, 20004,
-    20007, 20079, 20080, 20081, 21546, 246948, 247754, 247755, 250327, 250328,
-    250329, 250330, 250331, 250332, 250333, 250334, 250335, 250336, 250337, 250338,
-    250339, 250340, 250341, 250342, 250343, 250344, 250345, 250346, 250347, 250348,
-    250349, 250350, 250351, 250353, 250354, 274273, 274274, 274275, 274276,
+    13510, 13511, 13512, 13513, 274273, 274274, 274275, 274276,
+  },
+  -- elixirs and other buffs (Blasted Lands, Zanza): several at once; grouped by effect for the catalog window
+  elixir = {
+    strength = {
+      2454, 3391, 9206, 250349,
+    },
+    agility = {
+      2457, 3390, 8949, 9187,
+    },
+    intellect = {
+      3383, 9179, 250353, 250354,
+    },
+    spirit = {
+      250344, 250345, 250346, 250347,
+    },
+    health = {
+      2458, 3389, 3825, 5997, 8951, 13445, 250329, 250334, 250335,
+    },
+    spellpower = {
+      6373, 9155, 9264, 13454, 17708, 21546, 217398, 247754, 250342, 250343,
+    },
+    healing = {
+      250330, 250331, 250332, 250333,
+    },
+    regen = {
+      3382, 3388, 3826, 20004, 20007, 250336, 250339, 250340, 250341,
+    },
+    mixed = {
+      12820, 13447, 13452, 13453, 246948, 247755, 250328, 250337, 250338, 250348,
+      250350, 250351,
+    },
+    world = {
+      8410, 8411, 8412, 8423, 8424, 20079, 20080, 20081,
+    },
+    endless = {
+      289082, 289083, 289084, 289086, 289087, 289321,
+    },
+    utility = {
+      6662, 9088, 9224,
+    },
   },
   potion = {
     1450, 2459, 2633, 3384, 3386, 3387, 3823, 4623, 5631, 5633,
@@ -46,16 +95,17 @@ CM.CATALOG = {
     9172, 13442, 13455, 13456, 13457, 13458, 13459, 13460, 13461, 13462,
     13506, 20008, 250932, 250933, 250934, 250935, 250936, 250937, 250938, 250939,
     250940, 250941, 250942, 250943, 250944, 250945, 250946, 250947, 250948, 250949,
-    250950, 250951, 250953, 250954, 250955, 281234, 287975, 287976,
+    250950, 250951, 250953, 250954, 250955, 281234, 287975, 287976, 288898,
   },
   healpotion = {
     118, 858, 929, 1710, 2456, 3928, 4596, 9144, 12190, 13446,
     17348, 17349, 18253, 18839, 20002, 23579, 241650, 247239, 247240, 247241,
-    247242, 268881, 268882, 268883, 274935, 282011, 287966, 287967, 287977,
+    247242, 268881, 268882, 268883, 274935, 282011, 287966, 287967, 287977, 288896,
   },
   manapotion = {
     2455, 2456, 3087, 3385, 3827, 6149, 9144, 12190, 13443, 13444,
     17351, 17352, 18253, 18841, 20002, 23578, 274935, 282013, 287968, 287969,
+    288897,
   },
   -- first aid: the Classic bandages (Linen ... Heavy Runecloth, battleground ones, Crystal Infused)
   bandage = {

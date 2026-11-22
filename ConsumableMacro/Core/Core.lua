@@ -72,6 +72,12 @@ if CM.IS_FOREVER then
     CM.MACRO_OWNER.drink = "food"
     CM.REMINDER_SKIP.food, CM.REMINDER_SKIP.drink = true, true
 
+    -- Flasks and elixirs are separate lists: a flask lasts through death and only one runs at a
+    -- time, several elixirs run together. The reminder leaves elixirs out (they are optional).
+    tinsert(CM.TABS, 2, { key = "elixir", tabL = "TAB_ELIXIR", info = "INFO_ELIXIR", sub = "SUB_ELIXIR", color = {0.3, 0.85, 0.75} })
+    CM.MACRO_NAMES.elixir = "CM_Elixir"
+    CM.REMINDER_SKIP.elixir = true
+
     -- Bandages sit after Mana Pots: first aid is used on purpose there, one press per bandage
     tinsert(CM.TABS, 5, { key = "bandage", tabL = "TAB_BANDAGE", info = "INFO_BANDAGE", sub = "SUB_BANDAGE", color = {0.95, 0.9, 0.7} })
     CM.MACRO_NAMES.bandage = "CM_Bandage"

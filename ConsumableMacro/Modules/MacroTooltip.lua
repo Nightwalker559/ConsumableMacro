@@ -31,6 +31,9 @@ function CM.GetMacroItems(key)
     elseif key == "poison" then
         local _, id = CM.GetPoisonTarget()
         add(id)
+    elseif key == "elixir" then
+        -- the one the macro uses; all active: the first in the bags, like #showtooltip
+        add(CM.GetNextElixir(db.elixir.items) or CM.GetFirstInBags(db.elixir.items))
     elseif db[key] then
         add(CM.GetFirstInBags(db[key].items))
     end

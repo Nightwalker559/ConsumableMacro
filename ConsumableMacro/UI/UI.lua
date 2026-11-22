@@ -60,7 +60,6 @@ function CM.SetSideTabSelected(btn, selected)
 end
 
 -- ── RefreshList ────────────────────────────────────────────────────────────────
--- One list row: icon, name, in-bags status and the up / down / delete buttons.
 -- Click handler of the up / down / delete buttons of a list row.
 function CM.OnRowButtonClick(self)
     if InCombatLockdown() or not CM.db then return end
@@ -85,6 +84,7 @@ function CM.OnRowButtonClick(self)
     CM.UpdateMacro(CM.activeTab)
 end
 
+-- One list row: icon, name, in-bags status and the up / down / delete buttons.
 local function CreateRow(i)
     local content = CM.mainFrame.content
     local row = CreateFrame("Frame", nil, content)
