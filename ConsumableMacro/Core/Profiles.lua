@@ -22,12 +22,20 @@ local function Trim(s)
     return (tostring(s or ""):match("^%s*(.-)%s*$"))
 end
 
+-- The realm name, or nil where the client has none: GetRealmName is unusable on WoW Forever.
+local function GetRealm()
+    if type(_G.GetRealmName) ~= "function" then return nil end
+    local ok, realm = pcall(_G.GetRealmName)
+    if ok and type(realm) == "string" and realm ~= "" then return realm end
+    return nil
+end
+
 -- "Name-Realm" - name of the profile a brand-new character starts with. WoW Forever
 -- has no realms: there UnitName's second value is the surname, which tells
 -- characters of the same first name apart.
 function CM.GetCharKey()
     local name, second = _G.UnitName("player")
-    if not second or second == "" then second = _G.GetRealmName() end
+    if not second or second == "" then second = GetRealm() end
     return (name or "Unknown") .. "-" .. (second or "Realm")
 end
 

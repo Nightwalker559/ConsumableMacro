@@ -14,6 +14,9 @@ All notable changes to this project are documented here.
 ### Changed
 - Forever: elixirs in your Flask lists move to the new Elixirs tab once, on the first login (all profiles). Flask of Stormwind Tawny (an alcoholic drink) is no longer in the Flask catalog.
 
+### Fixed
+- Forever: the profile name of a new character no longer depends on `GetRealmName`, which is unusable there.
+
 ## 2.1.1
 
 ### New
