@@ -32,6 +32,7 @@ Modules\Restock.lua
 Modules\WeaponEnhance.lua
 Modules\Poison.lua
 Modules\FoodDrink.lua
+Modules\Elixir.lua
 Modules\MacroTooltip.lua
 
 # UI (ElvUI skin, shared widgets, main window, options)

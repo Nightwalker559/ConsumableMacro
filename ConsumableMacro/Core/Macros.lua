@@ -41,6 +41,11 @@ function CM.GetMacroBodyText(key)
         return CM.BuildFoodDrinkMacroBody()
     end
 
+    -- Elixirs (Forever): the first one whose buff is missing - see Elixir.lua.
+    if key == "elixir" then
+        return CM.BuildElixirMacroBody()
+    end
+
     local lines = { CM.GetShowtooltipLine(items), "/cqs", "/stopcasting" }
 
     -- Only potion, healpotion and manapotion get the stacked fallback chain (every
