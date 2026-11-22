@@ -26,6 +26,22 @@ local POISONS = {
     10918, 10920, 10921, 10922,                     -- Wound Poison
 }
 
+-- Groups of the Elixirs catalog, shown as headings in the catalog window (name = locale key).
+CM.CATALOG_GROUPS = {
+  { key = "strength", name = "CATALOG_GROUP_STRENGTH" },
+  { key = "agility", name = "CATALOG_GROUP_AGILITY" },
+  { key = "intellect", name = "CATALOG_GROUP_INTELLECT" },
+  { key = "spirit", name = "CATALOG_GROUP_SPIRIT" },
+  { key = "health", name = "CATALOG_GROUP_HEALTH" },
+  { key = "spellpower", name = "CATALOG_GROUP_SPELLPOWER" },
+  { key = "healing", name = "CATALOG_GROUP_HEALING" },
+  { key = "regen", name = "CATALOG_GROUP_REGEN" },
+  { key = "mixed", name = "CATALOG_GROUP_MIXED" },
+  { key = "world", name = "CATALOG_GROUP_WORLD" },
+  { key = "endless", name = "CATALOG_GROUP_ENDLESS" },
+  { key = "utility", name = "CATALOG_GROUP_UTILITY" },
+}
+
 CM.CATALOG = {
   poison = POISONS,
   poisonoff = POISONS,
@@ -33,17 +49,46 @@ CM.CATALOG = {
   flask = {
     13510, 13511, 13512, 13513, 274273, 274274, 274275, 274276,
   },
-  -- elixirs and other buffs (Blasted Lands, Zanza): several at once
+  -- elixirs and other buffs (Blasted Lands, Zanza): several at once; grouped by effect for the catalog window
   elixir = {
-    2454, 2457, 2458, 3382, 3383, 3388, 3389, 3390, 3391, 3825,
-    3826, 3828, 5996, 5997, 6373, 6662, 8410, 8411, 8412, 8423,
-    8424, 8529, 8827, 8949, 8951, 9088, 9154, 9155, 9179, 9187,
-    9197, 9206, 9224, 9233, 9264, 10592, 12820, 13445, 13447, 13452,
-    13453, 13454, 17708, 18294, 20004, 20007, 20079, 20080, 20081, 21546,
-    217398, 246948, 247754, 247755, 250327, 250328, 250329, 250330, 250331, 250332,
-    250333, 250334, 250335, 250336, 250337, 250338, 250339, 250340, 250341, 250342,
-    250343, 250344, 250345, 250346, 250347, 250348, 250349, 250350, 250351, 250353,
-    250354, 289082, 289083, 289084, 289086, 289087, 289321,
+    strength = {
+      2454, 3391, 9206, 250349,
+    },
+    agility = {
+      2457, 3390, 8949, 9187,
+    },
+    intellect = {
+      3383, 9179, 250353, 250354,
+    },
+    spirit = {
+      250344, 250345, 250346, 250347,
+    },
+    health = {
+      2458, 3389, 3825, 5997, 8951, 13445, 250329, 250334, 250335,
+    },
+    spellpower = {
+      6373, 9155, 9264, 13454, 17708, 21546, 217398, 247754, 250342, 250343,
+    },
+    healing = {
+      250330, 250331, 250332, 250333,
+    },
+    regen = {
+      3382, 3388, 3826, 20004, 20007, 250336, 250339, 250340, 250341,
+    },
+    mixed = {
+      12820, 13447, 13452, 13453, 246948, 247755, 250328, 250337, 250338, 250348,
+      250350, 250351,
+    },
+    world = {
+      8410, 8411, 8412, 8423, 8424, 20079, 20080, 20081,
+    },
+    endless = {
+      289082, 289083, 289084, 289086, 289087, 289321,
+    },
+    utility = {
+      3828, 5996, 6662, 8529, 8827, 9088, 9154, 9197, 9224, 9233,
+      10592, 18294, 250327,
+    },
   },
   potion = {
     1450, 2459, 2633, 3384, 3386, 3387, 3823, 4623, 5631, 5633,

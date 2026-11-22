@@ -8,6 +8,7 @@ All notable changes to this project are documented here.
 
 ### New
 - Forever: Elixirs tab, separate from Flasks. Flasks last through death and only one runs at a time, elixirs and buffs (Blasted Lands, Zanza) run together. The elixir list is not part of the login reminder.
+- Forever: the Elixirs catalog is grouped by effect (Strength, Agility, Intellect, Spirit, Health & Armor, Spell Power, Healing, Regeneration, Mixed, Blasted Lands & Zanza, Endless, Utility) with a heading per group in the catalog window.
 - Forever catalog: Superior Healing Potion, Superior Mana Potion, Swiftness Potion, Lesser Arcane Elixir and the Elixirs of Endless Intellect, Power, Healing, Rapidity, Opportunity and Mana. Checked against the Forever build 1.60.1.71037.
 
 ### Changed
