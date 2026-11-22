@@ -1,7 +1,7 @@
 -- ConsumableMacro Catalog (WoW Forever)
 -- Every item the tabs know about, by item ID: what the "Catalog" picker offers and what
 -- decides the tab of an item that is dragged in or typed. IDs instead of names, so it
--- works in every client language. Source: Wowhead Forever, 2026-11. An item may sit in
+-- works in every client language. Source: wago.tools (Forever build 1.60.1.71037), 2026-11. An item may sit in
 -- several tabs (a potion that restores health and mana is in Heal Pots and Mana Pots).
 local CM = ConsumableMacroAddon
 if not CM.IS_FOREVER then return end

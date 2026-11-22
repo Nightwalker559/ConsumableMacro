@@ -7,30 +7,34 @@
 local CM = ConsumableMacroAddon
 if not CM.IS_FOREVER then return end
 
--- True/false: the buff of this item is on the player. nil: unknown (aura data hidden
--- in combat, or the item's spell is not cached yet).
-local function HasItemBuff(itemID)
+-- Auras can be read out of combat only (they are secret values in combat).
+local function AurasReadable()
     local C_Secrets = _G.C_Secrets
-    if _G.InCombatLockdown() or (C_Secrets and C_Secrets.ShouldAurasBeSecret and C_Secrets.ShouldAurasBeSecret()) then
-        return nil
-    end
+    if _G.InCombatLockdown() then return false end
+    return not (C_Secrets and C_Secrets.ShouldAurasBeSecret and C_Secrets.ShouldAurasBeSecret())
+end
+
+-- True if the buff of this item is on the player; false if not or if the item's spell
+-- isn't cached yet (then the elixir counts as missing and gets used).
+local function HasItemBuff(itemID)
     -- the spell an item casts is the buff it leaves (same spell ID)
     local spellName, spellID = C_Item.GetItemSpell(itemID)
-    if not spellID then return nil end
+    if not spellID then return false end
     local auras = _G.C_UnitAuras
     if auras.GetPlayerAuraBySpellID(spellID) then return true end
     return spellName ~= nil and auras.GetAuraDataBySpellName("player", spellName, "HELPFUL") ~= nil
 end
 
--- The elixir the macro uses now: the first in the bags without its buff. With unknown
--- buffs that is simply the first in the bags. Second value: true when every elixir in
--- the bags is active already (nothing left to use).
+-- The elixir the macro uses now: the first in the bags without its buff. In combat the
+-- buffs are unknown, so it is simply the first in the bags. Second value: true when every
+-- elixir in the bags is active already (nothing left to use).
 function CM.GetNextElixir(items)
+    local readable = AurasReadable()
     local anyInBags
     for _, item in ipairs(items) do
         if CM.IsInBags(item.id) then
             anyInBags = true
-            if not HasItemBuff(item.id) then return item.id, false end
+            if not (readable and HasItemBuff(item.id)) then return item.id, false end
         end
     end
     return nil, anyInBags == true

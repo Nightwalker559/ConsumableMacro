@@ -1,4 +1,5 @@
 -- ConsumableMacro Items
+-- Which tab an item belongs to (catalog, name patterns, item class), and adding items to the lists.
 local CM = ConsumableMacroAddon
 
 -- ── Item Classification ────────────────────────────────────────────────────────
