@@ -61,6 +61,30 @@ end
 
 -- ── RefreshList ────────────────────────────────────────────────────────────────
 -- One list row: icon, name, in-bags status and the up / down / delete buttons.
+-- Click handler of the up / down / delete buttons of a list row.
+function CM.OnRowButtonClick(self)
+    if InCombatLockdown() or not CM.db then return end
+    local parent  = self:GetParent()
+    local index   = parent.index
+    local items   = CM.db[CM.activeTab].items
+    local item    = items[index]
+
+    if self.action == "delete" then
+        tremove(items, index)
+    elseif self.action == "up" and index > 1 then
+        tremove(items, index)
+        tinsert(items, index - 1, item)
+    elseif self.action == "down" and index < #items then
+        tremove(items, index)
+        tinsert(items, index + 1, item)
+    else
+        return
+    end
+
+    CM.RefreshList()
+    CM.UpdateMacro(CM.activeTab)
+end
+
 local function CreateRow(i)
     local content = CM.mainFrame.content
     local row = CreateFrame("Frame", nil, content)

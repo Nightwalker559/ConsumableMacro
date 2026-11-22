@@ -127,7 +127,7 @@ function CM.InitProfiles()
     root.profiles[name] = root.profiles[name] or {}
     local p = root.profiles[name]
 
-    -- Seed fields that used to be per-character / nested (only where the profile has none).
+    -- Per-character and nested settings of the earlier format move into the profile (only where it has none).
     local ap = p.autoPotion
     if p.showReminder == nil then p.showReminder = cdb.showReminder end
     if p.autoPotionResetSeconds == nil then
