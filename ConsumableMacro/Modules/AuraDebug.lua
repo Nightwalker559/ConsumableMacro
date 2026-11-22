@@ -32,10 +32,13 @@ local function PrintEnvironment()
     local _, instanceType = _G.IsInInstance()
     Say("combat=%s instance=%s build=%s", tostring(_G.InCombatLockdown()), tostring(instanceType),
         tostring(select(4, _G.GetBuildInfo())))
-    -- every no-argument answer of C_Secrets (which of them exists depends on the client)
+    -- the answers of C_Secrets that need no argument (which of them exist depends on the client)
     local parts = {}
     for name, fn in pairs(_G.C_Secrets or {}) do
-        if type(fn) == "function" then tinsert(parts, name .. "=" .. Probe(fn)) end
+        if type(fn) == "function" then
+            local answer = Probe(fn)
+            if not answer:find("^ERR") then tinsert(parts, name .. "=" .. answer) end
+        end
     end
     table.sort(parts)
     Say("C_Secrets: %s", #parts > 0 and table.concat(parts, ", ") or "n/a")
@@ -71,8 +74,12 @@ local function PrintItems()
         local bySpell = Probe(api.GetPlayerAuraBySpellID, spellID)
         local byName  = Probe(api.GetAuraDataBySpellName, "player", spellName, "HELPFUL")
         local find    = Probe(_G.AuraUtil and _G.AuraUtil.FindAuraByName, spellName, "player", "HELPFUL")
-        Say("%s (%d): spell %s/%s | bySpellID=%s byName=%s findName=%s", tostring(C_Item.GetItemNameByID(item.id)),
-            item.id, tostring(spellName), tostring(spellID), bySpell, byName, find)
+        -- whether the client treats this spell's aura as secret
+        local secrecy = Probe(_G.C_Secrets and _G.C_Secrets.GetSpellAuraSecrecy, spellID)
+        local secret  = Probe(_G.C_Secrets and _G.C_Secrets.ShouldSpellAuraBeSecret, spellID)
+        Say("%s (%d): spell %s/%s | bySpellID=%s byName=%s findName=%s | secrecy=%s shouldBeSecret=%s",
+            tostring(C_Item.GetItemNameByID(item.id)), item.id, tostring(spellName), tostring(spellID),
+            bySpell, byName, find, secrecy, secret)
     end
 end
 
