@@ -59,6 +59,42 @@ local function ResolveName(root, name)
     return nil
 end
 
+-- One-time, for every profile of the account: the Potion catalog lists combat potions
+-- only, so potions in a Potion list that the catalog files under other tabs (heal / mana
+-- potions) move there. Items outside the catalog stay where the user put them.
+function CM.MigratePotionSplit(root)
+    if root.potionSplitDone then return end
+    root.potionSplitDone = true
+    for _, p in pairs(root.profiles) do
+        local list = type(p.potion) == "table" and p.potion.items
+        if type(list) == "table" then
+            local keep = {}
+            for _, item in ipairs(list) do
+                local tabs = type(item) == "table" and CM.GetCatalogTabs(item.id)
+                local stays = not tabs
+                for _, key in ipairs(tabs or {}) do
+                    if key == "potion" then stays = true end
+                end
+                if stays then
+                    tinsert(keep, item)
+                else
+                    for _, key in ipairs(tabs) do
+                        local tab = type(p[key]) == "table" and p[key] or {}
+                        p[key] = tab
+                        tab.items = tab.items or {}
+                        local present = false
+                        for _, existing in ipairs(tab.items) do
+                            if existing.id == item.id then present = true end
+                        end
+                        if not present then tinsert(tab.items, DeepCopy(item)) end
+                    end
+                end
+            end
+            p.potion.items = keep
+        end
+    end
+end
+
 -- ── Init (ADDON_LOADED) ────────────────────────────────────────────────────────
 function CM.InitProfiles()
     ConsumableMacroDB = ConsumableMacroDB or {}
@@ -74,6 +110,7 @@ function CM.InitProfiles()
     end
     root.dbVersion = DB_VERSION
     root.aliases   = root.aliases or {}
+    CM.MigratePotionSplit(root)
 
     local isNewChar = ConsumableMacroCharDB == nil
     ConsumableMacroCharDB = ConsumableMacroCharDB or {}
