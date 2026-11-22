@@ -4,6 +4,11 @@ All notable changes to this project are documented here.
 
 ---
 
+## 2.1.2
+
+### New
+- Forever catalog: Superior Healing Potion, Superior Mana Potion, Swiftness Potion, Lesser Arcane Elixir and the Elixirs of Endless Intellect, Power, Healing, Rapidity, Opportunity and Mana. Checked against the Forever build 1.60.1.71037.
+
 ## 2.1.1
 
 ### New
