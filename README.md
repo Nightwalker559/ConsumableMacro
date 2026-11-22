@@ -10,7 +10,7 @@ For World of Warcraft: Midnight (12.1, 12.1.5) and WoW Forever. English and Germ
 
 ## Features
 
-- **Auto-managed macros** for Flask, Potion, Heal Potion, Healthstone, Buff Food and Weapon Enhancements. WoW Forever adds Mana Pots, Food & Drink and, for rogues, Poisons.
+- **Auto-managed macros** for Flask, Potion, Heal Potion, Mana Pots, Healthstone, Buff Food and Weapon Enhancements. WoW Forever adds Bandages, Food & Drink and, for rogues, Poisons.
 - **Priority lists** per category: add items by ID or drag & drop, reorder with the arrows. Macros always use the best item currently in your bags and update on bag changes (toggleable).
 - **Item catalog:** a searchable list of known items per category, one click adds an item. Works in every client language; the lists start empty.
 - **Reminder** for missing or low consumables on login and after leaving a dungeon, raid, delve or scenario, with a minimum count per category.

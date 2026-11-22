@@ -17,7 +17,7 @@ setmetatable(CM.L, {__index = function(_, k) return k end})
 CM.db                    = nil   -- active profile (stored account-wide, see Profiles.lua)
 CM.charDb                 = nil   -- per-character SavedVariables (profile name, reminder position)
 CM.mainFrame              = nil
-CM.FRAME_STRATA           = "MEDIUM"  -- one strata for all addon windows
+CM.FRAME_STRATA           = "DIALOG"  -- config windows: above other addons' HUD frames (chat buttons, quest trackers)
 CM.activeTab              = "flask"
 CM.rowPool                = {}
 CM.needsUpdateAfterCombat = false
@@ -26,6 +26,7 @@ CM.MACRO_NAMES = {
     flask         = "CM_Flask",
     potion        = "CM_Potion",
     healpotion    = "CM_HealPotion",
+    manapotion    = "CM_ManaPotion",
     healthstone   = "CM_Healthstone",
     bufffood      = "CM_Bufffood",
     weaponenhance = "CM_WeaponEnhance",
@@ -40,6 +41,7 @@ CM.TABS = {
     { key = "flask",         tabL = "TAB_FLASK",         info = "INFO_FLASK",         sub = "SUB_FLASK",         color = {0, 1, 1} },
     { key = "potion",        tabL = "TAB_POTION",        info = "INFO_POTION",        sub = "SUB_POTION",        color = {0, 0.8, 1} },
     { key = "healpotion",    tabL = "TAB_HEALPOTION",    info = "INFO_HEAL",          sub = "SUB_HEAL",          color = {0.2, 1, 0.2} },
+    { key = "manapotion",    tabL = "TAB_MANAPOTION",    info = "INFO_MANAPOTION",    sub = "SUB_MANAPOTION",    color = {0.3, 0.5, 1} },
     { key = "healthstone",   tabL = "TAB_HEALTHSTONE",   info = "INFO_STONE",         sub = "SUB_STONE",         color = {0.7, 0.3, 1} },
     { key = "bufffood",      tabL = "TAB_BUFFFOOD",      info = "INFO_FOOD",          sub = "SUB_FOOD",          color = {1, 0.7, 0} },
     { key = "weaponenhance", tabL = "TAB_WEAPONENHANCE", info = "INFO_WEAPONENHANCE", sub = "SUB_WEAPONENHANCE", color = {0.85, 0.6, 0.3} },
@@ -64,14 +66,15 @@ end
 CM.MACRO_OWNER = {}
 
 if CM.IS_FOREVER then
-    tinsert(CM.TABS, 6, { key = "food",  tabL = "TAB_FOOD",  sideL = "TAB_FOODDRINK", info = "INFO_FOOD_LIST", sub = "SUB_FOOD_LIST", color = {1, 0.85, 0.4} })
-    tinsert(CM.TABS, 7, { key = "drink", tabL = "TAB_DRINK", sideOf = "food",         info = "INFO_DRINK",     sub = "SUB_DRINK",     color = {0.4, 0.7, 1} })
+    tinsert(CM.TABS, 7, { key = "food",  tabL = "TAB_FOOD",  sideL = "TAB_FOODDRINK", info = "INFO_FOOD_LIST", sub = "SUB_FOOD_LIST", color = {1, 0.85, 0.4} })
+    tinsert(CM.TABS, 8, { key = "drink", tabL = "TAB_DRINK", sideOf = "food",         info = "INFO_DRINK",     sub = "SUB_DRINK",     color = {0.4, 0.7, 1} })
     CM.MACRO_NAMES.food = "CM_FoodDrink"
     CM.MACRO_OWNER.drink = "food"
     CM.REMINDER_SKIP.food, CM.REMINDER_SKIP.drink = true, true
 
-    tinsert(CM.TABS, 4, { key = "manapotion", tabL = "TAB_MANAPOTION", info = "INFO_MANAPOTION", sub = "SUB_MANAPOTION", color = {0.3, 0.5, 1} })
-    CM.MACRO_NAMES.manapotion = "CM_ManaPotion"
+    -- Bandages sit after Mana Pots: first aid is used on purpose there, one press per bandage
+    tinsert(CM.TABS, 5, { key = "bandage", tabL = "TAB_BANDAGE", info = "INFO_BANDAGE", sub = "SUB_BANDAGE", color = {0.95, 0.9, 0.7} })
+    CM.MACRO_NAMES.bandage = "CM_Bandage"
 
     -- Rogues: poisons, two lists (poison 1 for the main hand, poison 2 for the off hand)
     -- behind one sidebar entry, one macro, CM_Poison (Modules\Poison.lua). Before Weapon Enhancements.
@@ -85,7 +88,7 @@ if CM.IS_FOREVER then
 end
 
 -- Tabs the reminder leaves out: the fixed ones, plus Mana Pots for a class without mana
--- (warrior, rogue). Hunters have mana on Forever, so they are reminded.
+-- (warrior, rogue, ...).
 function CM.SkipsReminder(key)
     if CM.REMINDER_SKIP[key] then return true end
     return key == "manapotion" and (_G.UnitPowerMax("player", Enum.PowerType.Mana) or 0) <= 0

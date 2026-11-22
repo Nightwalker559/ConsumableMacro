@@ -44,15 +44,18 @@ function CM.GetMacroBodyText(key)
     local lines = { CM.GetShowtooltipLine(items), "/cqs", "/stopcasting" }
 
     -- Only potion, healpotion and manapotion get the stacked fallback chain (every
-    -- item in the bags, in priority order). Flask, healthstone and bufffood use the
-    -- single best item only.
+    -- item in the bags, in priority order). Flask, healthstone, bufffood and bandage use
+    -- the single best item only (a bandage needs the player as its target; a second one
+    -- is refused for a minute anyway).
     if key == "potion" or key == "healpotion" or key == "manapotion" then
         for _, item in ipairs(items) do
             if CM.IsInBags(item.id) then tinsert(lines, "/use item:" .. item.id) end
         end
     else
         local firstMatch = CM.GetFirstInBags(items)
-        if firstMatch then tinsert(lines, "/use item:" .. firstMatch) end
+        if firstMatch then
+            tinsert(lines, (key == "bandage" and "/use [@player] item:" or "/use item:") .. firstMatch)
+        end
     end
 
     return CM.TrimMacroLines(lines)

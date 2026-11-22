@@ -4,6 +4,19 @@ All notable changes to this project are documented here.
 
 ---
 
+## 2.1.1
+
+### New
+- Forever: Bandages tab with its own macro, CM_Bandage. It bandages you (`[@player]`) with the first bandage of your list that is in your bags. The catalog lists the Classic, battleground and Crystal Infused bandages.
+- Retail: Mana Pots tab with its own macro, CM_ManaPotion. The catalog lists the Midnight and The War Within mana potions. Potions that restore health and mana (Refreshing Serum, Cavedweller's Delight) are in Heal Pots and Mana Pots; the macro uses one once. Potions outside the catalog are sorted by what their tooltip says they restore.
+
+### Changed
+- Retail: the Potion catalog lists combat potions only. Heal and mana potions moved to their own tabs, and potions without a use in a fight (invisibility, stealth detection, slow fall, cosmetic, dead-only) are no longer listed. They can still be added by ID or drag & drop. Once, on the first login, heal and mana potions in your Potion lists move to their own tabs (all profiles); potions the catalog doesn't know stay.
+- The item ID input moved from the main window into the Catalog window, for items the catalog doesn't know yet. The Catalog button is always enabled, so the input stays reachable on every tab.
+
+### Fixed
+- Configuration windows could appear behind other addons' frames (e.g. Chat+ buttons, RestedXP Active Targets). They now sit on a higher layer; the AH restock panel stays above the auction house but below them.
+
 ## 2.1.0
 
 ### New

@@ -2,7 +2,7 @@
 ## Title: |cff00FF98Consumable|rMacro
 ## Notes: Automatically creates macros for the best available consumables in your bags.
 ## Author: Nightwalker559
-## Version: 2.1.0
+## Version: 2.1.1
 ## X-Curse-Project-ID: 1510966
 ## SavedVariables: ConsumableMacroDB
 ## SavedVariablesPerCharacter: ConsumableMacroCharDB
@@ -22,9 +22,11 @@ Data\CatalogRetail.lua
 Data\CatalogForever.lua
 
 # Modules (features)
+Modules\ItemInfo.lua
 Modules\Reminder.lua
 Modules\Catalog.lua
 Modules\Items.lua
+Modules\ImportExport.lua
 Modules\AutoPotion.lua
 Modules\Restock.lua
 Modules\WeaponEnhance.lua
@@ -38,6 +40,7 @@ UI\Widgets.lua
 UI\UI.lua
 UI\Catalog.lua
 UI\Options.lua
+UI\Dialogs.lua
 
 # Events + slash commands (last - uses everything above)
 Core\Events.lua

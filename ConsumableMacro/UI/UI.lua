@@ -61,6 +61,30 @@ end
 
 -- ── RefreshList ────────────────────────────────────────────────────────────────
 -- One list row: icon, name, in-bags status and the up / down / delete buttons.
+-- Click handler of the up / down / delete buttons of a list row.
+function CM.OnRowButtonClick(self)
+    if InCombatLockdown() or not CM.db then return end
+    local parent  = self:GetParent()
+    local index   = parent.index
+    local items   = CM.db[CM.activeTab].items
+    local item    = items[index]
+
+    if self.action == "delete" then
+        tremove(items, index)
+    elseif self.action == "up" and index > 1 then
+        tremove(items, index)
+        tinsert(items, index - 1, item)
+    elseif self.action == "down" and index < #items then
+        tremove(items, index)
+        tinsert(items, index + 1, item)
+    else
+        return
+    end
+
+    CM.RefreshList()
+    CM.UpdateMacro(CM.activeTab)
+end
+
 local function CreateRow(i)
     local content = CM.mainFrame.content
     local row = CreateFrame("Frame", nil, content)
@@ -155,7 +179,6 @@ function CM.RefreshList()
     local body = CM.GetMacroBodyText(CM.activeTab)
     f.previewText:SetText(body ~= "" and body or "...")
     f.content:SetHeight(math.max(1, #items * 35))
-    f.catalogBtn:SetEnabled(#CM.GetCatalogItems(CM.activeTab) > 0)
     if CM.restockConfigFrame and CM.restockConfigFrame:IsShown() then CM.RefreshRestockConfig() end
     CM.RefreshCatalog()
 end
@@ -185,7 +208,7 @@ function CM.BuildUI()
     local DROPZONE_WIDTH = AREA_WIDTH - 110 - 106  -- the Catalog button sits right of it
 
     local f = CM.CreateWindow("ConsumableMacroFrame")
-    f:SetSize(windowWidth, 485)
+    f:SetSize(windowWidth, 453)
     f:SetPoint("CENTER")
     f.TitleText:SetText(CM.TITLE)
     CM.mainFrame = f
@@ -265,40 +288,9 @@ function CM.BuildUI()
     f.content:SetHeight(1)
     CM.FitScrollFrame(scroll, scrollBg, f.content, 4)
 
-    -- item ID input
-    f.editLabel = f:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    f.editLabel:SetPoint("TOPLEFT", scrollBg, "BOTTOMLEFT", 10, -15)
-    f.editLabel:SetText(CM.L["LABEL_INPUT_PREFIX"])
-
-    f.editBox = CreateFrame("EditBox", nil, f, "InputBoxTemplate")
-    f.editBox:SetSize(120, 24)
-    f.editBox:SetPoint("LEFT", f.editLabel, "LEFT", 85, 0)
-    f.editBox:SetAutoFocus(false)
-    f.editBox:SetNumeric(true)
-    f.editBox:SetScript("OnEnterPressed", function(self)
-        local id = tonumber(self:GetText())
-        if id then CM.AddItemToDatabase(id); self:SetText("") end
-        self:ClearFocus()
-    end)
-    f.editBox:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
-
-    f.addBtn = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
-    f.addBtn:SetSize(100, 24)
-    f.addBtn:SetText(CM.L["BTN_ADD"])
-    f.addBtn:SetPoint("LEFT", f.editBox, "RIGHT", 5, 0)
-    f.addBtn:SetScript("OnClick", function()
-        local id = tonumber(f.editBox:GetText())
-        if id then CM.AddItemToDatabase(id); f.editBox:SetText("") end
-    end)
-
-    f.editTip = f:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
-    f.editTip:SetPoint("LEFT", f.addBtn, "RIGHT", 10, 0)
-    f.editTip:SetJustifyH("LEFT")
-    f.editTip:SetText(CM.L["LABEL_INPUT_TIP"])
-
     -- drop zone for items dragged from the bags
     f.dropLabel = f:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    f.dropLabel:SetPoint("TOPLEFT", f.editLabel, "BOTTOMLEFT", 0, -20)
+    f.dropLabel:SetPoint("TOPLEFT", scrollBg, "BOTTOMLEFT", 10, -15)
     f.dropLabel:SetText(CM.L["DROP_ZONE_TITLE"])
 
     f.dropSkin = CreateFrame("EditBox", nil, f, "InputBoxTemplate")
