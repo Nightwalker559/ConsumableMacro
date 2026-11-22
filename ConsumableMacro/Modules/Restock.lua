@@ -284,7 +284,7 @@ function CM.GetRestockFrame()
     local f = CM.CreatePanel("CMRestockFrame")
     f:SetSize(270, 100)
     AnchorPanel(f)
-    f:SetFrameStrata(CM.FRAME_STRATA)
+    f:SetFrameStrata("HIGH")  -- docks to the auction house: above it, but below the DIALOG config windows
     f:SetClampedToScreen(true)
     f:Hide()
     f.TitleText:SetText("|cff00FF98CM|r " .. L["RESTOCK_TITLE"])
