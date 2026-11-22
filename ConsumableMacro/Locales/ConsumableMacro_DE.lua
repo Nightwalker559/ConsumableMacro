@@ -28,6 +28,7 @@ L["CATALOG_DESC"] = "Bekannte Gegenstände für diese Liste. Klick auf einen Geg
 L["CATALOG_SEARCH"] = "Suche:"
 L["CATALOG_ONLY_BAGS"] = "Nur Gegenstände in meinen Taschen"
 L["CATALOG_IN_LIST"] = "In Liste"
+L["CATALOG_NEEDS_LEVEL"] = "Stufe %d"
 L["CATALOG_EMPTY"] = "Kein Katalog für diese Liste."
 L["CATALOG_GROUP_STRENGTH"] = "Stärke"
 L["CATALOG_GROUP_AGILITY"] = "Beweglichkeit"

@@ -82,6 +82,14 @@ local function IsBoundNoAH(itemID)
         or bindType == B.ToWoWAccount or bindType == B.ToBnetAccount
 end
 
+-- The level the item needs when that is above the player's, else nil (also while the item
+-- isn't cached yet: it can't be told, so it counts as usable).
+function CM.GetMissingLevel(itemID)
+    local minLevel = select(5, C_Item.GetItemInfo(itemID))
+    if type(minLevel) == "number" and minLevel > _G.UnitLevel("player") then return minLevel end
+    return nil
+end
+
 function CM.IsAuctionable(itemID)
     return not IsConjured(itemID) and not IsBoundNoAH(itemID)
 end

@@ -27,7 +27,7 @@ local function OnRowClick(self)
         CM.RefreshCatalog()
         return
     end
-    if type(self.itemID) ~= "number" or self.inList or CM.BlockedByCombat() then return end
+    if type(self.itemID) ~= "number" or self.inList or CM.GetMissingLevel(self.itemID) or CM.BlockedByCombat() then return end
     local tab = CM.activeTab
     if CM.AddItemToTab(self.itemID, tab) then
         CM.RefreshList()  -- also refreshes this window
@@ -112,6 +112,13 @@ local function ShowItem(row, id, listed)
     row.text:SetPoint("LEFT", row.icon, "RIGHT", 6, 0)
     row.text:SetPoint("RIGHT", row.status, "LEFT", -6, 0)
     row.text:SetText(CM.RankMarkup(id) .. (CM.L["ITEM_LABEL"]):format(names[id] or (CM.L["ITEM_LOADING"]):format(id), id))
+    -- an item above the player's level is red and can't be added
+    local needLevel = not listed and CM.GetMissingLevel(id)
+    if needLevel then
+        row.text:SetTextColor(1, 0.2, 0.2)
+        row.status:SetText((CM.L["CATALOG_NEEDS_LEVEL"]):format(needLevel)); row.status:SetTextColor(1, 0.2, 0.2)
+        return
+    end
     local shade = listed and 0.45 or (inBags and 1 or 0.75)
     row.text:SetTextColor(shade, shade, shade)
     if listed then
