@@ -72,6 +72,10 @@ if CM.IS_FOREVER then
     CM.MACRO_OWNER.drink = "food"
     CM.REMINDER_SKIP.food, CM.REMINDER_SKIP.drink = true, true
 
+    -- Bandages: first aid is a button you press on purpose there (after Mana Pots)
+    tinsert(CM.TABS, 5, { key = "bandage", tabL = "TAB_BANDAGE", info = "INFO_BANDAGE", sub = "SUB_BANDAGE", color = {0.95, 0.9, 0.7} })
+    CM.MACRO_NAMES.bandage = "CM_Bandage"
+
     -- Rogues: poisons, two lists (poison 1 for the main hand, poison 2 for the off hand)
     -- behind one sidebar entry, one macro, CM_Poison (Modules\Poison.lua). Before Weapon Enhancements.
     if select(2, _G.UnitClass("player")) == "ROGUE" then

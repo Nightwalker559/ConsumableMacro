@@ -7,6 +7,7 @@ All notable changes to this project are documented here.
 ## 2.1.1
 
 ### New
+- Forever: Bandages tab with its own macro, CM_Bandage. It bandages you (`[@player]`) with the first bandage of your list that is in your bags. The catalog lists the Classic, battleground and Crystal Infused bandages.
 - Retail: Mana Pots tab with its own macro, CM_ManaPotion. The catalog lists the Midnight and The War Within mana potions. Potions that restore health and mana (Refreshing Serum, Cavedweller's Delight) are in Heal Pots and Mana Pots; the macro uses one once. Potions outside the catalog are sorted by what their tooltip says they restore.
 
 ### Changed

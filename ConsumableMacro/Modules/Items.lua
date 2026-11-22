@@ -64,6 +64,8 @@ function CM.GetTargetTabForItem(targetID)
     -- Forever: drinks are mostly "... Water" / "... Tea", which the exclude list below
     -- would reject, so food and drink are decided by their subclass first.
     if CM.IS_FOREVER and isConsumable and subclassID == SUB.Fooddrink then return GetForeverFoodTab() end
+    -- Forever: bandages are their own subclass.
+    if CM.GetTabInfo("bandage") and isConsumable and subclassID and subclassID == SUB.Bandage then return "bandage" end
     -- Mana potions have their own tab; ones that restore both count as heal potions here
     -- and are added to Mana Pots as well (GetTargetTabsForItem).
     if isConsumable and subclassID == SUB.Potion then
