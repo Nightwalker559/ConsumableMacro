@@ -4,6 +4,11 @@ All notable changes to this project are documented here.
 
 ---
 
+## 2.1.3
+
+### New
+- Options: a "Feedback & Bugs" section with the GitHub link in a read-only box. Click it and copy with Ctrl+C.
+
 ## 2.1.2
 
 ### New
