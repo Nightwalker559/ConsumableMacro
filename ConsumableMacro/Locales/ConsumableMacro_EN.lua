@@ -117,6 +117,9 @@ L["RESET_TITLE"]         = "Reset Item Lists"
 L["RESET_DESC"]          = "Select tabs to reset:"
 L["RESET_NONE_SELECTED"] = "Select at least one tab."
 
+L["FEEDBACK_HEADER"]     = "Feedback & Bugs"
+L["FEEDBACK_HINT"]       = "Click the GitHub link and copy it with Ctrl+C."
+
 L["AUTOPOTION_HEADER"]              = "AutoPotion"
 L["CHECKBOX_AUTOPOTION_ENABLE"]     = "Enable AutoPotion macro"
 L["CHECKBOX_AUTOPOTION_STOPCAST"]   = "Stop casting before use"

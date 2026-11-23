@@ -118,6 +118,9 @@ L["RESET_TITLE"]         = "Gegenstandslisten zurücksetzen"
 L["RESET_DESC"]          = "Tabs zum Zurücksetzen auswählen:"
 L["RESET_NONE_SELECTED"] = "Mindestens einen Tab auswählen."
 
+L["FEEDBACK_HEADER"]     = "Feedback & Fehler"
+L["FEEDBACK_HINT"]       = "GitHub-Link anklicken und mit Strg+C kopieren."
+
 L["AUTOPOTION_HEADER"]              = "AutoPotion"
 L["CHECKBOX_AUTOPOTION_ENABLE"]     = "AutoPotion-Makro aktivieren"
 L["CHECKBOX_AUTOPOTION_STOPCAST"]   = "Vor Nutzung Zauber abbrechen"

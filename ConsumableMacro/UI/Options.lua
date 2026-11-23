@@ -2,6 +2,8 @@
 -- Options window and the minimum-count window (the dialogs are in Dialogs.lua).
 local CM = ConsumableMacroAddon
 
+local GITHUB_URL = "https://github.com/Nightwalker559/ConsumableMacro"
+
 -- Section header with a separator line below; returns the y offset under it.
 local function AddSection(o, y, title, gap)
     local header = o:CreateFontString(nil, "OVERLAY", "GameFontNormal")
@@ -218,6 +220,34 @@ function CM.BuildOptionsFrame()
     o.resetBtn:SetPoint("TOPLEFT", 14, y)
     o.resetBtn:SetText(L["BTN_RESET"])
     o.resetBtn:SetScript("OnClick", function() CM.ShowResetFrame() end)
+
+    -- ── Feedback section ──
+    -- WoW cannot open a browser, so the link sits in a read-only box to copy with Ctrl+C.
+    y = y - 38
+
+    y = AddSection(c, y, L["FEEDBACK_HEADER"], 10)
+
+    o.linkBox = CreateFrame("EditBox", nil, c, "InputBoxTemplate")
+    o.linkBox:SetSize(288, 22)
+    o.linkBox:SetPoint("TOPLEFT", 14, y)
+    o.linkBox:SetAutoFocus(false)
+    o.linkBox:SetText(GITHUB_URL)
+    o.linkBox:SetCursorPosition(0)
+    o.linkBox:SetScript("OnTextChanged", function(self, byUser)
+        if byUser then self:SetText(GITHUB_URL); self:HighlightText() end
+    end)
+    o.linkBox:SetScript("OnEditFocusGained", function(self) self:HighlightText() end)
+    o.linkBox:SetScript("OnMouseUp", function(self) self:SetFocus(); self:HighlightText() end)
+    o.linkBox:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
+    y = y - 30
+
+    local linkHint = c:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+    linkHint:SetPoint("TOPLEFT", 14, y)
+    linkHint:SetPoint("TOPRIGHT", -14, y)
+    linkHint:SetJustifyH("LEFT")
+    linkHint:SetText(L["FEEDBACK_HINT"])
+    linkHint:SetTextColor(0.65, 0.65, 0.65)
+    y = y - 12
 
     -- same height as the main window; the rest scrolls
     c:SetHeight(-y + 24 + 16)
