@@ -65,16 +65,11 @@ end
 -- True if the item is already in a tab or the extra list.
 local function IsTracked(itemID)
     for _, t in ipairs(CM.TABS) do
-        if not CM.RESTOCK_SKIP[t.key] then
-            for _, item in ipairs(CM.db[t.key] and CM.db[t.key].items or {}) do
-                if item.id == itemID then return true end
-            end
+        if not CM.RESTOCK_SKIP[t.key] and CM.ListHasItem(CM.db[t.key] and CM.db[t.key].items or {}, itemID) then
+            return true
         end
     end
-    for _, item in ipairs(CM.db.restock.extra) do
-        if item.id == itemID then return true end
-    end
-    return false
+    return CM.ListHasItem(CM.db.restock.extra, itemID)
 end
 
 -- Adds an item (ID, item link or cached item name) to the extra list.
@@ -165,10 +160,8 @@ local function GetPanelRow(f, i)
     row.hl:SetAllPoints()
     row.hl:SetColorTexture(1, 1, 1, 0.08)
 
-    row.icon = row:CreateTexture(nil, "ARTWORK")
-    row.icon:SetSize(20, 20)
+    row.icon = CM.CreateRowIcon(row, 20)
     row.icon:SetPoint("LEFT", 4, 0)
-    row.icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
 
     row.count = row:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
     row.count:SetPoint("RIGHT", -6, 0)
@@ -301,10 +294,8 @@ local function GetConfigRow(f, i)
     row.chk:SetSize(22, 22)
     row.chk:SetPoint("LEFT", 2, 0)
 
-    row.icon = row:CreateTexture(nil, "ARTWORK")
-    row.icon:SetSize(18, 18)
+    row.icon = CM.CreateRowIcon(row, 18)
     row.icon:SetPoint("LEFT", row.chk, "RIGHT", 2, 0)
-    row.icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
 
     -- remove button, only shown for extra items
     row.delBtn = CreateFrame("Button", nil, row)
@@ -469,13 +460,10 @@ function CM.BuildRestockConfigFrame()
         CM.RefreshRestockFrame()
     end)
 
-    f.descLbl = f:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+    f.descLbl = CM.CreateHint(f)
     f.descLbl:SetPoint("TOPLEFT",  14, -90)
     f.descLbl:SetPoint("TOPRIGHT", -14, -90)
-    f.descLbl:SetJustifyH("LEFT")
-    f.descLbl:SetWordWrap(true)
     f.descLbl:SetText(L["RESTOCK_CONFIG_DESC"])
-    f.descLbl:SetTextColor(0.65, 0.65, 0.65)
 
     f.scrollBg = CreateFrame("Frame", nil, f, "InsetFrameTemplate")
     f.scrollBg:SetPoint("TOPLEFT",     10, -128)

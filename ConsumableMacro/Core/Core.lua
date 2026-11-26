@@ -196,6 +196,23 @@ function CM.GetItemIcon(itemID)
     return C_Item.GetItemIconByID(itemID) or CM.ICON_UNKNOWN
 end
 
+-- True if the item list already holds the item.
+function CM.ListHasItem(items, itemID)
+    for _, item in ipairs(items) do
+        if item.id == itemID then return true end
+    end
+    return false
+end
+
+-- A new list with the entries of both lists, those of `first` in front.
+function CM.JoinLists(first, second)
+    local all = {}
+    for _, list in ipairs({ first, second }) do
+        for _, item in ipairs(list) do tinsert(all, item) end
+    end
+    return all
+end
+
 -- First item of a priority list that is in the bags; nil if none.
 function CM.GetFirstInBags(items)
     for _, item in ipairs(items or {}) do

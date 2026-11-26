@@ -49,13 +49,15 @@ function CM.BuildElixirMacroBody()
 end
 
 -- ── Rebuild when the buffs change ──────────────────────────────────────────────
+local function RebuildOutOfCombat()
+    if not _G.InCombatLockdown() then CM.UpdateMacro("elixir") end
+end
+
 local ev = CreateFrame("Frame")
 ev:RegisterUnitEvent("UNIT_AURA", "player")
 ev:RegisterEvent("PLAYER_REGEN_ENABLED")
 ev:SetScript("OnEvent", function()
     if not CM.db or not CM.db.autoUpdate or _G.InCombatLockdown() then return end
     -- UNIT_AURA comes in bursts: one rebuild per 0.5 s (the body is only written when it changed)
-    CM.Defer("elixirAura", function()
-        if not _G.InCombatLockdown() then CM.UpdateMacro("elixir") end
-    end, 0.5)
+    CM.Defer("elixirAura", RebuildOutOfCombat, 0.5)
 end)

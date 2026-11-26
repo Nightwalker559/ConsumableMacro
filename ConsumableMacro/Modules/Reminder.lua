@@ -1,4 +1,5 @@
 -- ConsumableMacro Reminder
+-- The window listing missing or low consumables, shown at login and after an instance.
 local CM = ConsumableMacroAddon
 
 -- ── Timer ──────────────────────────────────────────────────────────────────────

@@ -13,6 +13,11 @@ All notable changes to this project are documented here.
 ### Changed
 - Retail: mana potions are only for healer specs and Arcane Mage. Other specs get no Mana Pots tab, minimum count, restock entry or reminder for them, and it all follows a spec change. List and macro are kept.
 - Forever: classes without mana get no Mana Pots tab.
+- Options and dialogs: tidier layout (buttons use the full width, same grey for explanations, more room for long names in Minimum Counts).
+
+### Fixed
+- After switching profiles, closing Options could overwrite the new profile's minimum counts with those of the old one.
+- AutoPotion: "Sync" no longer errors while cooldowns are hidden from addons (boss fights, Mythic+).
 
 ## 2.1.2
 

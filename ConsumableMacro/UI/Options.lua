@@ -17,6 +17,15 @@ local function AddSection(o, y, title, gap)
     return y - gap
 end
 
+-- Saves the minimum-count boxes into the active profile. Only while their window is open
+-- (or just closing): afterwards they may hold the values of another profile.
+local function CommitMinCountBoxes()
+    if not CM.db then return end
+    for key, box in pairs(CM.minCountFrame.boxes) do
+        CM.db[key].minCount = tonumber(box:GetText()) or 0
+    end
+end
+
 -- ── Options Frame ───────────────────────────────────────────────────────────────
 function CM.BuildOptionsFrame()
     if CM.optionsFrame then return CM.optionsFrame end
@@ -56,13 +65,13 @@ function CM.BuildOptionsFrame()
 
     o.autoUpdateChk = CM.CreateCheckbox(c, L["CHECKBOX_AUTO"], 14, y)
     o.autoUpdateChk:SetScript("OnClick", function(self) CM.db.autoUpdate = self:GetChecked() end)
-    y = y - 30
+    y = y - 28
 
     o.reminderChk = CM.CreateCheckbox(c, L["CHECKBOX_REMINDER"], 14, y)
     o.reminderChk:SetScript("OnClick", function(self) CM.db.showReminder = self:GetChecked() end)
 
     if not CM.IS_FOREVER then  -- Forever shows Mana Pots to everyone with mana anyway
-        y = y - 30
+        y = y - 28
         o.manaSpecsChk = CM.CreateCheckbox(c, L["CHECKBOX_MANA_ALL_SPECS"], 14, y)
         o.manaSpecsChk:SetScript("OnClick", function(self)
             CM.db.manaPotionsAllSpecs = self:GetChecked()
@@ -101,13 +110,10 @@ function CM.BuildOptionsFrame()
         end)
         y = y - 28
 
-        o.apResetDesc = c:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+        o.apResetDesc = CM.CreateHint(c)
         o.apResetDesc:SetPoint("TOPLEFT", 14, y)
         o.apResetDesc:SetPoint("TOPRIGHT", -14, y)
-        o.apResetDesc:SetJustifyH("LEFT")
-        o.apResetDesc:SetWordWrap(true)
         o.apResetDesc:SetText(L["AUTOPOTION_RESET_DESC"])
-        o.apResetDesc:SetTextColor(0.65, 0.65, 0.65)
         y = y - 40
 
         o.apResetLbl = c:CreateFontString(nil, "OVERLAY", "GameFontNormal")
@@ -169,7 +175,7 @@ function CM.BuildOptionsFrame()
     y = y - 32
 
     o.exportBtn = CreateFrame("Button", nil, c, "UIPanelButtonTemplate")
-    o.exportBtn:SetSize(135, 24)
+    o.exportBtn:SetSize(142, 24)
     o.exportBtn:SetPoint("TOPLEFT", 14, y)
     o.exportBtn:SetText(L["BTN_EXPORT"])
     o.exportBtn:SetScript("OnClick", function()
@@ -177,7 +183,7 @@ function CM.BuildOptionsFrame()
     end)
 
     o.importBtn = CreateFrame("Button", nil, c, "UIPanelButtonTemplate")
-    o.importBtn:SetSize(135, 24)
+    o.importBtn:SetSize(142, 24)
     o.importBtn:SetPoint("LEFT", o.exportBtn, "RIGHT", 4, 0)
     o.importBtn:SetText(L["BTN_IMPORT"])
     o.importBtn:SetScript("OnClick", function()
@@ -251,12 +257,10 @@ function CM.BuildOptionsFrame()
     o.linkBox:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
     y = y - 30
 
-    local linkHint = c:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+    local linkHint = CM.CreateHint(c)
     linkHint:SetPoint("TOPLEFT", 14, y)
     linkHint:SetPoint("TOPRIGHT", -14, y)
-    linkHint:SetJustifyH("LEFT")
     linkHint:SetText(L["FEEDBACK_HINT"])
-    linkHint:SetTextColor(0.65, 0.65, 0.65)
     y = y - 12
 
     -- same height as the main window; the rest scrolls
@@ -266,16 +270,12 @@ function CM.BuildOptionsFrame()
     return o
 end
 
--- Saves all number boxes into the active profile. Skipped while the frame is
--- hidden (stale boxes) unless forced (OnHide).
+-- Saves all open number boxes into the active profile; `force` also saves the Options box
+-- while Options is closing.
 function CM.CommitOptionsBoxes(force)
     if not CM.db then return end
     local o, m = CM.optionsFrame, CM.minCountFrame
-    if m and (force or m:IsShown()) then
-        for key, box in pairs(m.boxes) do
-            CM.db[key].minCount = tonumber(box:GetText()) or 0
-        end
-    end
+    if m and m:IsShown() then CommitMinCountBoxes() end
     if o and o.apResetBox and (force or o:IsShown()) then
         CM.db.autoPotionResetSeconds = tonumber(o.apResetBox:GetText()) or 0
     end
@@ -337,16 +337,13 @@ function CM.BuildMinCountFrame()
     local m = CM.CreateWindow("CMMinCountFrame")
     m:SetWidth(300)
     m.TitleText:SetText(L["OPTIONS_MIN_HEADER"])
-    m:SetScript("OnHide", function() CM.CommitOptionsBoxes(true) end)
+    m:SetScript("OnHide", CommitMinCountBoxes)
     CM.AnchorSidePanel(m)
 
-    local desc = m:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+    local desc = CM.CreateHint(m)
     desc:SetPoint("TOPLEFT", 14, -34)
     desc:SetWidth(272)  -- wraps to up to four lines
     desc:SetText(L["OPTIONS_MIN_DESC"])
-    desc:SetTextColor(0.65, 0.65, 0.65)
-    desc:SetJustifyH("LEFT")
-    desc:SetWordWrap(true)
 
     m.boxes, m.labels = {}, {}
     for _, t in ipairs(CM.TABS) do
@@ -357,7 +354,7 @@ function CM.BuildMinCountFrame()
 
             local box = CreateFrame("EditBox", nil, m, "InputBoxTemplate")
             box:SetSize(52, 22)
-            box:SetPoint("LEFT", lbl, "LEFT", 130, 0)
+            box:SetPoint("LEFT", lbl, "LEFT", 150, 0)
             box:SetMaxLetters(3)
             box.tabKey = t.key
             CM.BindNumberBox(box, function(self)

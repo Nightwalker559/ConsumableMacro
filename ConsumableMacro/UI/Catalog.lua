@@ -43,10 +43,8 @@ local function CreateRow(f, i)
     CM.AddRowBackground(row)
     row:SetHighlightTexture("Interface\\Buttons\\UI-Listbox-Highlight2", "ADD")
 
-    row.icon = row:CreateTexture(nil, "ARTWORK")
-    row.icon:SetSize(22, 22)
+    row.icon = CM.CreateRowIcon(row, 22)
     row.icon:SetPoint("LEFT", 4, 0)
-    row.icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
 
     -- fold marker of a heading: a real button (without mouse, the row takes the click) so
     -- that ElvUI's collapse skin can restyle its +/- texture
@@ -215,11 +213,9 @@ local function BuildCatalogFrame()
     f.countLabel:SetPoint("LEFT", f.tabLabel, "RIGHT", 6, 0)
     f.countLabel:SetTextColor(0.5, 0.5, 0.5)
 
-    f.descLbl = f:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+    f.descLbl = CM.CreateHint(f)
     f.descLbl:SetPoint("TOPLEFT", f.tabLabel, "BOTTOMLEFT", 0, -4)
     f.descLbl:SetPoint("TOPRIGHT", -14, -52)
-    f.descLbl:SetJustifyH("LEFT")
-    f.descLbl:SetTextColor(0.65, 0.65, 0.65)
     f.descLbl:SetText(L["CATALOG_DESC"])
 
     local searchLbl = f:CreateFontString(nil, "OVERLAY", "GameFontNormal")

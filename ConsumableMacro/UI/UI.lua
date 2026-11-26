@@ -94,10 +94,8 @@ local function CreateRow(i)
 
     CM.AddRowBackground(row)
 
-    row.icon = row:CreateTexture(nil, "ARTWORK")
-    row.icon:SetSize(24, 24)
+    row.icon = CM.CreateRowIcon(row, 24)
     row.icon:SetPoint("LEFT", 5, 0)
-    row.icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
 
     row.text = row:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
     row.text:SetPoint("LEFT", row.icon, "RIGHT", 8, 0)

@@ -91,11 +91,7 @@ local function SplitTab(root, flag, from)
                         local tab = type(p[key]) == "table" and p[key] or {}
                         p[key] = tab
                         tab.items = tab.items or {}
-                        local present = false
-                        for _, existing in ipairs(tab.items) do
-                            if existing.id == item.id then present = true end
-                        end
-                        if not present then tinsert(tab.items, DeepCopy(item)) end
+                        if not CM.ListHasItem(tab.items, item.id) then tinsert(tab.items, DeepCopy(item)) end
                     end
                 end
             end

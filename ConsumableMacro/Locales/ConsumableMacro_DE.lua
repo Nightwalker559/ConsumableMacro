@@ -1,3 +1,4 @@
+-- ConsumableMacro locale: German
 if GetLocale() ~= "deDE" then return end
 
 local L = _G["ConsumableMacroLocale"] or {}

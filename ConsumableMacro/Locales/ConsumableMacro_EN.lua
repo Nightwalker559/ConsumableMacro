@@ -1,3 +1,4 @@
+-- ConsumableMacro locale: English (default)
 local L = _G["ConsumableMacroLocale"] or {}
 
 L["TAB_FLASK"] = "Flasks"

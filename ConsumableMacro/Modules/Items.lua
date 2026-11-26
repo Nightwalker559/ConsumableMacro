@@ -139,9 +139,7 @@ end
 -- Appends the item to the list of `tab`; false if it is already in it.
 function CM.AddItemToTab(itemID, tab)
     local items = CM.db[tab].items
-    for _, existing in ipairs(items) do
-        if existing.id == itemID then return false end
-    end
+    if CM.ListHasItem(items, itemID) then return false end
     tinsert(items, { id = itemID })
     return true
 end

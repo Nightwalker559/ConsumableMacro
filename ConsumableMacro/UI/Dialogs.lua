@@ -5,8 +5,9 @@ local CM = ConsumableMacroAddon
 -- ── Tab selection dialogs ─────────────────────────────────────────────────────
 -- Dialog with one checkbox per tab plus OK / Cancel: f.descLbl, f.checkboxes[tabKey],
 -- f.okBtn, f.cancelBtn.
-local function BuildTabDialog(frameName, width, btnWidth)
+local function BuildTabDialog(frameName, width)
     local rowH   = 28
+    local btnWidth = (width - 2 * 14 - 4) / 2  -- two buttons fill the width
     local frameH = 30 + 22 + (#CM.TABS * rowH) + 14 + 24 + 20
 
     local f = CM.CreateWindow(frameName)
@@ -15,9 +16,8 @@ local function BuildTabDialog(frameName, width, btnWidth)
 
     local y = -30
 
-    f.descLbl = f:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+    f.descLbl = CM.CreateHint(f)
     f.descLbl:SetPoint("TOPLEFT", 14, y)
-    f.descLbl:SetTextColor(0.7, 0.7, 0.7)
     y = y - 22
 
     f.checkboxes = {}
@@ -59,7 +59,7 @@ end
 -- One tab-selection frame for export and import (see CM.ShowIEFrame).
 function CM.BuildIEFrame()
     if CM.ieFrame then return CM.ieFrame end
-    CM.ieFrame = BuildTabDialog("CMIEFrame", 250, 110)
+    CM.ieFrame = BuildTabDialog("CMIEFrame", 250)
     return CM.ieFrame
 end
 
@@ -138,7 +138,7 @@ function CM.BuildResetFrame()
     if CM.resetFrame then return CM.resetFrame end
     local L = CM.L
 
-    local f = BuildTabDialog("CMResetFrame", 240, 100)
+    local f = BuildTabDialog("CMResetFrame", 240)
     f.TitleText:SetText(L["RESET_TITLE"])
     f.descLbl:SetText(L["RESET_DESC"])
     for _, t in ipairs(CM.TABS) do
@@ -184,12 +184,9 @@ function CM.BuildProfileFrame()
     f:SetSize(280, 140)
     CM.AnchorSidePanel(f)
 
-    f.descLbl = f:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+    f.descLbl = CM.CreateHint(f)
     f.descLbl:SetPoint("TOPLEFT", 14, -34)
     f.descLbl:SetPoint("TOPRIGHT", -14, -34)
-    f.descLbl:SetJustifyH("LEFT")
-    f.descLbl:SetWordWrap(true)
-    f.descLbl:SetTextColor(0.7, 0.7, 0.7)
 
     f.editBox = CreateFrame("EditBox", nil, f, "InputBoxTemplate")
     f.editBox:SetSize(240, 22)
@@ -249,8 +246,8 @@ function CM.ShowProfileDialog(mode, target)
     f.editBox:SetShown(not isDel)
     f:SetSize(isImp and 300 or 280, isDel and 110 or 140)
     f.okBtn:SetText(isDel and L["PROFILE_DELETE"] or isImp and L["PROFILE_IMPORT_NEW"] or OKAY)
-    f.okBtn:SetWidth(isImp and 88 or 120)
-    f.cancelBtn:SetWidth(isImp and 88 or 120)
+    f.okBtn:SetWidth(isImp and 88 or 124)
+    f.cancelBtn:SetWidth(isImp and 88 or 124)
     f.altBtn:SetShown(isImp)
     f.altBtn:SetText(L["PROFILE_IMPORT_CURRENT"])
     f.cancelBtn:ClearAllPoints()

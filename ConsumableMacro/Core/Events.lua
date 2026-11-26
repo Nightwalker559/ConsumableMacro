@@ -21,6 +21,11 @@ local function RefreshBagState(updateMacros)
     CM.RefreshList()
 end
 
+-- The deferred redraw after bag changes.
+local function RefreshAfterBagUpdate()
+    RefreshBagState(CM.db and CM.db.autoUpdate)
+end
+
 -- Back in the open world after an instance: remind about low consumables. The
 -- re-check after the delay covers zoning straight into another instance.
 local function OnLeftInstance()
@@ -106,9 +111,7 @@ ev:SetScript("OnEvent", function(_, event, arg1, arg2)
             if CM.db.autoUpdate then CM.needsUpdateAfterCombat = true end
         else
             -- only the macro rebuild depends on Auto-Update
-            CM.Defer("bagUpdate", function()
-                RefreshBagState(CM.db and CM.db.autoUpdate)
-            end, 1.0)
+            CM.Defer("bagUpdate", RefreshAfterBagUpdate, 1.0)
         end
 
     elseif event == "ITEM_DATA_LOAD_RESULT" then
