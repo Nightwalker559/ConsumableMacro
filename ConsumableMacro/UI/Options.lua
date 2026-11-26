@@ -298,6 +298,26 @@ function CM.ToggleOptionsFrame()
 end
 
 -- ── Min Count Frame ────────────────────────────────────────────────────────────
+-- Stacks the rows of the tabs this character has and fits the window to them.
+function CM.LayoutMinCountRows()
+    local m = CM.minCountFrame
+    if not m then return end
+    local y = -34 - 56  -- below the description
+    for _, t in ipairs(CM.TABS) do
+        local box = m.boxes[t.key]
+        if box then
+            local hidden = CM.IsTabHidden(t.key)
+            m.labels[t.key]:SetShown(not hidden)
+            box:SetShown(not hidden)
+            if not hidden then
+                m.labels[t.key]:SetPoint("TOPLEFT", 14, y)
+                y = y - 30
+            end
+        end
+    end
+    m:SetHeight(-y + 12)
+end
+
 -- One number box per tab (m.boxes[tabKey]); the reminder warns at or below the value.
 function CM.BuildMinCountFrame()
     if CM.minCountFrame then return CM.minCountFrame end
@@ -317,12 +337,10 @@ function CM.BuildMinCountFrame()
     desc:SetJustifyH("LEFT")
     desc:SetWordWrap(true)
 
-    local y = -34 - 56
-    m.boxes = {}
+    m.boxes, m.labels = {}, {}
     for _, t in ipairs(CM.TABS) do
         if not CM.MINCOUNT_SKIP[t.key] then
             local lbl = m:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-            lbl:SetPoint("TOPLEFT", 14, y)
             lbl:SetText((L[t.tabL] or t.key) .. ":")
             lbl:SetTextColor(unpack(t.color))
 
@@ -334,11 +352,10 @@ function CM.BuildMinCountFrame()
             CM.BindNumberBox(box, function(self)
                 CM.db[self.tabKey].minCount = tonumber(self:GetText()) or 0
             end)
+            m.labels[t.key] = lbl
             m.boxes[t.key] = box
-            y = y - 30
         end
     end
-    m:SetHeight(-y + 12)
 
     CM.minCountFrame = m
     return m
@@ -353,6 +370,7 @@ function CM.ShowMinCountFrame()
     for key, box in pairs(m.boxes) do
         box:SetText(tostring(CM.db[key] and CM.db[key].minCount or 0))
     end
+    CM.LayoutMinCountRows()
     CM.AnchorSidePanel(m)
     CM.HideSidePanels("minCountFrame")
     m:Show()

@@ -157,12 +157,24 @@ function CM.AddItemToDatabase(itemID)
 
         local targetTabs = CM.GetTargetTabsForItem(id)
         if targetTabs then
+            -- don't put an item where this character can't see it at all
+            local visible = false
+            for _, tab in ipairs(targetTabs) do
+                if not CM.IsTabHidden(tab) then visible = true end
+            end
+            if not visible then
+                CM.ShowError(CM.L["ERR_NO_MANAPOTION"])
+                return
+            end
+
             local added = {}
             for _, tab in ipairs(targetTabs) do
                 if CM.AddItemToTab(id, tab) then tinsert(added, tab) end
             end
             if #added == 0 then return end
-            CM.activeTab = added[1]
+            for _, tab in ipairs(added) do
+                if not CM.IsTabHidden(tab) then CM.activeTab = tab break end
+            end
             CM.RefreshList()
             for _, tab in ipairs(added) do CM.UpdateMacro(tab) end  -- an item for two tabs changes two macros
         else

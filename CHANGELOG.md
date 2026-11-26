@@ -10,7 +10,8 @@ All notable changes to this project are documented here.
 - Options: a "Feedback & Bugs" section with the GitHub link in a read-only box. Click it and copy with Ctrl+C.
 
 ### Changed
-- Retail: the reminder asks for mana potions only on healer specs and Arcane Mage, and an open reminder follows a spec change.
+- Retail: mana potions are only for healer specs and Arcane Mage. Other specs get no Mana Pots tab, minimum count, restock entry or reminder for them, and it all follows a spec change. List and macro are kept.
+- Forever: classes without mana get no Mana Pots tab.
 
 ## 2.1.2
 

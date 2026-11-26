@@ -107,11 +107,15 @@ local function UsesManaPotions()
     return (_G.UnitPowerMax("player", Enum.PowerType.Mana) or 0) > 0
 end
 
--- Tabs the reminder leaves out: the fixed ones, plus Mana Pots for a character that
--- doesn't use them.
-function CM.SkipsReminder(key)
-    if CM.REMINDER_SKIP[key] then return true end
+-- Tabs this character doesn't get: Mana Pots without a use for them. Only what is shown
+-- changes; the list and its macro stay, as characters and specs share profiles.
+function CM.IsTabHidden(key)
     return key == "manapotion" and not UsesManaPotions()
+end
+
+-- Tabs the reminder leaves out: the fixed ones and the hidden ones.
+function CM.SkipsReminder(key)
+    return CM.REMINDER_SKIP[key] or CM.IsTabHidden(key)
 end
 
 -- ── Utilities ──────────────────────────────────────────────────────────────────

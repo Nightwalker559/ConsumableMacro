@@ -49,8 +49,8 @@ function CM.GetRestockList()
     local list = {}
     if not CM.db then return list end
     for _, t in ipairs(CM.TABS) do
-        if not CM.RESTOCK_SKIP[t.key] then
-            local tabMin = tonumber(CM.db[t.key] and CM.db[t.key].minCount) or 0
+        if not CM.RESTOCK_SKIP[t.key] and not CM.IsTabHidden(t.key) then
+            local tabMin =tonumber(CM.db[t.key] and CM.db[t.key].minCount) or 0
             for _, item in ipairs(CM.db[t.key] and CM.db[t.key].items or {}) do
                 AddIfDue(list, item, tabMin)
             end
@@ -376,7 +376,7 @@ function CM.RefreshRestockConfig()
     -- one section per tab with AH-buyable items, plus the extra list
     local sections = {}
     for _, t in ipairs(CM.TABS) do
-        if not CM.RESTOCK_SKIP[t.key] then
+        if not CM.RESTOCK_SKIP[t.key] and not CM.IsTabHidden(t.key) then
             local items = {}
             for _, item in ipairs(CM.db[t.key] and CM.db[t.key].items or {}) do
                 if CM.IsAuctionable(item.id) then tinsert(items, item) end
