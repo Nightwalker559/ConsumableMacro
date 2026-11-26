@@ -93,11 +93,25 @@ if CM.IS_FOREVER then
     end
 end
 
--- Tabs the reminder leaves out: the fixed ones, plus Mana Pots for a class without mana
--- (warrior, rogue, ...).
+-- Retail specs outside the healer role that drink mana potions too.
+local MANA_POTION_SPECS = { [62] = true }  -- Arcane Mage
+
+-- Retail: healers and the specs above (other specs have mana but hardly drink it).
+-- Forever has no specs, so there (and while the spec is unknown) anyone with mana.
+local function UsesManaPotions()
+    local index = not CM.IS_FOREVER and _G.C_SpecializationInfo.GetSpecialization()
+    if index then
+        local specID, _, _, _, role = _G.C_SpecializationInfo.GetSpecializationInfo(index)
+        if role then return role == "HEALER" or MANA_POTION_SPECS[specID] == true end
+    end
+    return (_G.UnitPowerMax("player", Enum.PowerType.Mana) or 0) > 0
+end
+
+-- Tabs the reminder leaves out: the fixed ones, plus Mana Pots for a character that
+-- doesn't use them.
 function CM.SkipsReminder(key)
     if CM.REMINDER_SKIP[key] then return true end
-    return key == "manapotion" and (_G.UnitPowerMax("player", Enum.PowerType.Mana) or 0) <= 0
+    return key == "manapotion" and not UsesManaPotions()
 end
 
 -- ── Utilities ──────────────────────────────────────────────────────────────────

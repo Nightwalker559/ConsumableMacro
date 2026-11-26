@@ -41,6 +41,8 @@ ev:RegisterEvent("ITEM_DATA_LOAD_RESULT")
 ev:RegisterEvent("PLAYER_REGEN_DISABLED")
 ev:RegisterEvent("PLAYER_REGEN_ENABLED")
 ev:RegisterEvent("ZONE_CHANGED_NEW_AREA")
+-- the spec decides whether the reminder lists mana potions
+if not CM.IS_FOREVER then ev:RegisterUnitEvent("PLAYER_SPECIALIZATION_CHANGED", "player") end
 ev:SetScript("OnEvent", function(_, event, arg1, arg2)
     if event == "ADDON_LOADED" and arg1 == CM.ADDON_NAME then
         CM.InitProfiles()
@@ -74,6 +76,9 @@ ev:SetScript("OnEvent", function(_, event, arg1, arg2)
                 CM.CheckMissingConsumables()
             end)
         end
+
+    elseif event == "PLAYER_SPECIALIZATION_CHANGED" then
+        CM.UpdateReminderFrame()
 
     elseif event == "ZONE_CHANGED_NEW_AREA" then
         -- Catches instance entry/exit without a loading screen (e.g. delves).

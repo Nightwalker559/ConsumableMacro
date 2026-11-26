@@ -9,6 +9,9 @@ All notable changes to this project are documented here.
 ### New
 - Options: a "Feedback & Bugs" section with the GitHub link in a read-only box. Click it and copy with Ctrl+C.
 
+### Changed
+- Retail: the reminder asks for mana potions only on healer specs and Arcane Mage, and an open reminder follows a spec change.
+
 ## 2.1.2
 
 ### New
