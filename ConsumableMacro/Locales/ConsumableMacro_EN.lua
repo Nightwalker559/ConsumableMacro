@@ -1,3 +1,4 @@
+-- ConsumableMacro locale: English (default)
 local L = _G["ConsumableMacroLocale"] or {}
 
 L["TAB_FLASK"] = "Flasks"
@@ -54,10 +55,13 @@ L["BTN_MINCOUNT_CONFIGURE"] = "Configure Minimum Counts"
 L["OPTIONS_MIN_DESC"]   = "Warn when your top-priority item is at or below this count.\nAll 0 = no post-instance reminder."
 L["OPTIONS_GENERAL"]    = "General"
 L["CHECKBOX_REMINDER"] = "Show missing reminder on login"
+L["CHECKBOX_MANA_ALL_SPECS"] = "Mana Pots for all mana specs"
+L["MANA_ALL_SPECS_TOOLTIP"] = "Also shows Mana Pots on specs that have mana but are no healer or Arcane Mage."
 L["CHECKBOX_AUTO"] = "Auto-Update on bag change"
 L["BTN_UPDATE"] = "Update"
 L["ERROR_INVALID_ITEM"] = "Invalid Item!"
 L["ERR_COMBAT"] = "Action not allowed during combat!"
+L["ERR_NO_MANAPOTION"] = "This character doesn't use mana potions."
 L["REMINDER_SETUP_HINT"]     = "|cffAAAAAA/cm — open ConsumableMacro to configure missing tabs.|r"
 L["REMINDER_MISSING"] = "Missing consumables:"
 L["HELP_TEXT"] = "|cff00FF98ConsumableMacro Commands:|r\n/cm - Toggle UI window\n/cm update - Update macros immediately\n/cm reset - Reset item lists (asks first)\n/cm profile <name> - Switch profile\n/cm help - Show this help message"
@@ -116,6 +120,9 @@ L["BTN_RESET"]           = "Reset Lists"
 L["RESET_TITLE"]         = "Reset Item Lists"
 L["RESET_DESC"]          = "Select tabs to reset:"
 L["RESET_NONE_SELECTED"] = "Select at least one tab."
+
+L["FEEDBACK_HEADER"]     = "Feedback & Bugs"
+L["FEEDBACK_HINT"]       = "Click the GitHub link and copy it with Ctrl+C."
 
 L["AUTOPOTION_HEADER"]              = "AutoPotion"
 L["CHECKBOX_AUTOPOTION_ENABLE"]     = "Enable AutoPotion macro"

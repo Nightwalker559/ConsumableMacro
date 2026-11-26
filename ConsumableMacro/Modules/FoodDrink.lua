@@ -12,15 +12,8 @@ function CM.GetFoodDrinkIDs()
 end
 
 function CM.BuildFoodDrinkMacroBody()
-    local food, drink = CM.db.food.items, CM.db.drink.items
-
     -- the tooltip follows the first item in the bags, food before drink
-    local all = {}
-    for _, list in ipairs({ food, drink }) do
-        for _, item in ipairs(list) do tinsert(all, item) end
-    end
-
-    local lines = { CM.GetShowtooltipLine(all) }
+    local lines = { CM.GetShowtooltipLine(CM.JoinLists(CM.db.food.items, CM.db.drink.items)) }
     local foodID, drinkID = CM.GetFoodDrinkIDs()
     if drinkID then tinsert(lines, "/use [mod:shift,nomod:ctrl] item:" .. drinkID) end
     if foodID  then tinsert(lines, "/use [mod:ctrl,nomod:shift] item:" .. foodID) end

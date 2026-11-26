@@ -29,20 +29,8 @@ end
 
 function CM.BuildPoisonMacroBody()
     local slot, itemID = CM.GetPoisonTarget()
-
     -- the tooltip follows the poison to be applied, else the first one in the bags
-    local all = {}
-    for _, list in ipairs({ CM.db.poison.items, CM.db.poisonoff.items }) do
-        for _, item in ipairs(list) do tinsert(all, item) end
-    end
-    local lines = { CM.GetShowtooltipLine(all, itemID) }
-
-    if itemID then
-        tinsert(lines, "/use item:" .. itemID)
-        tinsert(lines, "/use " .. slot)
-        tinsert(lines, "/click StaticPopup1Button1")  -- confirms "replace enchant?"
-    end
-    return CM.TrimMacroLines(lines)
+    return CM.BuildHandMacroBody(CM.JoinLists(CM.db.poison.items, CM.db.poisonoff.items), slot, itemID)
 end
 
 CM.HAND_MACROS.poison = {

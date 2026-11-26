@@ -109,6 +109,23 @@ function CM.CreateWindow(name)
     return f
 end
 
+-- Square item icon of a list row, without the icon file's border. The caller anchors it.
+function CM.CreateRowIcon(row, size)
+    local icon = row:CreateTexture(nil, "ARTWORK")
+    icon:SetSize(size, size)
+    icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
+    return icon
+end
+
+-- Grey, left-aligned, wrapping explanation text. The caller anchors and fills it.
+function CM.CreateHint(parent)
+    local hint = parent:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+    hint:SetJustifyH("LEFT")
+    hint:SetWordWrap(true)
+    hint:SetTextColor(0.65, 0.65, 0.65)
+    return hint
+end
+
 -- Dark background texture of a list row.
 function CM.AddRowBackground(row)
     row.bg = row:CreateTexture(nil, "BACKGROUND")

@@ -121,6 +121,8 @@ function CM.SyncAutoPotionResetFromCooldown()
 
     local seconds, approximate = nil, false
     local cd = C_Spell.GetSpellCooldown(spellID)
+    -- the numbers are secret while restricted (encounters, Mythic+): not readable then
+    if cd and _G.issecretvalue and _G.issecretvalue(cd.duration) then cd = nil end
     if cd and cd.startTime > 0 and cd.duration > MIN_REAL_COOLDOWN then
         seconds = math.floor(cd.duration + 0.5)
     elseif _G.GetSpellBaseCooldown then
@@ -166,13 +168,10 @@ function CM.BuildAutoPotionFrame()
     f.TitleText:SetText(L["AUTOPOTION_PRIORITY_TITLE"])
 
     local y = -30
-    f.descLbl = f:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+    f.descLbl = CM.CreateHint(f)
     f.descLbl:SetPoint("TOPLEFT", 14, y)
     f.descLbl:SetPoint("TOPRIGHT", -14, y)
-    f.descLbl:SetJustifyH("LEFT")
-    f.descLbl:SetWordWrap(true)
     f.descLbl:SetText(L["AUTOPOTION_PRIORITY_DESC"])
-    f.descLbl:SetTextColor(0.7, 0.7, 0.7)
     y = y - 34
 
     f.rows = {}

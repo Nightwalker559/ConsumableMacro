@@ -93,11 +93,39 @@ if CM.IS_FOREVER then
     end
 end
 
--- Tabs the reminder leaves out: the fixed ones, plus Mana Pots for a class without mana
--- (warrior, rogue, ...).
+-- Retail specs outside the healer role that drink mana potions too.
+local MANA_POTION_SPECS = { [62] = true }  -- Arcane Mage
+
+-- Retail: healers and the specs above (other specs have mana but hardly drink it).
+-- Anyone with mana: on Forever (no specs), while the spec is unknown, and if the
+-- profile asks for every mana spec.
+local function UsesManaPotions()
+    local bySpec = not CM.IS_FOREVER and not (CM.db and CM.db.manaPotionsAllSpecs)
+    local index = bySpec and _G.C_SpecializationInfo.GetSpecialization()
+    if index then
+        local specID, _, _, _, role = _G.C_SpecializationInfo.GetSpecializationInfo(index)
+        if role then return role == "HEALER" or MANA_POTION_SPECS[specID] == true end
+    end
+    return (_G.UnitPowerMax("player", Enum.PowerType.Mana) or 0) > 0
+end
+
+-- Tabs this character doesn't get: Mana Pots without a use for them. Only what is shown
+-- changes; the list and its macro stay, as characters and specs share profiles.
+function CM.IsTabHidden(key)
+    return key == "manapotion" and not UsesManaPotions()
+end
+
+-- Tabs the reminder leaves out: the fixed ones and the hidden ones.
 function CM.SkipsReminder(key)
-    if CM.REMINDER_SKIP[key] then return true end
-    return key == "manapotion" and (_G.UnitPowerMax("player", Enum.PowerType.Mana) or 0) <= 0
+    return CM.REMINDER_SKIP[key] or CM.IsTabHidden(key)
+end
+
+-- Redraws everything that leaves hidden tabs out, after what is hidden changed.
+function CM.RefreshTabVisibility()
+    CM.UpdateReminderFrame()
+    CM.RefreshList()
+    CM.LayoutMinCountRows()
+    CM.RefreshRestockFrame()
 end
 
 -- ── Utilities ──────────────────────────────────────────────────────────────────
@@ -166,6 +194,23 @@ end
 -- Item icon texture (question mark while the item data isn't loaded yet).
 function CM.GetItemIcon(itemID)
     return C_Item.GetItemIconByID(itemID) or CM.ICON_UNKNOWN
+end
+
+-- True if the item list already holds the item.
+function CM.ListHasItem(items, itemID)
+    for _, item in ipairs(items) do
+        if item.id == itemID then return true end
+    end
+    return false
+end
+
+-- A new list with the entries of both lists, those of `first` in front.
+function CM.JoinLists(first, second)
+    local all = {}
+    for _, list in ipairs({ first, second }) do
+        for _, item in ipairs(list) do tinsert(all, item) end
+    end
+    return all
 end
 
 -- First item of a priority list that is in the bags; nil if none.

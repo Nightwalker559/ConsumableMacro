@@ -78,18 +78,21 @@ function CM.GetWeaponEnhanceTarget(items)
     return CM.PickWeaponHand(function(_, weaponType) return GetBestItemFor(items, weaponType) end)
 end
 
-function CM.BuildWeaponEnhanceMacroBody(items)
-    local slot, itemID = CM.GetWeaponEnhanceTarget(items)
-
+-- Body of a macro that puts `itemID` on the weapon in `slot` (no use lines without one);
+-- `items` are what the tooltip falls back to.
+function CM.BuildHandMacroBody(items, slot, itemID)
     local lines = { CM.GetShowtooltipLine(items, itemID) }
-
     if itemID then
         tinsert(lines, "/use item:" .. itemID)
         tinsert(lines, "/use " .. slot)
         tinsert(lines, "/click StaticPopup1Button1")  -- confirms "replace enchant?"
     end
-
     return CM.TrimMacroLines(lines)
+end
+
+function CM.BuildWeaponEnhanceMacroBody(items)
+    local slot, itemID = CM.GetWeaponEnhanceTarget(items)
+    return CM.BuildHandMacroBody(items, slot, itemID)
 end
 
 -- ── Keep the macros in sync ────────────────────────────────────────────────────

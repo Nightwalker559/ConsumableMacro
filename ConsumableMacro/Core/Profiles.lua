@@ -49,7 +49,8 @@ function CM.FillProfileDefaults(p)
     end
     if p.autoUpdate   == nil then p.autoUpdate   = true end
     if p.showReminder == nil then p.showReminder = true end
-    p.autoPotion = p.autoPotion or { enabled = false, stopCasting = true }
+    p.manaPotionsAllSpecs = p.manaPotionsAllSpecs or false  -- Retail: see CM.IsTabHidden
+    p.autoPotion =p.autoPotion or { enabled = false, stopCasting = true }
     p.restock    = p.restock    or { enabled = false, countBank = false }
     p.restock.extra     = p.restock.extra     or {}  -- items without a tab: { id, restock, target, minCount }
     p.restock.collapsed = p.restock.collapsed or {}  -- [sectionKey] = true while folded in the setup
@@ -90,11 +91,7 @@ local function SplitTab(root, flag, from)
                         local tab = type(p[key]) == "table" and p[key] or {}
                         p[key] = tab
                         tab.items = tab.items or {}
-                        local present = false
-                        for _, existing in ipairs(tab.items) do
-                            if existing.id == item.id then present = true end
-                        end
-                        if not present then tinsert(tab.items, DeepCopy(item)) end
+                        if not CM.ListHasItem(tab.items, item.id) then tinsert(tab.items, DeepCopy(item)) end
                     end
                 end
             end

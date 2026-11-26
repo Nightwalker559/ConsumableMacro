@@ -94,10 +94,8 @@ local function CreateRow(i)
 
     CM.AddRowBackground(row)
 
-    row.icon = row:CreateTexture(nil, "ARTWORK")
-    row.icon:SetSize(24, 24)
+    row.icon = CM.CreateRowIcon(row, 24)
     row.icon:SetPoint("LEFT", 5, 0)
-    row.icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
 
     row.text = row:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
     row.text:SetPoint("LEFT", row.icon, "RIGHT", 8, 0)
@@ -125,9 +123,30 @@ local function CreateRow(i)
     return row
 end
 
+-- Places the sidebar entries one below the other, leaving out hidden tabs.
+local function LayoutSideTabs(f)
+    local row = 0
+    for _, t in ipairs(CM.TABS) do
+        local btn = f.tabBtns[t.key]
+        if btn then
+            local hidden = CM.IsTabHidden(t.key)
+            btn:SetShown(not hidden)
+            if not hidden then
+                local y = -6 - row * (CM.SIDE_TAB_HEIGHT + 2)
+                btn:SetPoint("TOPLEFT",  f.sideBar, "TOPLEFT",  4, y)
+                btn:SetPoint("TOPRIGHT", f.sideBar, "TOPRIGHT", -4, y)
+                row = row + 1
+            end
+        end
+    end
+end
+
 function CM.RefreshList()
     local f = CM.mainFrame
     if not f or not f:IsShown() or not CM.db then return end
+    -- the open list can lose its tab with a spec change
+    if CM.IsTabHidden(CM.activeTab) then CM.activeTab = CM.TABS[1].key end
+    LayoutSideTabs(f)
     local items = CM.db[CM.activeTab].items
     for _, row in ipairs(CM.rowPool) do row:Hide() end
 
@@ -221,12 +240,9 @@ function CM.BuildUI()
 
     f.tabBtns = {}
     f.subBtns = {}  -- [list key] = button, for the lists that sit behind another entry
-    local row = 0
     for _, t in ipairs(CM.TABS) do
         if not t.sideOf then
-            local btn = CM.CreateSideTab(sideBar, t)
-            btn:SetPoint("TOPLEFT",  sideBar, "TOPLEFT",  4, -6 - row * (CM.SIDE_TAB_HEIGHT + 2))
-            btn:SetPoint("TOPRIGHT", sideBar, "TOPRIGHT", -4, -6 - row * (CM.SIDE_TAB_HEIGHT + 2))
+            local btn = CM.CreateSideTab(sideBar, t)  -- placed by LayoutSideTabs
             -- clicking the entry of the list being edited keeps the shown list
             btn:SetScript("OnClick", function()
                 local cur = CM.GetTabInfo(CM.activeTab)
@@ -234,7 +250,6 @@ function CM.BuildUI()
                 CM.RefreshList()
             end)
             f.tabBtns[t.key] = btn
-            row = row + 1
         end
     end
 

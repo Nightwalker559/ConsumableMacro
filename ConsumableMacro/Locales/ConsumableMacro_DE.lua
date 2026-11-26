@@ -1,3 +1,4 @@
+-- ConsumableMacro locale: German
 if GetLocale() ~= "deDE" then return end
 
 local L = _G["ConsumableMacroLocale"] or {}
@@ -55,10 +56,13 @@ L["BTN_MINCOUNT_CONFIGURE"] = "Mindestmengen konfigurieren"
 L["OPTIONS_MIN_DESC"]   = "Warnen, wenn dein höchstpriorisierter Gegenstand diese Menge erreicht oder darunter liegt.\nAlle 0 = kein Reminder nach Instanz."
 L["OPTIONS_GENERAL"]    = "Allgemein"
 L["CHECKBOX_REMINDER"] = "Fehlenden Reminder beim Login anzeigen"
+L["CHECKBOX_MANA_ALL_SPECS"] = "Manatränke für alle Mana-Specs"
+L["MANA_ALL_SPECS_TOOLTIP"] = "Zeigt Manatränke auch bei Specs, die Mana haben, aber weder Heiler noch Arkanmagier sind."
 L["CHECKBOX_AUTO"] = "Auto-Update bei Taschenänderung"
 L["BTN_UPDATE"] = "Aktualisieren"
 L["ERROR_INVALID_ITEM"] = "Ungültiger Gegenstand!"
 L["ERR_COMBAT"] = "Aktion während des Kampfes nicht erlaubt!"
+L["ERR_NO_MANAPOTION"] = "Dieser Charakter nutzt keine Manatränke."
 L["REMINDER_SETUP_HINT"]     = "|cffAAAAAA/cm — ConsumableMacro öffnen um fehlende Tabs zu konfigurieren.|r"
 L["REMINDER_MISSING"] = "Fehlende Verbrauchsgüter:"
 L["HELP_TEXT"] = "|cff00FF98ConsumableMacro Befehle:|r\n/cm - UI Fenster öffnen/schließen\n/cm update - Makros sofort aktualisieren\n/cm reset - Gegenstandslisten zurücksetzen (mit Rückfrage)\n/cm profile <name> - Profil wechseln\n/cm help - Diese Hilfe anzeigen"
@@ -117,6 +121,9 @@ L["BTN_RESET"]           = "Listen zurücksetzen"
 L["RESET_TITLE"]         = "Gegenstandslisten zurücksetzen"
 L["RESET_DESC"]          = "Tabs zum Zurücksetzen auswählen:"
 L["RESET_NONE_SELECTED"] = "Mindestens einen Tab auswählen."
+
+L["FEEDBACK_HEADER"]     = "Feedback & Fehler"
+L["FEEDBACK_HINT"]       = "GitHub-Link anklicken und mit Strg+C kopieren."
 
 L["AUTOPOTION_HEADER"]              = "AutoPotion"
 L["CHECKBOX_AUTOPOTION_ENABLE"]     = "AutoPotion-Makro aktivieren"

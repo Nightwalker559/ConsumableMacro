@@ -21,6 +21,11 @@ local function RefreshBagState(updateMacros)
     CM.RefreshList()
 end
 
+-- The deferred redraw after bag changes.
+local function RefreshAfterBagUpdate()
+    RefreshBagState(CM.db and CM.db.autoUpdate)
+end
+
 -- Back in the open world after an instance: remind about low consumables. The
 -- re-check after the delay covers zoning straight into another instance.
 local function OnLeftInstance()
@@ -41,6 +46,8 @@ ev:RegisterEvent("ITEM_DATA_LOAD_RESULT")
 ev:RegisterEvent("PLAYER_REGEN_DISABLED")
 ev:RegisterEvent("PLAYER_REGEN_ENABLED")
 ev:RegisterEvent("ZONE_CHANGED_NEW_AREA")
+-- the spec decides whether the character has the Mana Pots tab
+if not CM.IS_FOREVER then ev:RegisterUnitEvent("PLAYER_SPECIALIZATION_CHANGED", "player") end
 ev:SetScript("OnEvent", function(_, event, arg1, arg2)
     if event == "ADDON_LOADED" and arg1 == CM.ADDON_NAME then
         CM.InitProfiles()
@@ -75,6 +82,9 @@ ev:SetScript("OnEvent", function(_, event, arg1, arg2)
             end)
         end
 
+    elseif event == "PLAYER_SPECIALIZATION_CHANGED" then
+        CM.RefreshTabVisibility()
+
     elseif event == "ZONE_CHANGED_NEW_AREA" then
         -- Catches instance entry/exit without a loading screen (e.g. delves).
         if IsRealInstance() then
@@ -101,9 +111,7 @@ ev:SetScript("OnEvent", function(_, event, arg1, arg2)
             if CM.db.autoUpdate then CM.needsUpdateAfterCombat = true end
         else
             -- only the macro rebuild depends on Auto-Update
-            CM.Defer("bagUpdate", function()
-                RefreshBagState(CM.db and CM.db.autoUpdate)
-            end, 1.0)
+            CM.Defer("bagUpdate", RefreshAfterBagUpdate, 1.0)
         end
 
     elseif event == "ITEM_DATA_LOAD_RESULT" then
