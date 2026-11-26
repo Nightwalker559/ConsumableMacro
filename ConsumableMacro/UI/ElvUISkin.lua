@@ -75,7 +75,7 @@ function CM.ApplyElvUISkin()
     local o = CM.optionsFrame
     if o then
         frame(o)
-        check(o.autoUpdateChk); check(o.reminderChk)
+        check(o.autoUpdateChk); check(o.reminderChk); check(o.manaSpecsChk)
         button(o.minConfigBtn)
         button(o.exportBtn); button(o.importBtn); edit(o.ieBox)
         button(o.resetBtn); edit(o.linkBox)

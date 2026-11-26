@@ -49,7 +49,8 @@ function CM.FillProfileDefaults(p)
     end
     if p.autoUpdate   == nil then p.autoUpdate   = true end
     if p.showReminder == nil then p.showReminder = true end
-    p.autoPotion = p.autoPotion or { enabled = false, stopCasting = true }
+    p.manaPotionsAllSpecs = p.manaPotionsAllSpecs or false  -- Retail: see CM.IsTabHidden
+    p.autoPotion =p.autoPotion or { enabled = false, stopCasting = true }
     p.restock    = p.restock    or { enabled = false, countBank = false }
     p.restock.extra     = p.restock.extra     or {}  -- items without a tab: { id, restock, target, minCount }
     p.restock.collapsed = p.restock.collapsed or {}  -- [sectionKey] = true while folded in the setup

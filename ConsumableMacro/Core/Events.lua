@@ -78,10 +78,7 @@ ev:SetScript("OnEvent", function(_, event, arg1, arg2)
         end
 
     elseif event == "PLAYER_SPECIALIZATION_CHANGED" then
-        CM.UpdateReminderFrame()
-        CM.RefreshList()
-        CM.LayoutMinCountRows()
-        CM.RefreshRestockFrame()
+        CM.RefreshTabVisibility()
 
     elseif event == "ZONE_CHANGED_NEW_AREA" then
         -- Catches instance entry/exit without a loading screen (e.g. delves).

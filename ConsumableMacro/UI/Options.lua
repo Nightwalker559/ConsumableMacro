@@ -60,6 +60,16 @@ function CM.BuildOptionsFrame()
 
     o.reminderChk = CM.CreateCheckbox(c, L["CHECKBOX_REMINDER"], 14, y)
     o.reminderChk:SetScript("OnClick", function(self) CM.db.showReminder = self:GetChecked() end)
+
+    if not CM.IS_FOREVER then  -- Forever shows Mana Pots to everyone with mana anyway
+        y = y - 30
+        o.manaSpecsChk = CM.CreateCheckbox(c, L["CHECKBOX_MANA_ALL_SPECS"], 14, y)
+        o.manaSpecsChk:SetScript("OnClick", function(self)
+            CM.db.manaPotionsAllSpecs = self:GetChecked()
+            CM.RefreshTabVisibility()
+        end)
+        CM.AttachTooltip(o.manaSpecsChk, L["MANA_ALL_SPECS_TOOLTIP"])
+    end
     y = y - 38
 
     -- ── Min Count section ──
@@ -277,6 +287,7 @@ function CM.RefreshOptionsFrame()
     if not o or not CM.db then return end
     o.autoUpdateChk:SetChecked(CM.db.autoUpdate)
     o.reminderChk:SetChecked(CM.db.showReminder)
+    if o.manaSpecsChk then o.manaSpecsChk:SetChecked(CM.db.manaPotionsAllSpecs) end
     if CM.HAS_AUTOPOTION then
         o.apEnableChk:SetChecked(CM.db.autoPotion.enabled)
         o.apStopCastChk:SetChecked(CM.db.autoPotion.stopCasting)

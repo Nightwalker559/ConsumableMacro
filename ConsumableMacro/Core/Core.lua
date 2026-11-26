@@ -97,9 +97,11 @@ end
 local MANA_POTION_SPECS = { [62] = true }  -- Arcane Mage
 
 -- Retail: healers and the specs above (other specs have mana but hardly drink it).
--- Forever has no specs, so there (and while the spec is unknown) anyone with mana.
+-- Anyone with mana: on Forever (no specs), while the spec is unknown, and if the
+-- profile asks for every mana spec.
 local function UsesManaPotions()
-    local index = not CM.IS_FOREVER and _G.C_SpecializationInfo.GetSpecialization()
+    local bySpec = not CM.IS_FOREVER and not (CM.db and CM.db.manaPotionsAllSpecs)
+    local index = bySpec and _G.C_SpecializationInfo.GetSpecialization()
     if index then
         local specID, _, _, _, role = _G.C_SpecializationInfo.GetSpecializationInfo(index)
         if role then return role == "HEALER" or MANA_POTION_SPECS[specID] == true end
@@ -116,6 +118,14 @@ end
 -- Tabs the reminder leaves out: the fixed ones and the hidden ones.
 function CM.SkipsReminder(key)
     return CM.REMINDER_SKIP[key] or CM.IsTabHidden(key)
+end
+
+-- Redraws everything that leaves hidden tabs out, after what is hidden changed.
+function CM.RefreshTabVisibility()
+    CM.UpdateReminderFrame()
+    CM.RefreshList()
+    CM.LayoutMinCountRows()
+    CM.RefreshRestockFrame()
 end
 
 -- ── Utilities ──────────────────────────────────────────────────────────────────
